@@ -1,0 +1,1 @@
+# simplifynext-2026

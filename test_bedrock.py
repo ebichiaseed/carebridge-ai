@@ -1,7 +1,7 @@
 import boto3
 
 session = boto3.Session(
-    profile_name="hack2026_IsbUsersPS-812313739264",
+    profile_name="default",
     region_name="us-east-1",
 )
 

@@ -24,6 +24,7 @@ class BaseAgent(ABC):
     def get_tool(self, tool_name: str):
         if tool_name not in self.tools:
             raise ValueError(f"Tool '{tool_name}' not available")
+        return self.tools[tool_name]
 
     async def ask_model(self, prompt: str, **kwargs):
         """

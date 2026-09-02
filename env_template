@@ -1,0 +1,11 @@
+# The original env file is not committed to github so please copy and paste this into your own repo
+
+AWS_ACCESS_KEY_ID = ""
+AWS_SECRET_ACCESS_KEY = ""
+
+AWS_REGION=ap-southeast-1
+
+INTERPRETATION_MODEL=sonnet
+TRANSLATION_MODEL=sonnet
+
+WHISPER_MODEL=mjwong/whisper-large-v3-turbo-singlish

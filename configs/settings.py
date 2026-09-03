@@ -20,5 +20,10 @@ TRANSLATION_MODEL = os.getenv(
 
 WHISPER_MODEL = os.getenv(
     "WHISPER_MODEL",
-    "mjwong/whisper-large-v3-turbo-singlish"
+    "wysie/whisper-large-v3-turbo-singlish-mlx"
+)
+
+QWEN_ASR_MODEL = os.getenv(
+    "QWEN_ASR_MODEL",
+    "mlx-community/Qwen3-ASR-0.6B-8bit"
 )

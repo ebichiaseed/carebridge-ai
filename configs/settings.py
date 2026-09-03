@@ -27,3 +27,5 @@ QWEN_ASR_MODEL = os.getenv(
     "QWEN_ASR_MODEL",
     "mlx-community/Qwen3-ASR-0.6B-8bit"
 )
+
+VERIFICATION_MODEL = os.getenv("VERIFICATION_MODEL", "sonnet")

@@ -1,54 +1,43 @@
-# models/whisper_singlish.py
+"""Apple Silicon MLX implementation of the Singlish Whisper ASR model."""
 
-import torch
-from transformers import (
-    AutoModelForSpeechSeq2Seq,
-    AutoProcessor,
-    pipeline
-)
+import asyncio
+from pathlib import Path
+from typing import Any
 
 from models.base_model import SpeechToTextModel
 
 
+DEFAULT_MODEL_ID = "wysie/whisper-large-v3-turbo-singlish-mlx"
+
+
 class WhisperSinglishModel(SpeechToTextModel):
+    def __init__(self, model_id: str = DEFAULT_MODEL_ID):
+        """Configure the model; MLX downloads and caches weights on first use."""
+        try:
+            import mlx_whisper
+        except ImportError as error:
+            raise RuntimeError(
+                "MLX Whisper is missing. Run: pip install -r requirements.txt"
+            ) from error
 
-    def __init__(
-        self,
-        model_id="mjwong/whisper-large-v3-turbo-singlish"
-    ):
+        self.model_id = model_id
+        self._transcribe = mlx_whisper.transcribe
 
-        device = (
-            "cuda:0"
-            if torch.cuda.is_available()
-            else "cpu"
+    async def transcribe(self, audio_path: str, **kwargs: Any) -> str:
+        """Transcribe an existing local audio file.
+
+        Extra keyword arguments are forwarded to ``mlx_whisper.transcribe``,
+        for example ``word_timestamps=True`` when word timestamps are needed.
+        """
+        file_path = Path(audio_path)
+        if not file_path.is_file():
+            raise FileNotFoundError(f"Audio file not found: {file_path}")
+
+        result = await asyncio.to_thread(
+            self._transcribe,
+            str(file_path),
+            path_or_hf_repo=self.model_id,
+            **kwargs,
         )
-
-        dtype = (
-            torch.float16
-            if torch.cuda.is_available()
-            else torch.float32
-        )
-
-        model = AutoModelForSpeechSeq2Seq.from_pretrained(
-            model_id,
-            torch_dtype=dtype
-        )
-
-        processor = AutoProcessor.from_pretrained(
-            model_id
-        )
-
-        self.pipe = pipeline(
-            "automatic-speech-recognition",
-            model=model,
-            tokenizer=processor.tokenizer,
-            feature_extractor=processor.feature_extractor,
-            torch_dtype=dtype,
-            device=device
-        )
-
-    async def transcribe(self, audio_path: str, **kwargs):
-
-        result = self.pipe(audio_path)
 
         return result["text"]

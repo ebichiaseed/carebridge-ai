@@ -1,7 +1,8 @@
 # models/model_factory.py
 
-from configs.settings import AWS_REGION
+from configs.settings import AWS_REGION, QWEN_ASR_MODEL, WHISPER_MODEL
 from models.bedrock_model import BedrockModel
+from models.qwen_asr_model import QwenAsrModel
 from models.whisper_model import WhisperSinglishModel
 
 
@@ -23,8 +24,10 @@ class ModelFactory:
                 model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
                 region=AWS_REGION
             )
-        elif model_name == "whisper-singlish":
-                    return WhisperSinglishModel()
+        elif model_name in {"whisper-singlish", WHISPER_MODEL}:
+            return WhisperSinglishModel(model_id=WHISPER_MODEL)
+        elif model_name in {"qwen-asr", QWEN_ASR_MODEL}:
+            return QwenAsrModel(model_id=QWEN_ASR_MODEL)
         else:
             raise ValueError(
                 f"Unknown model: {model_name}"

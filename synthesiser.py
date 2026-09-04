@@ -1,4 +1,4 @@
-# synthesiser.py
+"""LangGraph orchestration for the CareBridge text workflow."""
 
 from typing import Any
 
@@ -9,13 +9,16 @@ from agents.interpretation_agent import (
     InterpretationError,
     needs_clarification,
 )
-from agents.structure_agent import StructureAgent, StructureError
+from agents.structure_agent import (
+    StructureAgent,
+    StructureError,
+)
 from agents.verify_agent import VerifyAgent
 from state import CareBridgeState
 
 
 def _format_transcript(transcript: str | list[str]) -> str:
-    """Convert multiple ASR candidates into text for the verifier."""
+    """Convert one or more ASR results into text for verification."""
 
     if isinstance(transcript, str):
         return transcript
@@ -31,16 +34,13 @@ def build_workflow(
     structure_agent: StructureAgent,
     verify_agent: VerifyAgent,
 ):
-    """
-    Build and compile the text-only CareBridge workflow.
-
-    Agents are passed in rather than created here so model configuration remains
-    outside the graph and the workflow is easy to test with fake agents.
-    """
+    """Build and compile the CareBridge text workflow."""
 
     async def interpretation_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
+        """Run the interpretation agent."""
+
         try:
             result = await interpretation_agent.run(
                 transcript=state["transcript"],
@@ -67,6 +67,8 @@ def build_workflow(
     async def structure_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
+        """Create a natural-language draft from the interpretation."""
+
         try:
             result = await structure_agent.run(
                 interpretation=state["interpretation"],
@@ -74,7 +76,7 @@ def build_workflow(
             )
 
             return {
-                "draft_translation": result.draft_translation,
+                "structure": result,
                 "status": "processing",
                 "error": None,
             }
@@ -91,10 +93,18 @@ def build_workflow(
     async def verification_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
+        """Verify that the draft preserves the original meaning."""
+
         result = await verify_agent.run({
-            "transcript": _format_transcript(state["transcript"]),
-            "interpretation": state["interpretation"].model_dump(),
-            "draft_translation": state["draft_translation"],
+            "transcript": _format_transcript(
+                state["transcript"]
+            ),
+            "interpretation": (
+                state["interpretation"].model_dump()
+            ),
+            "draft_translation": (
+                state["structure"].draft_translation
+            ),
         })
 
         return {
@@ -105,35 +115,43 @@ def build_workflow(
     def accept_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
-        """Expose text only after verification passes."""
+        """Expose the draft as final text after verification passes."""
 
         return {
-            "final_text": state["draft_translation"],
+            "final_text": (
+                state["structure"].draft_translation
+            ),
             "status": "verified",
         }
 
     def clarify_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
-        """Select the most relevant clarification question."""
+        """Choose the most relevant clarification question."""
 
         question = state.get("clarification_question")
 
         verification = state.get("verification")
-        if verification and verification.clarification_question:
+
+        if (
+            verification is not None
+            and verification.clarification_question
+        ):
             question = verification.clarification_question
 
         interpretation = state.get("interpretation")
+
         if (
             not question
-            and interpretation
+            and interpretation is not None
             and interpretation.clarification_question
         ):
             question = interpretation.clarification_question
 
         return {
             "clarification_question": (
-                question or "Could you say that a different way?"
+                question
+                or "Could you say that a different way?"
             ),
             "status": "needs_clarification",
         }
@@ -141,6 +159,8 @@ def build_workflow(
     def route_after_interpretation(
         state: CareBridgeState,
     ) -> str:
+        """Decide whether to structure or request clarification."""
+
         if state["status"] == "needs_clarification":
             return "clarify"
 
@@ -157,10 +177,17 @@ def build_workflow(
     def route_after_structure(
         state: CareBridgeState,
     ) -> str:
+        """Decide whether the draft can be verified."""
+
         if state["status"] == "needs_clarification":
             return "clarify"
 
-        if not state.get("draft_translation"):
+        structure = state.get("structure")
+
+        if structure is None:
+            return "clarify"
+
+        if not structure.draft_translation.strip():
             return "clarify"
 
         return "verify"
@@ -168,6 +195,8 @@ def build_workflow(
     def route_after_verification(
         state: CareBridgeState,
     ) -> str:
+        """Route according to the verifier verdict."""
+
         verification = state.get("verification")
 
         if verification is None:
@@ -176,21 +205,43 @@ def build_workflow(
         if verification.verdict == "PASS":
             return "accept"
 
-        # RETRY is routed to clarification for now because StructureAgent does
-        # not yet accept verification feedback. Retrying the same deterministic
-        # prompt would likely produce the same draft.
+        # RETRY and CLARIFY both stop for clarification for now.
+        # A retry loop should only be added after StructureAgent can
+        # receive the verifier's issues and revise its earlier draft.
         return "clarify"
 
+    # Build the graph.
     builder = StateGraph(CareBridgeState)
 
-    builder.add_node("interpret", interpretation_node)
-    builder.add_node("structure", structure_node)
-    builder.add_node("verify", verification_node)
-    builder.add_node("accept", accept_node)
-    builder.add_node("clarify", clarify_node)
+    # Register nodes.
+    builder.add_node(
+        "interpret",
+        interpretation_node,
+    )
+    builder.add_node(
+        "structure",
+        structure_node,
+    )
+    builder.add_node(
+        "verify",
+        verification_node,
+    )
+    builder.add_node(
+        "accept",
+        accept_node,
+    )
+    builder.add_node(
+        "clarify",
+        clarify_node,
+    )
 
-    builder.add_edge(START, "interpret")
+    # Starting edge.
+    builder.add_edge(
+        START,
+        "interpret",
+    )
 
+    # Interpretation routing.
     builder.add_conditional_edges(
         "interpret",
         route_after_interpretation,
@@ -200,6 +251,7 @@ def build_workflow(
         },
     )
 
+    # Structure routing.
     builder.add_conditional_edges(
         "structure",
         route_after_structure,
@@ -209,6 +261,7 @@ def build_workflow(
         },
     )
 
+    # Verification routing.
     builder.add_conditional_edges(
         "verify",
         route_after_verification,
@@ -218,6 +271,7 @@ def build_workflow(
         },
     )
 
+    # Terminal edges.
     builder.add_edge("accept", END)
     builder.add_edge("clarify", END)
 

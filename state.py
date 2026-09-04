@@ -1,42 +1,48 @@
-"""Shared state for the CareBridge agent workflow."""
+"""Shared LangGraph state for the CareBridge agent workflow."""
 
 from typing import Any, Literal, NotRequired, TypedDict
 
 from agents.interpretation_agent import InterpretationResult
+from agents.structure_agent import StructureResult
 from agents.verify_agent import VerificationResult
 
 
+WorkflowStatus = Literal[
+    "processing",
+    "verified",
+    "needs_clarification",
+    "failed",
+]
+
+
 class CareBridgeState(TypedDict):
-    # Input
+    """Information passed between CareBridge workflow nodes."""
+
+    # Workflow input
     transcript: str | list[str]
 
-    # Context supplied to the interpretation agent
+    # Context for the interpretation agent
     glossary_hits: NotRequired[list[dict[str, Any]]]
     recent_context: NotRequired[list[dict[str, Any]]]
     person_info: NotRequired[dict[str, Any]]
 
-    # Agent results
+    # Results produced by the three agents
     interpretation: NotRequired[InterpretationResult]
-    draft_translation: NotRequired[str]
+    structure: NotRequired[StructureResult]
     verification: NotRequired[VerificationResult]
 
-    # Retry control
+    # Verification and retry information
     retry_count: int
     max_retries: int
     verification_issues: NotRequired[list[str]]
 
-    # Workflow result
+    # Terminal workflow output
     final_text: NotRequired[str]
     clarification_question: NotRequired[str]
-
-    status: Literal[
-        "processing",
-        "verified",
-        "needs_clarification",
-        "failed",
-    ]
-
     error: NotRequired[str]
+
+    # Current workflow status
+    status: WorkflowStatus
 
 
 def create_initial_state(
@@ -45,9 +51,15 @@ def create_initial_state(
     glossary_hits: list[dict[str, Any]] | None = None,
     recent_context: list[dict[str, Any]] | None = None,
     person_info: dict[str, Any] | None = None,
-    max_retries: int = 1,
+    max_retries: int = 0,
 ) -> CareBridgeState:
-    """Create a consistently initialized state for a new workflow run."""
+    """Create the initial state for one workflow execution."""
+
+    if isinstance(transcript, str):
+        if not transcript.strip():
+            raise ValueError("transcript cannot be empty")
+    elif not transcript or not any(item.strip() for item in transcript):
+        raise ValueError("transcript candidates cannot be empty")
 
     if max_retries < 0:
         raise ValueError("max_retries cannot be negative")

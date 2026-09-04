@@ -2,7 +2,9 @@
 
 for now i shall use readme to introduce the repo to all, then later we amend nice nice
 
-the repo skeleton:
+## Notes
+
+### Repo Skeleton
 ```
 backend/
 │
@@ -30,6 +32,7 @@ backend/
 └── synthesiser.py
 ```
 
+### Agent
 le important idea
 ```
 Agent
@@ -50,6 +53,23 @@ so what do you need to do as agent specialists:
 
 2. create your system prompt, create any tools where needed
 
+### Orchestration Workflow
+
+overarching idea:
+
+```
+START
+  ↓
+interpretation_agent
+  ├─ needs clarification ─────────────→ CLARIFY → END
+  ↓
+structure_agent
+  ↓
+verify_agent
+  ├─ PASS ────────────────────────────→ END
+  ├─ CLARIFY ─────────────────────────→ CLARIFY → END
+  └─ RETRY and retry_count < limit ───→ structure_agent
+```
 
 
 and then how to access the AWS

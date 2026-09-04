@@ -5,7 +5,7 @@ import os
 
 AWS_REGION = os.getenv(
     "AWS_REGION",
-    "ap-southeast-1"
+    "ap-southeast-2"
 )
 
 INTERPRETATION_MODEL = os.getenv(
@@ -28,4 +28,4 @@ QWEN_ASR_MODEL = os.getenv(
     "mlx-community/Qwen3-ASR-0.6B-8bit"
 )
 
-VERIFICATION_MODEL = os.getenv("VERIFICATION_MODEL", "sonnet")
+VERIFICATION_MODEL = os.getenv("VERIFICATION_MODEL", "nova-lite")

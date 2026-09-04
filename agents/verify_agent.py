@@ -6,11 +6,6 @@ Follows the same pattern as agents/base_agent_example.py:
 - gets its model via ModelFactory (not boto3 directly)
 - implements run()
 
-Note: BedrockModel.generate() returns plain text, not a forced tool-call
-JSON shape. So we ask Claude to respond in JSON only, then parse + validate
-it ourselves with Pydantic. If parsing fails, we fail safe to CLARIFY
-rather than crashing the graph - this matches the team's "no infinite
-loop, no silent crash" invariant.
 """
 
 import json
@@ -29,8 +24,9 @@ from configs.settings import VERIFICATION_MODEL
 # agent can import the same definition instead of redefining it.
 # ---------------------------------------------------------------------------
 
+# schema
 class VerificationResult(PydanticModel):
-    verdict: Literal["PASS", "RETRY", "CLARIFY"]
+    verdict: Literal["PASS", "RETRY", "CLARIFY"] # groups determined through system prompt
     issues: list[str] = Field(default_factory=list)
     fault_source: Literal["translation", "source_ambiguity"] | None = None
     clarification_question: str | None = None
@@ -80,6 +76,7 @@ exactly this shape:
         raw_text = await self.ask_model(prompt)
         return self._parse_result(raw_text)
 
+    # safety net: if the model returns unparseable text, return a CLARIFY with an issue and a generic clarification question
     def _parse_result(self, raw_text: str) -> VerificationResult:
         cleaned = raw_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         try:

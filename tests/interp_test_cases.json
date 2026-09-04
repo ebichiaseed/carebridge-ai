@@ -1,0 +1,205 @@
+[
+  {
+    "id": "c001",
+    "probe": "Singlish 'never' as past-tense negation",
+    "transcript": "ah ma never take her morning medicine",
+    "person_info": {"preferred_name": "Mdm Tan", "relationships": {"ah ma": "care recipient, Mdm Tan"}},
+    "recent_context": [],
+    "assert": {"negated": true, "utterance_type": "statement"},
+    "watch_for": "negation_scope should be the morning dose, not medication in general. If the output implies she never takes medicine at all, the 'never' glossary entry is not landing.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c002",
+    "probe": "unresolvable referent -- 'ah girl' with no person info",
+    "transcript": "ah girl, help me open the light",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"negated": false, "utterance_type": "request"},
+    "watch_for": "actor must be null with an ambiguity note. If the model guesses 'daughter' or 'helper', the no-invented-referent rule is failing.",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c003",
+    "probe": "same utterance, referent resolvable from person info",
+    "transcript": "ah girl, help me open the light",
+    "person_info": {"relationships": {"ah girl": "Siti, the domestic helper"}, "household_terms": {"the light": "living room ceiling light"}},
+    "recent_context": [],
+    "assert": {"negated": false, "utterance_type": "request"},
+    "watch_for": "actor should now resolve to Siti and ambiguity should be empty. Compare against c002 -- this pair shows person info doing work the glossary cannot do.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c004",
+    "probe": "受不了 -- pain or frustration",
+    "transcript": "她说她受不了了",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"utterance_type": "statement"},
+    "watch_for": "no symptom is named, so this should be flagged ambiguous and urgency should NOT jump to high. If it goes high, the model is inferring pain from the phrase alone.",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c005",
+    "probe": "受不了 with the symptom named",
+    "transcript": "她的膝盖痛到受不了",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"urgency": "high", "utterance_type": "distress"},
+    "watch_for": "with a symptom present, urgency should rise and ambiguity should clear. The c004/c005 pair is the test of whether the ambiguity note is being used conditionally.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c006",
+    "probe": "酸 as dull ache, not sharp pain",
+    "transcript": "站太久了，腰很酸",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"urgency": "normal", "utterance_type": "statement"},
+    "watch_for": "action/object should describe soreness. If the interpretation says sharp pain or urgency goes high, the 酸 entry is not overriding the model's default reading.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c007",
+    "probe": "热气 must not become fever",
+    "transcript": "吃太多炸的，会热气",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"urgency": "normal", "utterance_type": "statement"},
+    "watch_for": "if the output mentions fever or raised temperature, the TCM entry is being ignored and a clinical finding is being invented.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c008",
+    "probe": "'send' means accompany, not dispatch",
+    "transcript": "tomorrow morning can you send her to the polyclinic",
+    "person_info": {"relationships": {"her": "Mdm Tan, care recipient"}},
+    "recent_context": [],
+    "assert": {"utterance_type": "request", "negated": false},
+    "watch_for": "actor must remain the listener and the action must include accompanying. If the caregiver drops out of the instruction, the 'send' entry is not landing.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c009",
+    "probe": "'later' as a warning, not a schedule",
+    "transcript": "hold the rail, later you fall down",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"utterance_type": "request", "negated": false},
+    "watch_for": "timing must not be set to a future time. The utterance is a caution, not a prediction. If timing says 'later' as a scheduled event, the entry is misfiring.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c010",
+    "probe": "等下 -- vague timing attached to medication",
+    "transcript": "等下才吃药，现在还饱",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"utterance_type": "statement", "negated": false},
+    "watch_for": "timing is genuinely unresolved and tied to a dose, so this should be flagged. Whether it clarifies depends on needs_clarification -- check both.",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c011",
+    "probe": "two ASR candidates disagreeing across scripts",
+    "transcript": [
+      "ah ma say my dowan give the white one she buay tahan already",
+      "阿嬤說不要給白色那個，她受不了了"
+    ],
+    "person_info": {"household_terms": {"the white one": "white blood pressure tablet, 8am dose"}},
+    "recent_context": [{"speaker": "helper", "text": "doctor changed her medicine yesterday"}],
+    "assert": {"negated": true},
+    "watch_for": "cleaned_transcript should reconcile the two candidates ('my dowan' is a mis-hear of 'mai'/不要). object should resolve to the BP tablet via person info. This is the flagship case -- all three inputs contribute.",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c012",
+    "probe": "no action at all -- must not be treated as a failed parse",
+    "transcript": "aiyo, today very hot ah",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"utterance_type": "statement", "negated": false},
+    "watch_for": "action should be null and the node must NOT raise InterpretationError. If it errors, the optional-action change did not take effect.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c013",
+    "probe": "paiseh masking a real need",
+    "transcript": "no need lah, I can walk myself, paiseh to trouble you",
+    "person_info": {},
+    "recent_context": [{"speaker": "helper", "text": "she fell in the bathroom last week"}],
+    "assert": {"negated": true, "utterance_type": "statement"},
+    "watch_for": "the refusal is real but the context suggests it should not be taken at face value. Does the model surface that tension in ambiguity, or does it flatten it into a plain refusal?",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c014",
+    "probe": "high-urgency fall, already happened",
+    "transcript": "阿嬤在厕所跌倒了，起不来",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"urgency": "high", "utterance_type": "distress", "negated": false},
+    "watch_for": "urgency must be high. If it is not, no other part of the pipeline will recover it.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c015",
+    "probe": "jialat alone must not raise urgency",
+    "transcript": "wah jialat, the aircon spoil again",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"urgency": "normal", "utterance_type": "statement"},
+    "watch_for": "no symptom is named, so urgency stays normal. 'spoil' should read as broken. Two entries tested at once.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c016",
+    "probe": "辛苦 -- speaker-dependent reading",
+    "transcript": "阿嬤说她今天很辛苦",
+    "person_info": {"relationships": {"阿嬤": "Mdm Tan, care recipient"}},
+    "recent_context": [],
+    "assert": {"utterance_type": "statement"},
+    "watch_for": "said of herself, this leans towards feeling unwell rather than tired-from-work. Does the output distinguish, or flag it?",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c017",
+    "probe": "negation scope on a specific object",
+    "transcript": "不要给她蓝色的，给白色的",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"negated": true},
+    "watch_for": "negation_scope must be the blue one specifically, and the action must preserve that the white one IS to be given. A single negated=true with no scope loses half the instruction.",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c018",
+    "probe": "one-sided weakness -- stroke warning sign",
+    "transcript": "她今天左手没力，拿不动杯子",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"utterance_type": "statement"},
+    "watch_for": "a side is specified, which the 没力 entry flags as a stroke sign. Does urgency rise? If it stays normal, consider whether the entry's ambiguity note needs to be more directive.",
+    "expect_ambiguity": true
+  },
+  {
+    "id": "c019",
+    "probe": "open/close as on/off",
+    "transcript": "close the light, then open the aircon",
+    "person_info": {},
+    "recent_context": [],
+    "assert": {"utterance_type": "request", "negated": false},
+    "watch_for": "two appliance actions in one utterance. Does the schema handle a compound request, or does it silently drop the second one? This may be a schema gap rather than a glossary gap.",
+    "expect_ambiguity": false
+  },
+  {
+    "id": "c020",
+    "probe": "pronoun resolved only by recent context",
+    "transcript": "那个还没换",
+    "person_info": {},
+    "recent_context": [{"speaker": "helper", "text": "尿布两个小时换一次"}],
+    "assert": {"negated": true, "utterance_type": "statement"},
+    "watch_for": "object should resolve to the diaper from the previous turn. Re-run this case with recent_context emptied -- object should then be null with an ambiguity note. That contrast shows recent context doing work neither the glossary nor person info can.",
+    "expect_ambiguity": false
+  }
+]

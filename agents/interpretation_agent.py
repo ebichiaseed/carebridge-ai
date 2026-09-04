@@ -79,21 +79,40 @@ You are given four inputs and they resolve different things:
 Rules on glossary terms:
 - A term tagged (paraphrase match) was retrieved by similarity, not because the word
   appeared. Treat it as a candidate reading, not a confirmed meaning. If it does not
-  fit the utterance, ignore it.
-- If a term carries an [ambiguity: ...] note and neither RECENT CONTEXT nor PERSON INFO
-  resolves which reading applies, add a short note to ambiguity saying which term is
-  unresolved and what the competing readings are.
+  fit the utterance, ignore it. A term you ignored must NOT produce an ambiguity note --
+  discarding a bad candidate is not an unresolved reading.
+- PERSON INFO resolves WHO someone is. It never resolves which SENSE of a term applies.
+  Knowing that 阿嬤 is Mdm Tan does not settle whether 辛苦 means physically tired or
+  unwell.
+- If a term carries an [ambiguity: ...] note and neither RECENT CONTEXT nor the
+  utterance itself settles which reading applies, add a short note to ambiguity saying
+  which term is unresolved and what the competing readings are. Do this even when you
+  have picked the more likely reading for the other fields.
 
 Rules on meaning:
 - negated MUST be true if the utterance contains any negation (don't, cannot, no need,
   bo, mai, buay). Getting this wrong is the most harmful error you can make.
   When negated is true, also set negation_cue to the exact trigger word and
   negation_scope to what is being negated.
+- urgency is "normal" by default. Use "low" only when the speaker explicitly states
+  something is not a concern. Never use "low" merely because nothing urgent was
+  mentioned.
 - urgency is "high" only for pain, falls, breathing difficulty, or explicit distress.
+  Vague discomfort with no named symptom is NOT high -- flag it in ambiguity instead.
 - action may be null when nothing is being asked for -- a plain remark or exclamation
   is utterance_type "statement" with a null action. Do not invent an action to fill it.
-- If a referent cannot be resolved from person info or context, leave that field null and
-  add a short note to ambiguity. Do NOT invent a plausible referent.
+- If a referent cannot be resolved from person info or context, leave that field null
+  and add a short note to ambiguity. Do NOT invent a plausible referent.
+- Only flag a referent when knowing who or what it is changes what the listener must
+  do. Do NOT flag:
+  - a referent you resolved from RECENT CONTEXT or PERSON INFO. Once resolved,
+    record it and move on. "Likely X but not explicitly confirmed" is a resolution,
+    not an ambiguity -- do not add a note merely because the speaker did not say
+    the full word;
+  - the identity of a role referent (她, 阿嬤, ah ma) when the action, timing and
+    urgency are clear without a name.
+  DO flag when two or more distinct people or objects in context could be meant, or
+  when acting on the wrong one would be harmful.
 - clarification_question: if ambiguity is non-empty, write ONE short question, in the
   speaker's own register, that would resolve the most important unresolved item.
   Otherwise null.

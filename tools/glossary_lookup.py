@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 TOP_K = 3
-MIN_SIMILARITY = 0.35          # TODO: need to calibrate -> python3 -m tools.glossary_lookup --check, then aws sso login --profile hackathon, then python3 -m tools.glossary_lookup --calibrate
+MIN_SIMILARITY = 0.28          # TODO: need to calibrate -> python3 -m tools.glossary_lookup --check, then aws sso login --profile hackathon, then python3 -m tools.glossary_lookup --calibrate
 MAX_HITS = 8
 
 MIN_ALIAS_LENGTH = 3           # latin forms
@@ -312,8 +312,9 @@ def _content_warnings(entries: list[GlossaryEntry]) -> list[str]:
 
     owners: dict[str, list[str]] = {}
     for entry in entries:
-        for form in entry.surface_forms:
-            owners.setdefault(_squash(form), []).append(entry.id)
+        for form in dict.fromkeys(_squash(f) for f in entry.surface_forms):
+            owners[form] = owners.get(form, []) + [entry.id]
+
     for form, ids in sorted(owners.items()):
         if len(ids) > 1:
             warnings.append(
@@ -322,8 +323,6 @@ def _content_warnings(entries: list[GlossaryEntry]) -> list[str]:
             )
 
     return warnings
-
-
 # Embedder -- lazy client, no AWS work at import time
 
 def _explain_aws_error(error: Exception) -> str:
@@ -767,6 +766,12 @@ _CALIBRATION_PROBES = [
     ("what time does the bus come", None),
     ("please pass me the tv remote", None),
     ("the weather today is very hot", None),
+    # more mundane negatives -- the threshold is only as trustworthy
+    # as the number of things it has been shown to reject
+    ("the wifi is down again", None),
+    ("did the mail come this morning", None),
+    ("help me put the laundry outside", None),
+    ("what channel is the news on", None),
 ]
 
 _ALIAS_SMOKE_TESTS = [

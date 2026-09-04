@@ -1,33 +1,42 @@
-"""Unit tests for the hybrid glossary retriever.
+"""
+tests/test_glossary_lookup.py
+
+Unit tests for tools/glossary_lookup.py.
 
 No network, no AWS, no data file: every test injects an explicit glossary and a
-FakeEmbedder. Run with:
+FakeEmbedder. Run from the repo root:
 
     python3 -m unittest tests.test_glossary_lookup -v
-
-Adjust the import path below if the module does not live at tools/glossary_lookup.py.
+    python3 -m unittest discover -s tests -v
 """
 
 import asyncio
 import hashlib
+import json
+import logging
 import math
 import re
+import tempfile
 import unittest
+from pathlib import Path
 
-from agents.glossary_lookup import (
+from tools.glossary_lookup import (
+    GlossaryConfigError,
     GlossaryEntry,
     GlossaryRetriever,
     _cache_key,
+    _content_warnings,
+    _load_glossary,
     _validate_entries,
+    get_retriever,
+    reset_retriever,
 )
 
 
-
 # Test doubles
-
 DIM = 64
 _TOKEN = re.compile(r"[a-z0-9]+|[\u4e00-\u9fff]")
-
+logging.getLogger("tools.glossary_lookup").setLevel(logging.CRITICAL)
 
 class FakeEmbedder:
     """Deterministic bag-of-tokens embedder.
@@ -37,9 +46,10 @@ class FakeEmbedder:
     across processes (hashlib, not the randomised builtin hash()).
     """
 
-    def __init__(self, fail: bool = False):
+    def __init__(self, fail: bool = False, region: str = "us-east-1"):
         self.model_id = "fake-embedder"
         self.dimensions = DIM
+        self.region = region
         self.fail = fail
         self.calls: list[str] = []
 
@@ -47,6 +57,8 @@ class FakeEmbedder:
         self.calls.append(text)
         if self.fail:
             raise RuntimeError("simulated Bedrock failure")
+        if not text or not text.strip():
+            raise ValueError("cannot embed empty text")
 
         vector = [0.0] * DIM
         for token in _TOKEN.findall(text.casefold()):
@@ -56,7 +68,7 @@ class FakeEmbedder:
         return [v / norm for v in vector]
 
 
-def entry(**overrides) -> dict:
+def row(**overrides) -> dict:
     base = {
         "id": "g001",
         "term": "paiseh",
@@ -72,8 +84,8 @@ def entry(**overrides) -> dict:
 
 
 GLOSSARY = [
-    entry(id="g001", term="paiseh", variants=["pai seh", "paisay", "不好意思"]),
-    entry(
+    row(id="g001", term="paiseh", variants=["pai seh", "paisay", "不好意思"]),
+    row(
         id="g002",
         term="受不了",
         language="Chinese/Singlish",
@@ -81,19 +93,20 @@ GLOSSARY = [
         variants=["忍不住", "buay tahan", "cannot tahan", "cannot stand"],
         ambiguity="pain or frustration",
     ),
-    entry(
+    row(
         id="g003",
         term="giddy",
         language="Singapore English",
         meaning="dizzy or lightheaded",
         variants=["头晕", "dizzy"],
     ),
-    entry(
-        id="g004",
-        term="song",
-        language="Singlish",
-        meaning="feeling good or comfortable",
-        variants=[],
+    row(id="g004", term="song", language="Singlish", meaning="feeling good"),
+    row(
+        id="g005",
+        term="跌倒",
+        language="Chinese",
+        meaning="to fall down",
+        variants=["摔倒", "fall down"],
     ),
 ]
 
@@ -103,7 +116,7 @@ def build(glossary=None, embedder=None, index=True) -> GlossaryRetriever:
     retriever = GlossaryRetriever(
         glossary=glossary if glossary is not None else GLOSSARY,
         embedder=embedder,
-        cache_path=None,          # never touch disk in tests
+        cache_path=None,          # never touch disk unless a test asks for it
     )
     if index:
         retriever.index()
@@ -115,7 +128,6 @@ def terms(result) -> list[str]:
 
 
 # Alias matching
-
 class AliasMatchingTests(unittest.TestCase):
 
     def test_spacing_and_punctuation_are_ignored(self):
@@ -150,17 +162,57 @@ class AliasMatchingTests(unittest.TestCase):
 
     def test_longer_surface_form_ranks_first(self):
         glossary = [
-            entry(id="a", term="tahan", meaning="endure"),
-            entry(id="b", term="cannot tahan", meaning="cannot endure"),
+            row(id="a", term="tahan", meaning="endure"),
+            row(id="b", term="cannot tahan", meaning="cannot endure"),
         ]
         retriever = build(glossary=glossary, index=False)
-        self.assertEqual(terms(retriever.lookup("she cannot tahan the pain"))[0], "cannot tahan")
+        self.assertEqual(
+            terms(retriever.lookup("she cannot tahan the pain"))[0], "cannot tahan"
+        )
 
     def test_alias_hits_score_one_and_are_tagged(self):
         retriever = build(index=False)
         hit = retriever.lookup("wa paiseh").hits[0]
         self.assertEqual(hit["match_type"], "alias")
         self.assertEqual(hit["score"], 1.0)
+
+
+class ScriptAwareLengthFloorTests(unittest.TestCase):
+    """The bug this guards: a flat MIN_ALIAS_LENGTH of 3 silently drops every
+    two-character Chinese form -- 头晕, 跌倒, 不要, 中风 -- from alias matching."""
+
+    def test_two_character_cjk_form_is_matchable(self):
+        model = GlossaryEntry.model_validate(row(id="c", term="跌倒", language="Chinese"))
+        self.assertIn("跌倒", model.surface_forms)
+
+    def test_two_character_cjk_actually_matches_in_a_lookup(self):
+        retriever = build(index=False)
+        self.assertIn("跌倒", terms(retriever.lookup("阿嬤在厕所跌倒了")))
+
+    def test_two_character_latin_form_is_still_excluded(self):
+        model = GlossaryEntry.model_validate(row(id="l", term="ok", variants=["no"]))
+        self.assertEqual(model.surface_forms, [])
+
+    def test_uppercase_latin_form_is_not_mistaken_for_cjk(self):
+        """Regression: _has_latin must casefold. Otherwise "GP"/"BP" take the
+        CJK branch -- 2-char floor, and no word-boundary anchors, so "gp"
+        would match inside unrelated words."""
+        model = GlossaryEntry.model_validate(row(id="u", term="GP", variants=["BP"]))
+        self.assertEqual(model.surface_forms, [])
+
+    def test_uppercase_variant_does_not_match_inside_a_word(self):
+        retriever = build(
+            glossary=[row(id="u", term="polyclinic", variants=["GP"])], index=False
+        )
+        self.assertEqual(terms(retriever.lookup("she was upgrading her phone")), [])
+
+    def test_single_character_cjk_is_excluded(self):
+        """风 alone would fire inside 中风 (stroke) and 风扇 (fan)."""
+        model = GlossaryEntry.model_validate(
+            row(id="s", term="风", language="Chinese", variants=["中风"])
+        )
+        self.assertNotIn("风", model.surface_forms)
+        self.assertIn("中风", model.surface_forms)
 
 
 # Vector search
@@ -177,7 +229,7 @@ class VectorSearchTests(unittest.TestCase):
     def test_threshold_drops_weak_matches(self):
         retriever = build()
         query = "what time does the bus arrive at the interchange"
-        self.assertTrue(retriever.lookup(query, min_similarity=0.9).hits == [])
+        self.assertEqual(retriever.lookup(query, min_similarity=0.9).hits, [])
 
     def test_alias_hits_rank_above_vector_hits(self):
         retriever = build()
@@ -202,6 +254,46 @@ class VectorSearchTests(unittest.TestCase):
         retriever = build()
         result = retriever.lookup("paiseh 受不了 giddy song", max_hits=2, min_similarity=0.0)
         self.assertEqual(len(result.hits), 2)
+
+
+
+# Input validation
+
+class InputValidationTests(unittest.TestCase):
+
+    def test_bad_parameters_raise_immediately(self):
+        retriever = build(index=False)
+        for kwargs in (
+            {"top_k": 0},
+            {"min_similarity": 1.5},
+            {"min_similarity": -0.1},
+            {"max_hits": 0},
+        ):
+            with self.subTest(**kwargs):
+                with self.assertRaises(ValueError):
+                    retriever.lookup("wa paiseh", **kwargs)
+
+    def test_non_string_candidates_are_skipped_not_fatal(self):
+        """A failed ASR model can hand back None. The candidate that worked
+        must still be searched."""
+        retriever = build(index=False)
+        result = retriever.lookup([None, "wa paiseh lah", 42])
+        self.assertIn("paiseh", terms(result))
+        self.assertTrue(result.success)
+
+    def test_empty_query_is_a_success_with_no_hits(self):
+        retriever = build()
+        for query in ("   ", [], [None], ["", "  "]):
+            with self.subTest(query=query):
+                result = retriever.lookup(query)
+                self.assertEqual(result.hits, [])
+                self.assertTrue(result.success)
+
+    def test_no_match_is_a_success_not_a_failure(self):
+        """Zero hits on a transcript with no glossary terms is correct
+        behaviour, and must not count against Tool-Call Success Rate."""
+        retriever = build()
+        self.assertTrue(retriever.lookup("what time is the bus coming").success)
 
 
 # Degradation -- the tool must never take down the node
@@ -233,21 +325,9 @@ class DegradationTests(unittest.TestCase):
         embedder.fail = True
         retriever.lookup("anything at all")   # must not raise
 
-    def test_empty_query_is_a_success_with_no_hits(self):
-        retriever = build()
-        result = retriever.lookup("   ")
-        self.assertEqual(result.hits, [])
-        self.assertTrue(result.success)
-
-    def test_no_match_is_a_success_not_a_failure(self):
-        """Zero hits on a transcript with no glossary terms is correct
-        behaviour, and must not count against Tool-Call Success Rate."""
-        retriever = build()
-        result = retriever.lookup("what time is the bus coming")
-        self.assertTrue(result.success)
-
 
 # Contract and observability
+
 
 class ContractTests(unittest.TestCase):
 
@@ -269,85 +349,223 @@ class ContractTests(unittest.TestCase):
 
     def test_trace_counts_alias_and_vector_separately(self):
         retriever = build()
-        trace = retriever.lookup("wa paiseh, cannot tolerate anymore", min_similarity=0.2).to_trace()
+        trace = retriever.lookup(
+            "wa paiseh, cannot tolerate anymore", min_similarity=0.2
+        ).to_trace()
         self.assertEqual(trace["node"], "glossary")
         self.assertEqual(trace["matches"], trace["alias_matches"] + trace["vector_matches"])
         self.assertGreaterEqual(trace["alias_matches"], 1)
         self.assertTrue(trace["tool_success"])
 
+    def test_describe_reports_load_state(self):
+        retriever = build()
+        info = retriever.describe()
+        self.assertEqual(info["entries"], len(GLOSSARY))
+        self.assertEqual(info["vectors_indexed"], len(GLOSSARY))
+        self.assertEqual(info["warnings"], [])
+
     def test_async_wrapper_returns_the_same_hits(self):
         retriever = build(index=False)
         sync = retriever.lookup("wa paiseh")
-        async_result = asyncio.run(retriever.alookup("wa paiseh"))
-        self.assertEqual(terms(sync), terms(async_result))
+        result = asyncio.run(retriever.alookup("wa paiseh"))
+        self.assertEqual(terms(sync), terms(result))
 
 
-# Glossary file validation
+
+# Glossary file loading and validation
+
+class FileLoadingTests(unittest.TestCase):
+
+    def test_missing_file_error_lists_every_path_searched(self):
+        missing = Path("/nonexistent/dir/caregiving_glossary.json")
+        with self.assertRaises(GlossaryConfigError) as caught:
+            _load_glossary(None, [missing])
+        message = str(caught.exception)
+        self.assertIn(str(missing), message)
+        self.assertIn("GLOSSARY_PATH", message)
+
+    def test_malformed_json_reports_line_and_column(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "bad.json"
+            path.write_text('[{"id": "g001",}]', encoding="utf-8")
+            with self.assertRaises(GlossaryConfigError) as caught:
+                _load_glossary(path, [path])
+            self.assertIn("line", str(caught.exception))
+
+    def test_json_object_instead_of_array_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "obj.json"
+            path.write_text('{"g001": {}}', encoding="utf-8")
+            with self.assertRaisesRegex(GlossaryConfigError, "array"):
+                _load_glossary(path, [path])
+
+    def test_a_real_file_round_trips(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "good.json"
+            path.write_text(json.dumps(GLOSSARY, ensure_ascii=False), encoding="utf-8")
+            retriever = GlossaryRetriever(
+                glossary_path=path, embedder=FakeEmbedder(), cache_path=None
+            )
+            self.assertEqual(len(retriever.entries), len(GLOSSARY))
+            self.assertIn("paiseh", terms(retriever.lookup("wa paiseh")))
+
 
 class ValidationTests(unittest.TestCase):
 
     def test_duplicate_ids_are_rejected(self):
-        glossary = [entry(id="dup", term="one"), entry(id="dup", term="two")]
-        with self.assertRaisesRegex(ValueError, "duplicate id"):
-            _validate_entries(glossary)
+        with self.assertRaisesRegex(GlossaryConfigError, "duplicate id"):
+            _validate_entries([row(id="dup", term="one"), row(id="dup", term="two")])
 
     def test_unknown_field_is_rejected(self):
-        with self.assertRaisesRegex(ValueError, "Invalid glossary"):
-            _validate_entries([entry(meannig="typo'd key")])
+        with self.assertRaisesRegex(GlossaryConfigError, "Invalid glossary"):
+            _validate_entries([row(meannig="typo'd key")])
 
     def test_missing_required_field_is_rejected(self):
-        row = entry()
-        del row["meaning"]
-        with self.assertRaisesRegex(ValueError, "Invalid glossary"):
-            _validate_entries([row])
+        bad = row()
+        del bad["meaning"]
+        with self.assertRaisesRegex(GlossaryConfigError, "Invalid glossary"):
+            _validate_entries([bad])
+
+    def test_non_object_row_is_rejected(self):
+        with self.assertRaisesRegex(GlossaryConfigError, "expected an object"):
+            _validate_entries(["just a string"])
 
     def test_empty_glossary_is_rejected(self):
-        with self.assertRaisesRegex(ValueError, "empty"):
+        with self.assertRaisesRegex(GlossaryConfigError, "empty"):
             _validate_entries([])
 
     def test_every_problem_is_reported_not_just_the_first(self):
-        bad = [entry(id="x", meannig="typo"), entry(id="y", langauge="typo")]
-        with self.assertRaises(ValueError) as caught:
+        bad = [row(id="x", meannig="typo"), row(id="y", langauge="typo")]
+        with self.assertRaises(GlossaryConfigError) as caught:
             _validate_entries(bad)
         self.assertIn("x", str(caught.exception))
         self.assertIn("y", str(caught.exception))
 
-    def test_short_forms_are_excluded_from_alias_matching(self):
-        """Single-character CJK and 1-2 char latin forms would fire inside
-        unrelated words, so they must not become alias patterns."""
-        model = GlossaryEntry.model_validate(
-            entry(id="s", term="风", variants=["中风", "ok"])
+
+class ContentWarningTests(unittest.TestCase):
+
+    def test_entry_with_no_matchable_form_is_reported(self):
+        entries = _validate_entries([row(id="short", term="ok", variants=["no"])])
+        warnings = _content_warnings(entries)
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("short", warnings[0])
+
+    def test_surface_form_claimed_by_two_entries_is_reported(self):
+        entries = _validate_entries(
+            [
+                row(id="a", term="paiseh"),
+                row(id="b", term="malu", variants=["pai seh"]),
+            ]
         )
-        self.assertNotIn("风", model.surface_forms)
-        self.assertNotIn("ok", model.surface_forms)
-        self.assertIn("中风", model.surface_forms)
+        warnings = _content_warnings(entries)
+        self.assertTrue(any("claimed by" in w for w in warnings))
+
+    def test_a_clean_glossary_produces_no_warnings(self):
+        self.assertEqual(_content_warnings(_validate_entries(GLOSSARY)), [])
+
+    def test_warnings_are_exposed_on_the_retriever(self):
+        retriever = build(glossary=[row(id="short", term="ok")], index=False)
+        self.assertEqual(len(retriever.warnings), 1)
 
 
 # Embedding cache
 
-class CacheKeyTests(unittest.TestCase):
+class CacheTests(unittest.TestCase):
 
     def test_key_changes_when_the_entry_text_changes(self):
         embedder = FakeEmbedder()
-        a = GlossaryEntry.model_validate(entry(meaning="one meaning"))
-        b = GlossaryEntry.model_validate(entry(meaning="another meaning"))
+        a = GlossaryEntry.model_validate(row(meaning="one meaning"))
+        b = GlossaryEntry.model_validate(row(meaning="another meaning"))
         self.assertNotEqual(_cache_key(a, embedder), _cache_key(b, embedder))
 
     def test_key_changes_when_the_model_config_changes(self):
         """Otherwise a dimension change silently mixes two vector spaces."""
-        model = GlossaryEntry.model_validate(entry())
-        small = FakeEmbedder()
-        large = FakeEmbedder()
+        model = GlossaryEntry.model_validate(row())
+        small, large = FakeEmbedder(), FakeEmbedder()
         large.dimensions = 256
         self.assertNotEqual(_cache_key(model, small), _cache_key(model, large))
 
-    def test_unchanged_entries_are_not_re_embedded(self):
-        embedder = FakeEmbedder()
-        retriever = GlossaryRetriever(glossary=GLOSSARY, embedder=embedder, cache_path=None)
-        retriever.index()
-        first = len(embedder.calls)
-        retriever.index()   # cache_path=None, so this re-embeds; with a cache it would not
-        self.assertEqual(len(embedder.calls), first * 2)
+    def test_cached_vectors_are_reused_on_a_second_index(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "cache.json"
+            embedder = FakeEmbedder()
+
+            first = GlossaryRetriever(glossary=GLOSSARY, embedder=embedder, cache_path=cache)
+            self.assertTrue(first.index())
+            calls_after_first = len(embedder.calls)
+            self.assertTrue(cache.is_file())
+
+            second = GlossaryRetriever(glossary=GLOSSARY, embedder=embedder, cache_path=cache)
+            self.assertTrue(second.index())
+            self.assertEqual(len(embedder.calls), calls_after_first)   # no new calls
+
+    def test_corrupt_cache_falls_back_to_re_embedding(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "cache.json"
+            cache.write_text("not json at all", encoding="utf-8")
+            embedder = FakeEmbedder()
+            retriever = GlossaryRetriever(
+                glossary=GLOSSARY, embedder=embedder, cache_path=cache
+            )
+            self.assertTrue(retriever.index())
+            self.assertEqual(len(embedder.calls), len(GLOSSARY))
+
+    def test_cache_entries_with_wrong_dimensions_are_dropped(self):
+        """A stale cache from a different embedding config must not enter the
+        index with vectors of the wrong size."""
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "cache.json"
+            embedder = FakeEmbedder()
+            entry = GlossaryEntry.model_validate(GLOSSARY[0])
+            cache.write_text(
+                json.dumps({_cache_key(entry, embedder): [0.1, 0.2, 0.3]}),
+                encoding="utf-8",
+            )
+            retriever = GlossaryRetriever(
+                glossary=GLOSSARY, embedder=embedder, cache_path=cache
+            )
+            self.assertTrue(retriever.index())
+            self.assertEqual(len(embedder.calls), len(GLOSSARY))   # all re-embedded
+
+    def test_cache_that_is_not_an_object_is_ignored(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "cache.json"
+            cache.write_text("[1, 2, 3]", encoding="utf-8")
+            retriever = GlossaryRetriever(
+                glossary=GLOSSARY, embedder=FakeEmbedder(), cache_path=cache
+            )
+            self.assertTrue(retriever.index())
+
+    def test_no_temp_file_is_left_behind(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "cache.json"
+            retriever = GlossaryRetriever(
+                glossary=GLOSSARY, embedder=FakeEmbedder(), cache_path=cache
+            )
+            retriever.index()
+            self.assertFalse(cache.with_suffix(".tmp").exists())
+
+
+# Singleton
+
+class SingletonTests(unittest.TestCase):
+
+    def tearDown(self):
+        reset_retriever()
+
+    def test_get_retriever_returns_the_same_instance(self):
+        first = get_retriever(glossary=GLOSSARY, embedder=FakeEmbedder(), cache_path=None)
+        second = get_retriever()
+        self.assertIs(first, second)
+
+    def test_reset_allows_reloading_an_edited_glossary(self):
+        first = get_retriever(glossary=GLOSSARY, embedder=FakeEmbedder(), cache_path=None)
+        reset_retriever()
+        second = get_retriever(
+            glossary=GLOSSARY[:2], embedder=FakeEmbedder(), cache_path=None
+        )
+        self.assertIsNot(first, second)
+        self.assertEqual(len(second.entries), 2)
 
 
 if __name__ == "__main__":

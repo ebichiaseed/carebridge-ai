@@ -21,7 +21,7 @@ class ModelFactory:
         elif model_name == "sonnet":
 
             return BedrockModel(
-                model_id="apac.anthropic.claude-sonnet-4-20250514-v1:0",
+                model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
                 region=AWS_REGION
             )
 

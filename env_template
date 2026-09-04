@@ -7,3 +7,4 @@ TRANSLATION_MODEL=sonnet
 
 WHISPER_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
 QWEN_ASR_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
+VERIFICATION_MODEL=nova-lite

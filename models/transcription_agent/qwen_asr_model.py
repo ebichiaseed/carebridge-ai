@@ -17,9 +17,15 @@ class QwenAsrModel(SpeechToTextModel):
     def __init__(self, model_id: str = DEFAULT_MODEL_ID):
         try:
             from mlx_audio.stt import load
-        except ImportError as error:
+        except ModuleNotFoundError as error:
             raise RuntimeError(
                 "MLX-Audio is missing. Run: pip install -r requirements.txt"
+            ) from error
+        except ImportError as error:
+            raise RuntimeError(
+                "MLX-Audio could not initialize. This backend requires an "
+                "Apple Silicon Mac with Metal GPU access. Set ASR_BACKEND=cpu "
+                "or cuda on another system."
             ) from error
 
         self.model_id = model_id

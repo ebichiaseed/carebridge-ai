@@ -30,17 +30,13 @@ from configs.settings import (
     INTERPRETATION_MODEL,
     POLLY_ENGINE,
     POLLY_VOICE_ID,
-    QWEN_ASR_MODEL,
     TRANSLATION_MODEL,
     VERIFICATION_MODEL,
-    WHISPER_MODEL,
 )
 from models.model_factory import ModelFactory
-from models.qwen_asr_model import QwenAsrModel
-from models.whisper_model import WhisperSinglishModel
-from services.transcription_service import ParallelTranscriptionService
 from services.polly_service import PollyService
 from services.run_log_service import write_run_log
+from services.transcription_agent.transcription_service import ParallelTranscriptionService
 from state import create_initial_state
 from synthesiser import build_workflow
 from tools.glossary_lookup import get_retriever
@@ -79,8 +75,8 @@ async def lifespan(app: FastAPI):
     def build_transcription_service() -> ParallelTranscriptionService:
         return ParallelTranscriptionService(
             [
-                ("singlish_whisper", WhisperSinglishModel(WHISPER_MODEL)),
-                ("qwen_multilingual", QwenAsrModel(QWEN_ASR_MODEL)),
+                ("singlish_whisper", ModelFactory.create("whisper-singlish")),
+                ("qwen_multilingual", ModelFactory.create("qwen-asr")),
             ]
         )
 

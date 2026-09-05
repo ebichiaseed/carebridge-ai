@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 from models.base_model import SpeechToTextModel
-from models.transcription_agent.romanization import romanize_chinese_text
 
 
 class TransformersQwenAsrModel(SpeechToTextModel):
@@ -43,4 +42,4 @@ class TransformersQwenAsrModel(SpeechToTextModel):
         text = self._processor.decode(
             generated_ids, return_format="transcription_only"
         )[0]
-        return romanize_chinese_text(text)
+        return text

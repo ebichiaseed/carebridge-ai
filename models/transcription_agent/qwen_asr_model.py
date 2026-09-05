@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 from models.base_model import SpeechToTextModel
-from models.transcription_agent.romanization import romanize_chinese_text
 
 
 DEFAULT_MODEL_ID = "mlx-community/Qwen3-ASR-0.6B-8bit"
@@ -38,4 +37,4 @@ class QwenAsrModel(SpeechToTextModel):
             raise FileNotFoundError(f"Audio file not found: {file_path}")
 
         result = await asyncio.to_thread(self._model.generate, str(file_path), **kwargs)
-        return romanize_chinese_text(result.text)
+        return result.text

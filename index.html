@@ -554,7 +554,7 @@ function render() {
     heard.classList.add("empty");
     heard.textContent = "Nothing was picked up. Try again, a little louder and closer to the microphone.";
   } else {
-    heard.textContent = current.text;
+    heard.textContent = current.raw_text || current.text;
   }
 
   el("speak").disabled = !current.text;
@@ -672,7 +672,7 @@ el("speak").addEventListener("click", () => {
   const current = candidates[chosen];
   if (!current || !current.text || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(current.text);
+  const utterance = new SpeechSynthesisUtterance(current.raw_text || current.text);
   utterance.lang = (MODELS[current.model] || {}).lang || "en-SG";
   utterance.rate = 0.85;
   window.speechSynthesis.speak(utterance);
@@ -683,7 +683,7 @@ el("copy").addEventListener("click", async () => {
   const current = candidates[chosen];
   if (!current || !current.text) return;
   try {
-    await navigator.clipboard.writeText(current.text);
+    await navigator.clipboard.writeText(current.raw_text || current.text);
     el("ok").textContent = "Copied.";
   } catch {
     el("ok").textContent = "Copying is blocked here. Select the words and copy them by hand.";

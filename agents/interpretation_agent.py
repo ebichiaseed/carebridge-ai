@@ -80,6 +80,16 @@ You are given five inputs and they resolve different things:
   interpretation where those problems indicate that meaning was extracted incorrectly.
   Do not invent details solely to satisfy the feedback.
 
+Rules on transcript:
+Treat the Qwen transcript as authoritative for Hokkien, Minnan,
+Mandarin, and dialect words.
+
+Use the Whisper transcript primarily as evidence for English and
+Singlish portions.
+
+Do not replace a plausible Qwen dialect phrase merely because Whisper
+produced a fluent English phrase.
+
 Rules on glossary terms:
 - A term tagged (paraphrase match) was retrieved by similarity, not because the word
   appeared. Treat it as a candidate reading, not a confirmed meaning. If it does not

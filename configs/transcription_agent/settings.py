@@ -2,6 +2,11 @@
 
 import os
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 
 ASR_BACKEND = os.getenv("ASR_BACKEND", "auto")
 

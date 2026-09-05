@@ -1,0 +1,452 @@
+[
+  {
+    "id": "g001",
+    "term": "never",
+    "language": "Singlish",
+    "meaning": "in Singlish, marks that something DID NOT happen on this occasion; it is a past-tense negation, not 'not ever'",
+    "variants": ["never did", "never take", "never eat", "never go"],
+    "category": "negation",
+    "example": "she never take her medicine this morning",
+    "ambiguity": "Standard English 'never' means 'not ever'. Singlish 'never' almost always refers to one specific occasion. Translating it as 'not ever' turns a missed dose into a claim that the person refuses all medication."
+  },
+  {
+    "id": "g002",
+    "term": "not yet",
+    "language": "Chinese/Singlish",
+    "meaning": "the action has not happened but is still expected",
+    "variants": ["还没", "还没有", "haven't", "havent", "not yet lah"],
+    "category": "negation",
+    "example": "she 还没 eat lunch",
+    "ambiguity": "'Not yet' implies the action is still pending, unlike a refusal. Do not translate as a refusal."
+  },
+  {
+    "id": "g003",
+    "term": "don't want",
+    "language": "Chinese/Singlish",
+    "meaning": "declines or refuses something being offered right now",
+    "variants": ["dowan", "don wan", "不要", "不要了", "唔要"],
+    "category": "negation",
+    "example": "ah ma dowan the porridge",
+    "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference."
+  },
+  {
+    "id": "g004",
+    "term": "no need",
+    "language": "Chinese/Singlish",
+    "meaning": "not necessary; declines an offer of help without refusing the underlying need",
+    "variants": ["不用", "不必", "no nid", "dun need", "dont need"],
+    "category": "negation",
+    "example": "no need to help me, I can walk",
+    "ambiguity": "Elderly speakers often say this out of reluctance to impose rather than genuine capability. Pair with the 'paiseh' reading before concluding help is unwanted."
+  },
+  {
+    "id": "g005",
+    "term": "cannot",
+    "language": "Chinese/Singlish",
+    "meaning": "unable to, not allowed to, or (of an object) not working",
+    "variants": ["不能", "不可以", "cannot already", "cannot one"],
+    "category": "negation",
+    "example": "she cannot stand up by herself",
+    "ambiguity": "Three distinct readings: physical inability, prohibition (e.g. by a doctor), or a malfunctioning object. The actor and the required action differ in each case."
+  },
+  {
+    "id": "g006",
+    "term": "不肯",
+    "language": "Chinese",
+    "meaning": "actively refuses or is unwilling, with resistance",
+    "variants": ["不肯", "不愿意", "refuse", "refuses to"],
+    "category": "negation",
+    "example": "她不肯吃药",
+    "ambiguity": "Stronger than 不要. 不肯 implies repeated resistance and may need escalation to a family member, whereas 不要 may be a passing preference."
+  },
+  {
+    "id": "g007",
+    "term": "giddy",
+    "language": "Singapore English",
+    "meaning": "dizzy or lightheaded",
+    "variants": ["头晕", "晕眩", "dizzy", "giddy giddy", "head spinning"],
+    "category": "symptom",
+    "example": "after standing up she feel giddy",
+    "ambiguity": "In Singapore English 'giddy' means dizzy, never 'excited' or 'giggly'. If it occurs with a fall, vomiting or slurred speech, urgency is high."
+  },
+  {
+    "id": "g008",
+    "term": "pain",
+    "language": "Chinese/Singlish",
+    "meaning": "sharp or acute pain",
+    "variants": ["很痛", "会痛", "痛到", "好痛", "painful", "sakit"],
+    "category": "symptom",
+    "example": "her knee 很痛 when she walk",
+    "ambiguity": "Distinguish from 酸 (dull ache). Sharp pain that is new or sudden raises urgency; a long-standing ache usually does not."
+  },
+  {
+    "id": "g009",
+    "term": "酸",
+    "language": "Chinese",
+    "meaning": "a dull ache or soreness in muscles or joints",
+    "variants": ["酸痛", "很酸", "腰酸", "脚酸", "ache", "aching", "sore"],
+    "category": "symptom",
+    "example": "腰很酸，站太久了",
+    "ambiguity": "酸 also means 'sour' as a taste. In a body context it is a dull ache, NOT sharp pain — translating it as 'pain' overstates urgency."
+  },
+  {
+    "id": "g010",
+    "term": "喘",
+    "language": "Chinese",
+    "meaning": "breathless, short of breath",
+    "variants": ["气喘", "喘不过气", "喘气", "breathless", "cannot breathe", "hard to breathe"],
+    "category": "symptom",
+    "example": "走两步就喘",
+    "ambiguity": "Sudden breathlessness is a high-urgency symptom. Breathlessness only after exertion is usually not. Check whether exertion is mentioned."
+  },
+  {
+    "id": "g011",
+    "term": "没力",
+    "language": "Chinese",
+    "meaning": "weak, having no strength",
+    "variants": ["没力气", "无力", "没有力", "no strength", "very weak"],
+    "category": "symptom",
+    "example": "今天手没力，拿不动",
+    "ambiguity": "General tiredness or a localised weakness (one arm, one leg). One-sided weakness is a stroke warning sign — check whether a side is specified."
+  },
+  {
+    "id": "g012",
+    "term": "中风",
+    "language": "Chinese",
+    "meaning": "stroke",
+    "variants": ["中风", "stroke", "半边不能动"],
+    "category": "symptom",
+    "example": "她以前中风过",
+    "ambiguity": "Do not confuse with 风 meaning trapped wind or a fan. If described as happening now, urgency is high; as medical history, it is background."
+  },
+  {
+    "id": "g013",
+    "term": "拉肚子",
+    "language": "Chinese/Singlish",
+    "meaning": "diarrhoea",
+    "variants": ["泻肚子", "肚子泻", "loose motion", "diarrhoea", "diarrhea", "lau sai"],
+    "category": "symptom",
+    "example": "她今天拉肚子三次",
+    "ambiguity": null
+  },
+  {
+    "id": "g014",
+    "term": "pass motion",
+    "language": "Singapore English",
+    "meaning": "to have a bowel movement",
+    "variants": ["大便", "排便", "大号", "bowel movement", "poo"],
+    "category": "daily_living",
+    "example": "she never pass motion for two days",
+    "ambiguity": "'Pass motion' is standard Singapore healthcare usage and is not idiomatic in other English varieties. Translate to the plain clinical sense, not literally."
+  },
+  {
+    "id": "g015",
+    "term": "pass urine",
+    "language": "Singapore English",
+    "meaning": "to urinate",
+    "variants": ["小便", "尿尿", "urinate", "pee"],
+    "category": "daily_living",
+    "example": "she need to pass urine every hour",
+    "ambiguity": null
+  },
+  {
+    "id": "g016",
+    "term": "跌倒",
+    "language": "Chinese/Singlish",
+    "meaning": "to fall down",
+    "variants": ["摔倒", "跌了", "跌到", "fall down", "fell down", "slip and fall"],
+    "category": "symptom",
+    "example": "她昨天在厕所跌倒",
+    "ambiguity": "A fall that already happened is high urgency. A fall being warned about ('later she fall down') is a precaution, not an event — check tense and the 'later' entry."
+  },
+  {
+    "id": "g017",
+    "term": "胀",
+    "language": "Chinese/Singapore English",
+    "meaning": "bloated, full of trapped gas",
+    "variants": ["肚子胀", "胀气", "bloated", "got wind", "gassy"],
+    "category": "symptom",
+    "example": "吃了以后肚子很胀",
+    "ambiguity": "'Wind' in Singapore English means trapped intestinal gas, not weather and not 中风 (stroke)."
+  },
+  {
+    "id": "g018",
+    "term": "发烧",
+    "language": "Chinese/Singlish",
+    "meaning": "fever",
+    "variants": ["发热", "fever", "temperature", "body hot"],
+    "category": "symptom",
+    "example": "她昨晚发烧到38度",
+    "ambiguity": "Distinguish from 热气 (TCM 'heatiness'), which is not a fever and does not imply a raised temperature."
+  },
+  {
+    "id": "g019",
+    "term": "睡不着",
+    "language": "Chinese",
+    "meaning": "unable to fall asleep",
+    "variants": ["失眠", "睡不好", "cannot sleep", "cant sleep"],
+    "category": "symptom",
+    "example": "她整晚睡不着",
+    "ambiguity": null
+  },
+  {
+    "id": "g020",
+    "term": "辛苦",
+    "language": "Chinese",
+    "meaning": "physically unwell and suffering, OR effortful and tiring",
+    "variants": ["很辛苦", "好辛苦", "辛苦了"],
+    "category": "urgency_state",
+    "example": "阿嬤说她很辛苦",
+    "ambiguity": "When an elderly speaker says it of themselves it usually means feeling unwell. Said of or to a helper it means the work is tiring, and 辛苦了 alone is simply thanks. The actor determines the reading."
+  },
+  {
+    "id": "g021",
+    "term": "受不了",
+    "language": "Chinese/Singlish",
+    "meaning": "cannot tolerate or cannot stand something any longer",
+    "variants": ["忍不住", "忍不了", "buay tahan", "bo tahan", "cannot tahan", "cannot stand"],
+    "category": "urgency_state",
+    "example": "痛到受不了",
+    "ambiguity": "May describe physical pain (urgency high) or emotional frustration (urgency normal). If no symptom is named, this is unresolved — ask."
+  },
+  {
+    "id": "g022",
+    "term": "jialat",
+    "language": "Singlish",
+    "meaning": "bad, serious, or dire",
+    "variants": ["jia lat", "jialat sia", "糟糕"],
+    "category": "urgency_state",
+    "example": "wah jialat, she fall down again",
+    "ambiguity": "Ranges from mild exasperation to genuine emergency. Do not raise urgency on this word alone — raise it only if a symptom or event is named alongside it."
+  },
+  {
+    "id": "g023",
+    "term": "kancheong",
+    "language": "Singlish",
+    "meaning": "anxious, flustered, or in a rush",
+    "variants": ["kan cheong", "紧张", "kancheong spider"],
+    "category": "urgency_state",
+    "example": "dont kancheong, take your time",
+    "ambiguity": "Describes emotional state, not a medical symptom. Does not by itself raise urgency."
+  },
+  {
+    "id": "g024",
+    "term": "sian",
+    "language": "Singlish",
+    "meaning": "bored, listless, or fed up",
+    "variants": ["sien", "very sian", "闷"],
+    "category": "urgency_state",
+    "example": "stay home whole day very sian",
+    "ambiguity": "Persistent listlessness in an elderly person may indicate low mood rather than boredom. Note it rather than translating it away as 'bored'."
+  },
+  {
+    "id": "g025",
+    "term": "paiseh",
+    "language": "Singlish",
+    "meaning": "embarrassed, or reluctant to impose on others",
+    "variants": ["pai seh", "paisay", "paisei", "不好意思"],
+    "category": "urgency_state",
+    "example": "she paiseh to ask you for help",
+    "ambiguity": "An elderly speaker saying paiseh is often declining help they actually need. Do not translate the refusal as a settled preference."
+  },
+  {
+    "id": "g026",
+    "term": "open the light",
+    "language": "Singapore English",
+    "meaning": "to switch an appliance on; 'close' means to switch it off",
+    "variants": ["close the light", "开灯", "关灯", "open the aircon", "close the aircon", "开冷气", "关冷气", "开风扇", "关风扇"],
+    "category": "daily_living",
+    "example": "can you open the light for me",
+    "ambiguity": "'Open' and 'close' here mean on and off. Nothing is being physically opened."
+  },
+  {
+    "id": "g027",
+    "term": "send",
+    "language": "Singapore English",
+    "meaning": "to accompany someone somewhere, or give them a lift",
+    "variants": ["send her", "send him", "send me", "送她", "送去", "送我"],
+    "category": "daily_living",
+    "example": "can you send her to the clinic tomorrow",
+    "ambiguity": "'Send her to the doctor' means accompany her, not dispatch her alone. Translating it as 'send' in the dispatch sense removes the caregiver from the instruction."
+  },
+  {
+    "id": "g028",
+    "term": "fetch",
+    "language": "Singapore English",
+    "meaning": "to collect or pick someone up",
+    "variants": ["去接", "接她", "接他", "pick her up", "collect her"],
+    "category": "daily_living",
+    "example": "I fetch her from the day care at 5",
+    "ambiguity": null
+  },
+  {
+    "id": "g029",
+    "term": "吃药",
+    "language": "Chinese/Singlish",
+    "meaning": "to take medicine",
+    "variants": ["服药", "食药", "take medicine", "eat medicine", "take her pill", "take the tablet"],
+    "category": "daily_living",
+    "example": "记得吃药，饭后吃",
+    "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error."
+  },
+  {
+    "id": "g030",
+    "term": "冲凉",
+    "language": "Chinese/Singapore English",
+    "meaning": "to shower or bathe",
+    "variants": ["洗澡", "shower", "bathe", "bath her"],
+    "category": "daily_living",
+    "example": "帮她冲凉，水不要太烫",
+    "ambiguity": "冲凉 is standard Singapore Mandarin for showering. It does not mean cooling down or a cold shower specifically."
+  },
+  {
+    "id": "g031",
+    "term": "spoil",
+    "language": "Singapore English",
+    "meaning": "broken or not working",
+    "variants": ["spoilt", "spoiled already", "坏了", "坏掉"],
+    "category": "daily_living",
+    "example": "the wheelchair brake spoil already",
+    "ambiguity": "Refers to equipment being broken, not to food going bad or a person being pampered."
+  },
+  {
+    "id": "g032",
+    "term": "扶",
+    "language": "Chinese",
+    "meaning": "to physically support or steady someone while they move",
+    "variants": ["扶她", "扶起来", "扶着", "help her up", "support her"],
+    "category": "daily_living",
+    "example": "扶她去厕所",
+    "ambiguity": "Means hands-on physical support, not merely accompanying. The distinction matters for fall risk."
+  },
+  {
+    "id": "g033",
+    "term": "尿布",
+    "language": "Chinese/Singlish",
+    "meaning": "adult incontinence diaper",
+    "variants": ["换尿布", "纸尿裤", "diaper", "adult diaper", "pampers"],
+    "category": "daily_living",
+    "example": "两个小时换一次尿布",
+    "ambiguity": null
+  },
+  {
+    "id": "g034",
+    "term": "血压",
+    "language": "Chinese/Singlish",
+    "meaning": "blood pressure",
+    "variants": ["高血压", "低血压", "blood pressure", "bp high", "bp low"],
+    "category": "daily_living",
+    "example": "早上量血压，写下来",
+    "ambiguity": null
+  },
+  {
+    "id": "g035",
+    "term": "糖尿病",
+    "language": "Chinese/Singlish",
+    "meaning": "diabetes",
+    "variants": ["糖尿", "血糖", "diabetes", "sugar level", "blood sugar"],
+    "category": "daily_living",
+    "example": "她有糖尿病，不能吃太甜",
+    "ambiguity": null
+  },
+  {
+    "id": "g036",
+    "term": "看医生",
+    "language": "Chinese/Singlish",
+    "meaning": "to see a doctor",
+    "variants": ["去看医生", "看病", "see doctor", "see the doctor", "polyclinic", "GP"],
+    "category": "daily_living",
+    "example": "明天带她去看医生",
+    "ambiguity": "'Polyclinic' is a Singapore public primary-care clinic, not a hospital or a private GP."
+  },
+  {
+    "id": "g037",
+    "term": "等下",
+    "language": "Chinese/Singlish",
+    "meaning": "in a while; shortly",
+    "variants": ["等一下", "等一等", "later lah", "in a while"],
+    "category": "time",
+    "example": "等下才吃，现在还饱",
+    "ambiguity": "Deliberately vague — could mean five minutes or several hours. If it is attached to medication, toileting or a meal, the timing is unresolved and should be clarified."
+  },
+  {
+    "id": "g038",
+    "term": "later",
+    "language": "Singlish",
+    "meaning": "either 'afterwards' (a schedule) or 'in case / lest' (a warning about a bad outcome)",
+    "variants": ["later she", "later you", "later kena", "later fall down"],
+    "category": "time",
+    "example": "hold the rail, later you fall down",
+    "ambiguity": "The warning reading appears before an undesirable outcome and is a caution, not a plan. 'Later she fall down' means 'in case she falls', NOT 'she will fall later'. This entry fires often — check which reading applies before using it."
+  },
+  {
+    "id": "g039",
+    "term": "热气",
+    "language": "Chinese",
+    "meaning": "TCM 'heatiness' — a felt internal imbalance often linked to fried food, sore throat or ulcers",
+    "variants": ["上火", "很热气", "heaty", "heatiness"],
+    "category": "tcm",
+    "example": "吃太多炸的会热气",
+    "ambiguity": "Not a fever and not a measurable temperature. Translating it as 'fever' invents a clinical finding. Keep the TCM sense and gloss it if the listener may not know the concept."
+  },
+  {
+    "id": "g040",
+    "term": "降火",
+    "language": "Chinese",
+    "meaning": "TCM 'cooling' — reducing perceived internal heatiness",
+    "variants": ["凉茶", "退火", "cooling", "cool down the body"],
+    "category": "tcm",
+    "example": "煮点凉茶给她降火",
+    "ambiguity": "A TCM concept, not a medical treatment and not literally lowering body temperature."
+  },
+  {
+    "id": "g041",
+    "term": "补品",
+    "language": "Chinese",
+    "meaning": "a tonic or restorative food/supplement taken to build strength",
+    "variants": ["进补", "补身", "tonic", "supplement"],
+    "category": "tcm",
+    "example": "她每天喝补品",
+    "ambiguity": "May interact with prescribed medication. Preserve the fact that it is a supplement rather than translating it as 'medicine'."
+  },
+  {
+    "id": "g042",
+    "term": "ah ma",
+    "language": "Chinese/Singlish",
+    "meaning": "grandmother, or a respectful term of address for an elderly woman",
+    "variants": ["ahma", "阿嬤", "阿嬷", "嬤嬤", "grandma"],
+    "category": "referent",
+    "example": "ah ma say she want to rest",
+    "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient."
+  },
+  {
+    "id": "g043",
+    "term": "ah gong",
+    "language": "Chinese/Singlish",
+    "meaning": "grandfather, or a respectful term of address for an elderly man",
+    "variants": ["ahgong", "阿公", "公公", "grandpa"],
+    "category": "referent",
+    "example": "ah gong already take his medicine",
+    "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO."
+  },
+  {
+    "id": "g044",
+    "term": "ah girl",
+    "language": "Singlish",
+    "meaning": "informal address term for a younger woman",
+    "variants": ["ah boy", "阿妹", "阿弟", "girl girl"],
+    "category": "referent",
+    "example": "ah girl, help me open the light",
+    "ambiguity": "May be a daughter, a granddaughter or the domestic helper. This is exactly the kind of referent that must come from PERSON INFO — leave the actor null and flag it if unresolved."
+  },
+  {
+    "id": "g045",
+    "term": "auntie",
+    "language": "Singapore English",
+    "meaning": "polite address term for an older woman, usually not a blood relative",
+    "variants": ["uncle", "安娣", "aunty"],
+    "category": "referent",
+    "example": "auntie downstairs will bring the food",
+    "ambiguity": "Usually not an actual aunt. Do not translate into a kinship term without confirmation from PERSON INFO."
+  }
+]

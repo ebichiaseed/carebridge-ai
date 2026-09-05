@@ -8,7 +8,7 @@ load_dotenv()
 
 AWS_REGION = os.getenv(
     "AWS_REGION",
-    "ap-southeast-1"
+    "us-east-1"
 )
 
 INTERPRETATION_MODEL = os.getenv(

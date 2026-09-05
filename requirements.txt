@@ -1,4 +1,17 @@
+# Bedrock (Converse + Titan embeddings)
 boto3==1.43.87
-pydantic==2.12.5
+
+# Local ASR on Apple Silicon
 mlx-whisper==0.4.3
 mlx-audio==0.5.1
+
+# Schema validation: LLM output parsing, glossary file validation.
+# v2 API is required -- model_validate_json / ConfigDict do not exist in v1.
+pydantic>=2.9,<3
+
+# Not needed: chromadb. Cosine similarity over a few hundred glossary entries
+# is an exact dot product in pure Python; an ANN index costs a dependency and
+# a silent L2-vs-cosine footgun for no gain at this scale.
+
+# Graph orchestration: nodes, conditional edges, bounded retry routing.
+langgraph>=0.2,<0.3

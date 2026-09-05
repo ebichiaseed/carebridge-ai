@@ -1,3 +1,6 @@
 boto3==1.43.87
-mlx-whisper==0.4.3
-mlx-audio==0.5.1
+pypinyin==0.55.0
+mlx-whisper==0.4.3 ; platform_system == "Darwin" and platform_machine == "arm64"
+mlx-audio==0.5.1 ; platform_system == "Darwin" and platform_machine == "arm64"
+torch>=2.8.0
+transformers>=5.13.0

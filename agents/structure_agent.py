@@ -39,13 +39,16 @@ class StructureAgent(BaseAgent):
 
     async def run(self, 
                   interpretation: InterpretationResult,
-                  recent_context: list[dict] | None = None) -> StructureResult:  
+                  recent_context: list[dict] | None = None,
+                  verification_issues: list[str] | None = None) -> StructureResult:
 
         prompt = (
             f"Interpretation:\n"
             f"{interpretation.model_dump_json(indent=2)}\n\n"
             f"Recent context:\n"
-            f"{json.dumps(recent_context or [], ensure_ascii=False)}"
+            f"{json.dumps(recent_context or [], ensure_ascii=False)}\n\n"
+            f"Verification feedback from the previous draft:\n"
+            f"{json.dumps(verification_issues or [], ensure_ascii=False)}"
         )
 
         raw = await self.ask_model(prompt, temperature=0, max_tokens=300)

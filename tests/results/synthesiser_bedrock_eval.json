@@ -1,0 +1,4102 @@
+{
+  "generated_at_utc": "2026-09-05T08:26:55.366111+00:00",
+  "purpose": "Live end-to-end AWS Bedrock synthesiser evaluation",
+  "cases_path": "/Users/erikachia/carebridge-ai/tests/synthesiser_test_cases.json",
+  "case_count": 30,
+  "semantic_judge_model": "nova-lite",
+  "evaluation_mode": "production",
+  "quality_thresholds": {
+    "task_completion_rate": 0.75,
+    "loop_discipline_rate": 1.0,
+    "interpretation_accuracy_rate": 0.75,
+    "semantic_equivalence_rate": 0.75,
+    "schema_validation_pass_rate": 1.0
+  },
+  "thresholds_enforced": true,
+  "metric_definitions": {
+    "token_cost": "Bedrock-reported tokens and estimated USD using recorded per-million-token rates.",
+    "loop_discipline": "Run terminates without exceeding its configured retry budget.",
+    "task_completion_rate": "Cases ending in their expected terminal status.",
+    "interpretation_accuracy": "Exact checks of labelled categorical fields in the structured interpretation.",
+    "semantic_equivalence": "Independent model judgement against expected meaning and safety requirements.",
+    "verifier_false_pass": "Final verifier returned PASS although the independent semantic judgement failed.",
+    "schema_validation_pass_rate": "Produced agent artifacts accepted by their Pydantic schema; verifier fallbacks fail."
+  },
+  "models": [
+    {
+      "name": "production",
+      "configuration": {
+        "interpretation": "sonnet",
+        "structure": "sonnet",
+        "verification": "haiku"
+      },
+      "judge_is_same_model_family": false,
+      "cases": [
+        {
+          "id": "T01",
+          "transcript": "Ah Ma 吃完饭记得吃药 hor.",
+          "languages": [
+            "english",
+            "mandarin",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker is reminding someone that Ah Ma should take her medicine after finishing dinner.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Remember to give Ah Ma her medicine after she finishes dinner.",
+          "critical_facts": [
+            "Ah Ma",
+            "take medicine",
+            "after dinner"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Ma should take her medicine after eating.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": "Ah Ma",
+            "action": "take medicine",
+            "object": "medicine",
+            "timing": "after eating",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Chinese/Singlish",
+            "cleaned_transcript": "Ah Ma 吃完饭记得吃药 hor."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts of the original transcript, including the person (Ah Ma), the action (take medicine), and the timing (after eating). There is no negation, quantity, or sequence issues, and no unsupported information was added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 2,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 2466.4,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 11666,
+          "token_usage": {
+            "input": 2167,
+            "output": 228,
+            "total": 2395,
+            "by_stage": {
+              "interpretation": {
+                "input": 1374,
+                "output": 155,
+                "total": 1529
+              },
+              "structure": {
+                "input": 261,
+                "output": 29,
+                "total": 290
+              },
+              "verification": {
+                "input": 532,
+                "output": 44,
+                "total": 576
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008417,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006447,
+            "structure": 0.001218,
+            "verification": 0.000752
+          },
+          "judge_token_usage": {
+            "input": 457,
+            "output": 125,
+            "total": 582
+          },
+          "estimated_judge_cost_usd": 5.742e-05
+        },
+        {
+          "id": "T02",
+          "transcript": "等下帮 Ah Gong 买 kopi, 少糖 can?",
+          "languages": [
+            "mandarin",
+            "english",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker is asking someone to buy coffee with less sugar for Ah Gong later.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Later, please buy coffee for Ah Gong with less sugar.",
+          "critical_facts": [
+            "Ah Gong",
+            "buy coffee",
+            "less sugar",
+            "later"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "In a while, buy kopi with less sugar for Ah Gong.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "buy kopi",
+            "object": "kopi, less sugar",
+            "timing": "等下 (shortly / in a while)",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "等下 is deliberately vague timing (could be 5 minutes or several hours)",
+              "Ah Gong identity cannot be resolved from PERSON INFO"
+            ],
+            "clarification_question": "When you say 等下, you mean now now or later in the afternoon?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "等下帮 Ah Gong 买 kopi, 少糖 can?"
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": false,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts of the original transcript, including the person (Ah Gong), the action (buy coffee), the condition (less sugar), and the timing (in a while). However, the negation is not preserved as the original transcript does not contain any negation, but the verifier's interpretation incorrectly identifies a negation scope."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 2,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 392.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g043",
+                "term": "ah gong",
+                "language": "Chinese/Singlish",
+                "meaning": "grandfather, or a respectful term of address for an elderly man",
+                "example": "ah gong already take his medicine",
+                "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g037",
+                "term": "等下",
+                "language": "Chinese/Singlish",
+                "meaning": "in a while; shortly",
+                "example": "等下才吃，现在还饱",
+                "ambiguity": "Deliberately vague — could mean five minutes or several hours. If it is attached to medication, toileting or a meal, the timing is unresolved and should be clarified.",
+                "category": "time",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 9430,
+          "token_usage": {
+            "input": 2340,
+            "output": 310,
+            "total": 2650,
+            "by_stage": {
+              "interpretation": {
+                "input": 1369,
+                "output": 230,
+                "total": 1599
+              },
+              "structure": {
+                "input": 336,
+                "output": 36,
+                "total": 372
+              },
+              "verification": {
+                "input": 635,
+                "output": 44,
+                "total": 679
+              }
+            }
+          },
+          "estimated_cost_usd": 0.00996,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007557,
+            "structure": 0.001548,
+            "verification": 0.000855
+          },
+          "judge_token_usage": {
+            "input": 516,
+            "output": 144,
+            "total": 660
+          },
+          "estimated_judge_cost_usd": 6.552e-05
+        },
+        {
+          "id": "T03",
+          "transcript": "这个药 before breakfast 不可以吃 leh.",
+          "languages": [
+            "mandarin",
+            "english",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The medicine must not be taken before breakfast.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Do not take this medicine before breakfast.",
+          "critical_facts": [
+            "medicine",
+            "do not take",
+            "before breakfast"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "This medicine should not be taken before breakfast.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": null,
+            "action": "take medicine",
+            "object": "this medicine",
+            "timing": "before breakfast",
+            "negated": true,
+            "negation_cue": "不可以",
+            "negation_scope": "take this medicine before breakfast",
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Chinese-English mixed (Singlish)",
+            "cleaned_transcript": "这个药 before breakfast 不可以吃 leh."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the critical facts of the original transcript, including the negation, timing, and the prohibition of taking the medicine before breakfast. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 1,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 421.1,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g005",
+                "term": "cannot",
+                "language": "Chinese/Singlish",
+                "meaning": "unable to, not allowed to, or (of an object) not working",
+                "example": "she cannot stand up by herself",
+                "ambiguity": "Three distinct readings: physical inability, prohibition (e.g. by a doctor), or a malfunctioning object. The actor and the required action differ in each case.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "vector",
+                "score": 0.3353
+              }
+            ]
+          },
+          "latency_ms": 7207,
+          "token_usage": {
+            "input": 2200,
+            "output": 234,
+            "total": 2434,
+            "by_stage": {
+              "interpretation": {
+                "input": 1381,
+                "output": 162,
+                "total": 1543
+              },
+              "structure": {
+                "input": 268,
+                "output": 28,
+                "total": 296
+              },
+              "verification": {
+                "input": 551,
+                "output": 44,
+                "total": 595
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008568,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006573,
+            "structure": 0.001224,
+            "verification": 0.000771
+          },
+          "judge_token_usage": {
+            "input": 447,
+            "output": 109,
+            "total": 556
+          },
+          "estimated_judge_cost_usd": 5.298e-05
+        },
+        {
+          "id": "T04",
+          "transcript": "Ah Ma 今天很累, let her rest first lah.",
+          "languages": [
+            "english",
+            "mandarin",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Ma is very tired today and should be allowed to rest first.",
+            "utterance_type": "statement",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Ma is very tired today, so let her rest first.",
+          "critical_facts": [
+            "Ah Ma",
+            "tired today",
+            "rest first"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Ma is very tired today, let her rest first.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": null,
+            "action": "rest",
+            "object": null,
+            "timing": "now/today",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "Ah Ma: identity cannot be resolved from available context; could be grandmother, care recipient, or another elderly woman"
+            ],
+            "clarification_question": "Which Ah Ma you talking about?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Ah Ma 今天很累, let her rest first lah."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the meaning of the original transcript. It preserves the critical facts that Ah Ma is very tired today and should be allowed to rest first. There is no negation, timing, quantity, or sequence issues. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 386.1,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 8049,
+          "token_usage": {
+            "input": 2146,
+            "output": 265,
+            "total": 2411,
+            "by_stage": {
+              "interpretation": {
+                "input": 1295,
+                "output": 189,
+                "total": 1484
+              },
+              "structure": {
+                "input": 295,
+                "output": 32,
+                "total": 327
+              },
+              "verification": {
+                "input": 556,
+                "output": 44,
+                "total": 600
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008861,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.00672,
+            "structure": 0.001365,
+            "verification": 0.000776
+          },
+          "judge_token_usage": {
+            "input": 478,
+            "output": 125,
+            "total": 603
+          },
+          "estimated_judge_cost_usd": 5.868e-05
+        },
+        {
+          "id": "T05",
+          "transcript": "你帮我 remind 她 8点吃药 can?",
+          "languages": [
+            "mandarin",
+            "english",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker wants someone to remind her to take her medicine at 8 o'clock.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Please remind her to take her medicine at 8 p.m.",
+          "critical_facts": [
+            "remind her",
+            "take medicine",
+            "8 p.m."
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Please remind her to take medicine at 8 o'clock. (Note: The person who needs to take medicine has not been identified.)",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": "FDW",
+            "action": "remind",
+            "object": "她 to take medicine",
+            "timing": "8点",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "她 (her) is unresolved – the person who needs to take medicine at 8 o'clock is not identified in context"
+            ],
+            "clarification_question": "Remind who ah? Which one need to eat medicine?",
+            "source_language": "Chinese/Singlish",
+            "cleaned_transcript": "你帮我 remind 她 8点吃药 can?"
+          },
+          "retry_count": 1,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the request to remind someone to take medicine at 8 o'clock, preserving the critical facts, negation, timing, quantity, and sequence. However, it does not add unsupported information and correctly notes the ambiguity regarding the person who needs to take the medicine."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": true,
+          "repair_succeeded": true,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 398.1,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 17688,
+          "token_usage": {
+            "input": 4597,
+            "output": 706,
+            "total": 5303,
+            "by_stage": {
+              "interpretation": {
+                "input": 2698,
+                "output": 391,
+                "total": 3089
+              },
+              "structure": {
+                "input": 715,
+                "output": 82,
+                "total": 797
+              },
+              "verification": {
+                "input": 1184,
+                "output": 233,
+                "total": 1417
+              }
+            }
+          },
+          "estimated_cost_usd": 0.019683,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.013959,
+            "structure": 0.003375,
+            "verification": 0.002349
+          },
+          "judge_token_usage": {
+            "input": 531,
+            "output": 131,
+            "total": 662
+          },
+          "estimated_judge_cost_usd": 6.33e-05
+        },
+        {
+          "id": "T06",
+          "transcript": "Wa bo beh chia png, stomach not feeling good.",
+          "languages": [
+            "hokkien",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker does not want to eat because their stomach does not feel well.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "I do not want to eat because my stomach does not feel well.",
+          "critical_facts": [
+            "does not want to eat",
+            "stomach feels unwell"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "I don't want to eat because my stomach is not feeling good.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "speaker",
+            "action": null,
+            "object": null,
+            "timing": null,
+            "negated": true,
+            "negation_cue": "bo beh",
+            "negation_scope": "chia png (eat rice/meal)",
+            "urgency": "normal",
+            "ambiguity": [
+              "Severity unclear: 'stomach not feeling good' could range from mild discomfort to nausea requiring attention"
+            ],
+            "clarification_question": "Your stomach pain is it serious or just a bit uncomfortable only?",
+            "source_language": "Singlish with Hokkien",
+            "cleaned_transcript": "Wa bo beh chia png, stomach not feeling good."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the negation and the critical facts that the speaker does not want to eat due to their stomach not feeling well. The sequence and timing are preserved, and no unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 0,
+            "alias_matches": 0,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 447.2,
+            "error_code": null,
+            "hits": []
+          },
+          "latency_ms": 9215,
+          "token_usage": {
+            "input": 2082,
+            "output": 279,
+            "total": 2361,
+            "by_stage": {
+              "interpretation": {
+                "input": 1221,
+                "output": 202,
+                "total": 1423
+              },
+              "structure": {
+                "input": 308,
+                "output": 33,
+                "total": 341
+              },
+              "verification": {
+                "input": 553,
+                "output": 44,
+                "total": 597
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008885,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006693,
+            "structure": 0.001419,
+            "verification": 0.000773
+          },
+          "judge_token_usage": {
+            "input": 492,
+            "output": 115,
+            "total": 607
+          },
+          "estimated_judge_cost_usd": 5.712e-05
+        },
+        {
+          "id": "T07",
+          "transcript": "Ah Ma kong 伊 beh lim zui first.",
+          "languages": [
+            "english",
+            "hokkien"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Ma said that she wants to drink water first.",
+            "utterance_type": "statement",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Ma said she wants to drink water first.",
+          "critical_facts": [
+            "Ah Ma",
+            "said",
+            "drink water",
+            "first"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Ma said she wants to drink water first.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "ah ma",
+            "action": "drink",
+            "object": "water",
+            "timing": "first",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Hokkien-English mix",
+            "cleaned_transcript": "Ah Ma kong 伊 beh lim zui first."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation matches the expected interpretation in terms of meaning, critical facts, negation, timing, quantity, and sequence. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 451.0,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 7097,
+          "token_usage": {
+            "input": 2061,
+            "output": 225,
+            "total": 2286,
+            "by_stage": {
+              "interpretation": {
+                "input": 1295,
+                "output": 151,
+                "total": 1446
+              },
+              "structure": {
+                "input": 257,
+                "output": 30,
+                "total": 287
+              },
+              "verification": {
+                "input": 509,
+                "output": 44,
+                "total": 553
+              }
+            }
+          },
+          "estimated_cost_usd": 0.0081,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.00615,
+            "structure": 0.001221,
+            "verification": 0.000729
+          },
+          "judge_token_usage": {
+            "input": 440,
+            "output": 104,
+            "total": 544
+          },
+          "estimated_judge_cost_usd": 5.136e-05
+        },
+        {
+          "id": "T08",
+          "transcript": "Mai give her the blue one, give 白色那个.",
+          "languages": [
+            "hokkien",
+            "english",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker says not to give her the blue item and to give her the white item instead.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Do not give her the blue one; give her the white one instead.",
+          "critical_facts": [
+            "do not give blue",
+            "give white instead"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Don't give her the blue one, give the white one.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "give",
+            "object": "白色那个 (the white one)",
+            "timing": null,
+            "negated": true,
+            "negation_cue": "Mai",
+            "negation_scope": "give her the blue one",
+            "urgency": "normal",
+            "ambiguity": [
+              "Referent 'her' cannot be resolved from context",
+              "Referent 'blue one' and '白色那个' (white one) not specified - unclear what objects are being referred to"
+            ],
+            "clarification_question": "Who you want to give the white one to?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Mai give her the blue one, give 白色那个."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual result correctly conveys the negation of giving the blue item and the instruction to give the white item instead. The critical facts of not giving the blue item and giving the white item are preserved. The negation, timing, quantity, and sequence are all preserved. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 0,
+            "alias_matches": 0,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 910.7,
+            "error_code": null,
+            "hits": []
+          },
+          "latency_ms": 9746,
+          "token_usage": {
+            "input": 2162,
+            "output": 299,
+            "total": 2461,
+            "by_stage": {
+              "interpretation": {
+                "input": 1221,
+                "output": 223,
+                "total": 1444
+              },
+              "structure": {
+                "input": 329,
+                "output": 32,
+                "total": 361
+              },
+              "verification": {
+                "input": 612,
+                "output": 44,
+                "total": 656
+              }
+            }
+          },
+          "estimated_cost_usd": 0.009307,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007008,
+            "structure": 0.001467,
+            "verification": 0.000832
+          },
+          "judge_token_usage": {
+            "input": 512,
+            "output": 132,
+            "total": 644
+          },
+          "estimated_judge_cost_usd": 6.24e-05
+        },
+        {
+          "id": "T09",
+          "transcript": "食饱了才可以吃这个药, understand?",
+          "languages": [
+            "mandarin",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The medicine should only be taken after eating.",
+            "utterance_type": "statement",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "This medicine should only be taken after eating.",
+          "critical_facts": [
+            "medicine",
+            "only after eating"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "You can take this medicine after eating.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": null,
+            "action": "take medicine",
+            "object": "this medicine",
+            "timing": "after eating / after meal",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Chinese/Singlish",
+            "cleaned_transcript": "食饱了才可以吃这个药, understand?"
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": false,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the critical facts that the medicine should be taken after eating, without adding any unsupported information. However, the actual interpretation does not explicitly state that the medicine should only be taken after eating, which is a slight deviation from the expected interpretation in terms of negation."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 0,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 375.8,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "vector",
+                "score": 0.5607
+              }
+            ]
+          },
+          "latency_ms": 8747,
+          "token_usage": {
+            "input": 2097,
+            "output": 224,
+            "total": 2321,
+            "by_stage": {
+              "interpretation": {
+                "input": 1300,
+                "output": 153,
+                "total": 1453
+              },
+              "structure": {
+                "input": 259,
+                "output": 27,
+                "total": 286
+              },
+              "verification": {
+                "input": 538,
+                "output": 44,
+                "total": 582
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008135,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006195,
+            "structure": 0.001182,
+            "verification": 0.000758
+          },
+          "judge_token_usage": {
+            "input": 440,
+            "output": 130,
+            "total": 570
+          },
+          "estimated_judge_cost_usd": 5.76e-05
+        },
+        {
+          "id": "T10",
+          "transcript": "等她睡醒先, then bring her downstairs.",
+          "languages": [
+            "mandarin",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker wants someone to wait for her to wake up before bringing her downstairs.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Wait until she wakes up before bringing her downstairs.",
+          "critical_facts": [
+            "wait until she wakes up",
+            "bring her downstairs",
+            "correct sequence"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "After she wakes up, bring her downstairs.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "bring downstairs",
+            "object": "her",
+            "timing": "after she wakes up",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Chinese/Singlish",
+            "cleaned_transcript": "等她睡醒先, then bring her downstairs."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the essence of the original transcript and the expected interpretation. It preserves the critical facts of waiting until she wakes up and then bringing her downstairs, maintains the correct sequence, and does not introduce any unsupported information."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 0,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 379.1,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g037",
+                "term": "等下",
+                "language": "Chinese/Singlish",
+                "meaning": "in a while; shortly",
+                "example": "等下才吃，现在还饱",
+                "ambiguity": "Deliberately vague — could mean five minutes or several hours. If it is attached to medication, toileting or a meal, the timing is unresolved and should be clarified.",
+                "category": "time",
+                "match_type": "vector",
+                "score": 0.3087
+              }
+            ]
+          },
+          "latency_ms": 7520,
+          "token_usage": {
+            "input": 2080,
+            "output": 226,
+            "total": 2306,
+            "by_stage": {
+              "interpretation": {
+                "input": 1302,
+                "output": 152,
+                "total": 1454
+              },
+              "structure": {
+                "input": 258,
+                "output": 30,
+                "total": 288
+              },
+              "verification": {
+                "input": 520,
+                "output": 44,
+                "total": 564
+              }
+            }
+          },
+          "estimated_cost_usd": 0.00815,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006186,
+            "structure": 0.001224,
+            "verification": 0.00074
+          },
+          "judge_token_usage": {
+            "input": 449,
+            "output": 120,
+            "total": 569
+          },
+          "estimated_judge_cost_usd": 5.574e-05
+        },
+        {
+          "id": "T11",
+          "transcript": "Ah Gong say 今日 mai go out, outside very hot lah.",
+          "languages": [
+            "english",
+            "hokkien",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Gong said that he does not want to go out today because it is very hot outside.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Gong said he does not want to go out today because it is very hot outside.",
+          "critical_facts": [
+            "Ah Gong",
+            "does not want to go out",
+            "today",
+            "hot outside"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Gong advised not to go out today because it's very hot outside.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "Ah Gong",
+            "action": "advise not to go out",
+            "object": null,
+            "timing": "今日 (today)",
+            "negated": true,
+            "negation_cue": "mai",
+            "negation_scope": "go out",
+            "urgency": "normal",
+            "ambiguity": [
+              "Ah Gong: specific person not identified in PERSON INFO"
+            ],
+            "clarification_question": "Which Ah Gong you talking about?",
+            "source_language": "Singlish with Mandarin and Hokkien",
+            "cleaned_transcript": "Ah Gong say 今日 mai go out, outside very hot lah."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the critical facts that Ah Gong does not want to go out today because it is very hot outside. The negation, timing, and sequence are preserved, and no unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 1,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 417.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g043",
+                "term": "ah gong",
+                "language": "Chinese/Singlish",
+                "meaning": "grandfather, or a respectful term of address for an elderly man",
+                "example": "ah gong already take his medicine",
+                "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g018",
+                "term": "发烧",
+                "language": "Chinese/Singlish",
+                "meaning": "fever",
+                "example": "她昨晚发烧到38度",
+                "ambiguity": "Distinguish from 热气 (TCM 'heatiness'), which is not a fever and does not imply a raised temperature.",
+                "category": "symptom",
+                "match_type": "vector",
+                "score": 0.2831
+              }
+            ]
+          },
+          "latency_ms": 8251,
+          "token_usage": {
+            "input": 2254,
+            "output": 287,
+            "total": 2541,
+            "by_stage": {
+              "interpretation": {
+                "input": 1361,
+                "output": 206,
+                "total": 1567
+              },
+              "structure": {
+                "input": 312,
+                "output": 37,
+                "total": 349
+              },
+              "verification": {
+                "input": 581,
+                "output": 44,
+                "total": 625
+              }
+            }
+          },
+          "estimated_cost_usd": 0.009465,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007173,
+            "structure": 0.001491,
+            "verification": 0.000801
+          },
+          "judge_token_usage": {
+            "input": 498,
+            "output": 116,
+            "total": 614
+          },
+          "estimated_judge_cost_usd": 5.772e-05
+        },
+        {
+          "id": "T12",
+          "transcript": "这个不要丢 hor, tomorrow still need to use.",
+          "languages": [
+            "mandarin",
+            "singlish",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The item should not be thrown away because it is still needed tomorrow.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Do not throw this away because it is still needed tomorrow.",
+          "critical_facts": [
+            "do not throw away",
+            "needed tomorrow"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Don't throw this away, I still need to use it tomorrow.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "keep / do not discard",
+            "object": "this (unspecified item)",
+            "timing": "now (and needed tomorrow)",
+            "negated": true,
+            "negation_cue": "不要",
+            "negation_scope": "discard this item",
+            "urgency": "normal",
+            "ambiguity": [
+              "Referent of 这个 (this) is unspecified – unclear which item should be kept"
+            ],
+            "clarification_question": "Which one you talking about?",
+            "source_language": "Mandarin-Singlish mix",
+            "cleaned_transcript": "这个不要丢 hor, tomorrow still need to use."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the negation ('Do not throw this away'), the timing ('still need to use it tomorrow'), and the critical facts ('do not throw away', 'needed tomorrow'). The actual final translation is a natural paraphrase of the expected interpretation without adding unsupported information."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 380.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g003",
+                "term": "don't want",
+                "language": "Chinese/Singlish",
+                "meaning": "declines or refuses something being offered right now",
+                "example": "ah ma dowan the porridge",
+                "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 9156,
+          "token_usage": {
+            "input": 2206,
+            "output": 283,
+            "total": 2489,
+            "by_stage": {
+              "interpretation": {
+                "input": 1297,
+                "output": 206,
+                "total": 1503
+              },
+              "structure": {
+                "input": 312,
+                "output": 33,
+                "total": 345
+              },
+              "verification": {
+                "input": 597,
+                "output": 44,
+                "total": 641
+              }
+            }
+          },
+          "estimated_cost_usd": 0.009229,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006981,
+            "structure": 0.001431,
+            "verification": 0.000817
+          },
+          "judge_token_usage": {
+            "input": 490,
+            "output": 130,
+            "total": 620
+          },
+          "estimated_judge_cost_usd": 6.06e-05
+        },
+        {
+          "id": "T13",
+          "transcript": "Wa ai jiak mee, but 不要辣的.",
+          "languages": [
+            "hokkien",
+            "english",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker wants noodles but does not want them to be spicy.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "I want noodles, but I do not want them spicy.",
+          "critical_facts": [
+            "wants noodles",
+            "not spicy"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "I want to eat noodles, but not spicy ones.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "eat",
+            "object": "noodles",
+            "timing": null,
+            "negated": true,
+            "negation_cue": "不要",
+            "negation_scope": "spicy",
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Hokkien/Mandarin/English mix",
+            "cleaned_transcript": "Wa ai jiak mee, but 不要辣的."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": false,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": false,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the speaker's desire for noodles and their preference against spiciness. The negation is preserved, and there are no unsupported details added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 718.8,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g003",
+                "term": "don't want",
+                "language": "Chinese/Singlish",
+                "meaning": "declines or refuses something being offered right now",
+                "example": "ah ma dowan the porridge",
+                "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 7702,
+          "token_usage": {
+            "input": 2098,
+            "output": 235,
+            "total": 2333,
+            "by_stage": {
+              "interpretation": {
+                "input": 1297,
+                "output": 158,
+                "total": 1455
+              },
+              "structure": {
+                "input": 264,
+                "output": 33,
+                "total": 297
+              },
+              "verification": {
+                "input": 537,
+                "output": 44,
+                "total": 581
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008305,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006261,
+            "structure": 0.001287,
+            "verification": 0.000757
+          },
+          "judge_token_usage": {
+            "input": 454,
+            "output": 106,
+            "total": 560
+          },
+          "estimated_judge_cost_usd": 5.268e-05
+        },
+        {
+          "id": "T14",
+          "transcript": "Ah Ma 咳嗽很多, give her warm water first can.",
+          "languages": [
+            "english",
+            "mandarin",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Ma is coughing a lot, and the speaker wants her to be given warm water first.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Ma is coughing a lot. Please give her some warm water first.",
+          "critical_facts": [
+            "Ah Ma",
+            "coughing",
+            "warm water",
+            "first"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Give Ah Ma warm water first because she is coughing a lot.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "give warm water",
+            "object": "warm water",
+            "timing": "first",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "Ah Ma: identity unclear - no person info provided to resolve which elderly woman is meant"
+            ],
+            "clarification_question": "Which Ah Ma you talking about?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Ah Ma 咳嗽很多, give her warm water first can."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": false,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts of 'Ah Ma', 'coughing', 'warm water', and 'first'. The timing and sequence are preserved, and there is no negation to preserve. However, the quantity of 'coughing a lot' is not explicitly preserved in the actual final interpretation, though it is implied. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 638.9,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 8734,
+          "token_usage": {
+            "input": 2150,
+            "output": 268,
+            "total": 2418,
+            "by_stage": {
+              "interpretation": {
+                "input": 1298,
+                "output": 189,
+                "total": 1487
+              },
+              "structure": {
+                "input": 295,
+                "output": 35,
+                "total": 330
+              },
+              "verification": {
+                "input": 557,
+                "output": 44,
+                "total": 601
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008916,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006729,
+            "structure": 0.00141,
+            "verification": 0.000777
+          },
+          "judge_token_usage": {
+            "input": 491,
+            "output": 150,
+            "total": 641
+          },
+          "estimated_judge_cost_usd": 6.546e-05
+        },
+        {
+          "id": "T15",
+          "transcript": "你出去的时候记得 lock door hor.",
+          "languages": [
+            "mandarin",
+            "english",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker is reminding someone to lock the door when leaving.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Remember to lock the door when you leave.",
+          "critical_facts": [
+            "lock the door",
+            "when leaving"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "When you go out, please remember to lock the door.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": "你",
+            "action": "lock door",
+            "object": "door",
+            "timing": "出去的时候",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Mandarin-English mix",
+            "cleaned_transcript": "你出去的时候记得 lock door hor."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the critical facts of locking the door when leaving, without adding any unsupported information. The timing, quantity, sequence, and negation are all preserved as per the safety requirements."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 0,
+            "alias_matches": 0,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 381.4,
+            "error_code": null,
+            "hits": []
+          },
+          "latency_ms": 7251,
+          "token_usage": {
+            "input": 2032,
+            "output": 227,
+            "total": 2259,
+            "by_stage": {
+              "interpretation": {
+                "input": 1221,
+                "output": 152,
+                "total": 1373
+              },
+              "structure": {
+                "input": 258,
+                "output": 31,
+                "total": 289
+              },
+              "verification": {
+                "input": 553,
+                "output": 44,
+                "total": 597
+              }
+            }
+          },
+          "estimated_cost_usd": 0.007955,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.005943,
+            "structure": 0.001239,
+            "verification": 0.000773
+          },
+          "judge_token_usage": {
+            "input": 437,
+            "output": 113,
+            "total": 550
+          },
+          "estimated_judge_cost_usd": 5.334e-05
+        },
+        {
+          "id": "T16",
+          "transcript": "Mai wake her up now lah, 她刚刚才睡.",
+          "languages": [
+            "hokkien",
+            "singlish",
+            "english",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker says not to wake her because she has only just fallen asleep.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Do not wake her up now; she has just fallen asleep.",
+          "critical_facts": [
+            "do not wake her",
+            "now",
+            "just fell asleep"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Don't wake her up now; she just fell asleep.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "not wake up",
+            "object": "her",
+            "timing": "now",
+            "negated": true,
+            "negation_cue": "Mai",
+            "negation_scope": "wake her up now",
+            "urgency": "normal",
+            "ambiguity": [
+              "Referent 'her' cannot be resolved from available context"
+            ],
+            "clarification_question": "Who you talking about? Which one don't wake up?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Mai wake her up now lah, 她刚刚才睡."
+          },
+          "retry_count": 1,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the negation, timing, and critical facts from the original transcript. The actual final interpretation is a natural paraphrase of the expected final interpretation, and no unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": true,
+          "repair_succeeded": true,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 0,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 332.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g019",
+                "term": "睡不着",
+                "language": "Chinese",
+                "meaning": "unable to fall asleep",
+                "example": "她整晚睡不着",
+                "ambiguity": null,
+                "category": "symptom",
+                "match_type": "vector",
+                "score": 0.3205
+              }
+            ]
+          },
+          "latency_ms": 11919,
+          "token_usage": {
+            "input": 3046,
+            "output": 437,
+            "total": 3483,
+            "by_stage": {
+              "interpretation": {
+                "input": 1257,
+                "output": 191,
+                "total": 1448
+              },
+              "structure": {
+                "input": 683,
+                "output": 58,
+                "total": 741
+              },
+              "verification": {
+                "input": 1106,
+                "output": 188,
+                "total": 1294
+              }
+            }
+          },
+          "estimated_cost_usd": 0.011601,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006636,
+            "structure": 0.002919,
+            "verification": 0.002046
+          },
+          "judge_token_usage": {
+            "input": 492,
+            "output": 113,
+            "total": 605
+          },
+          "estimated_judge_cost_usd": 5.664e-05
+        },
+        {
+          "id": "T17",
+          "transcript": "Ah Gong 要去厕所, can help him walk slowly?",
+          "languages": [
+            "english",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Gong needs to go to the toilet and should be helped to walk slowly.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Gong needs to go to the toilet. Please help him walk slowly.",
+          "critical_facts": [
+            "Ah Gong",
+            "go to toilet",
+            "help him",
+            "walk slowly"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Can you help Ah Gong walk slowly to the toilet now?",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "help walk",
+            "object": "Ah Gong",
+            "timing": "now",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "mixed (Mandarin + English/Singlish)",
+            "cleaned_transcript": "Ah Gong 要去厕所, can help him walk slowly?"
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the need to help Ah Gong walk slowly to the toilet, preserving all critical facts, negation, timing, quantity, and sequence. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 373.0,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g043",
+                "term": "ah gong",
+                "language": "Chinese/Singlish",
+                "meaning": "grandfather, or a respectful term of address for an elderly man",
+                "example": "ah gong already take his medicine",
+                "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 7301,
+          "token_usage": {
+            "input": 2084,
+            "output": 239,
+            "total": 2323,
+            "by_stage": {
+              "interpretation": {
+                "input": 1284,
+                "output": 161,
+                "total": 1445
+              },
+              "structure": {
+                "input": 267,
+                "output": 34,
+                "total": 301
+              },
+              "verification": {
+                "input": 533,
+                "output": 44,
+                "total": 577
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008331,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006267,
+            "structure": 0.001311,
+            "verification": 0.000753
+          },
+          "judge_token_usage": {
+            "input": 464,
+            "output": 111,
+            "total": 575
+          },
+          "estimated_judge_cost_usd": 5.448e-05
+        },
+        {
+          "id": "T18",
+          "transcript": "Wa bo hiao how to use this one, 你帮我一下.",
+          "languages": [
+            "hokkien",
+            "english",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker does not know how to use the item and is asking for help.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "I do not know how to use this. Please help me.",
+          "critical_facts": [
+            "does not know how to use",
+            "asks for help"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "I don't know how to use this one. Can you help me with it?",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "help use",
+            "object": "this one",
+            "timing": "now",
+            "negated": true,
+            "negation_cue": "bo",
+            "negation_scope": "know how to use this one",
+            "urgency": "normal",
+            "ambiguity": [
+              "object 'this one' not specified; could be device, app, medication, or other item"
+            ],
+            "clarification_question": "Which one you need help with?",
+            "source_language": "Singlish with Hokkien and Mandarin",
+            "cleaned_transcript": "Wa bo hiao how to use this one, 你帮我一下."
+          },
+          "retry_count": 1,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual translation accurately conveys the speaker's lack of knowledge about using the item and their request for help, preserving the negation, timing, and critical facts. No unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": true,
+          "repair_succeeded": true,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 0,
+            "alias_matches": 0,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 385.9,
+            "error_code": null,
+            "hits": []
+          },
+          "latency_ms": 13293,
+          "token_usage": {
+            "input": 3179,
+            "output": 552,
+            "total": 3731,
+            "by_stage": {
+              "interpretation": {
+                "input": 1226,
+                "output": 201,
+                "total": 1427
+              },
+              "structure": {
+                "input": 797,
+                "output": 70,
+                "total": 867
+              },
+              "verification": {
+                "input": 1156,
+                "output": 281,
+                "total": 1437
+              }
+            }
+          },
+          "estimated_cost_usd": 0.012695,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006693,
+            "structure": 0.003441,
+            "verification": 0.002561
+          },
+          "judge_token_usage": {
+            "input": 502,
+            "output": 112,
+            "total": 614
+          },
+          "estimated_judge_cost_usd": 5.7e-05
+        },
+        {
+          "id": "T19",
+          "transcript": "Dinner 后两个小时才吃药, not immediately hor.",
+          "languages": [
+            "english",
+            "mandarin",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The medicine should be taken two hours after dinner and not immediately after eating.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Take the medicine two hours after dinner, not immediately after eating.",
+          "critical_facts": [
+            "take medicine",
+            "two hours after dinner",
+            "not immediately"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "The medicine should be taken two hours after dinner, not immediately.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": null,
+            "action": "take medicine",
+            "object": "medicine",
+            "timing": "two hours after dinner",
+            "negated": true,
+            "negation_cue": "not",
+            "negation_scope": "immediately",
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Dinner 后两个小时才吃药, not immediately hor."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts of taking medicine two hours after dinner and not immediately, preserves the negation, timing, quantity, and sequence, and does not add any unsupported information."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 396.5,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 7389,
+          "token_usage": {
+            "input": 2107,
+            "output": 234,
+            "total": 2341,
+            "by_stage": {
+              "interpretation": {
+                "input": 1297,
+                "output": 158,
+                "total": 1455
+              },
+              "structure": {
+                "input": 264,
+                "output": 32,
+                "total": 296
+              },
+              "verification": {
+                "input": 546,
+                "output": 44,
+                "total": 590
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008299,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006261,
+            "structure": 0.001272,
+            "verification": 0.000766
+          },
+          "judge_token_usage": {
+            "input": 465,
+            "output": 112,
+            "total": 577
+          },
+          "estimated_judge_cost_usd": 5.478e-05
+        },
+        {
+          "id": "T20",
+          "transcript": "先不要给她吃, wait for Ah Gong to come back first.",
+          "languages": [
+            "mandarin",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker says not to give it to her yet and to wait until Ah Gong returns.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Do not give it to her yet. Wait until Ah Gong comes back first.",
+          "critical_facts": [
+            "do not give yet",
+            "wait for Ah Gong",
+            "Ah Gong returns first"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Don't give her anything to eat yet, wait for Ah Gong to come back first.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "wait to give food/medicine",
+            "object": "她 (her)",
+            "timing": "when Ah Gong comes back",
+            "negated": true,
+            "negation_cue": "不要",
+            "negation_scope": "给她吃",
+            "urgency": "normal",
+            "ambiguity": [
+              "Object of '给她吃' unclear: could be food or medicine",
+              "Identity of 她 (her) unresolved: no person info provided",
+              "Identity of Ah Gong unresolved: no person info provided"
+            ],
+            "clarification_question": "Give her eat what thing?",
+            "source_language": "Chinese-English mixed",
+            "cleaned_transcript": "先不要给她吃, wait for Ah Gong to come back first."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the negation, timing, and sequence of the original instruction. The critical facts of not giving anything to her yet and waiting for Ah Gong to come back are preserved. There is no addition of unsupported information."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 3,
+            "alias_matches": 2,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 381.4,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g043",
+                "term": "ah gong",
+                "language": "Chinese/Singlish",
+                "meaning": "grandfather, or a respectful term of address for an elderly man",
+                "example": "ah gong already take his medicine",
+                "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g003",
+                "term": "don't want",
+                "language": "Chinese/Singlish",
+                "meaning": "declines or refuses something being offered right now",
+                "example": "ah ma dowan the porridge",
+                "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g002",
+                "term": "not yet",
+                "language": "Chinese/Singlish",
+                "meaning": "the action has not happened but is still expected",
+                "example": "she 还没 eat lunch",
+                "ambiguity": "'Not yet' implies the action is still pending, unlike a refusal. Do not translate as a refusal.",
+                "category": "negation",
+                "match_type": "vector",
+                "score": 0.2916
+              }
+            ]
+          },
+          "latency_ms": 9222,
+          "token_usage": {
+            "input": 2425,
+            "output": 322,
+            "total": 2747,
+            "by_stage": {
+              "interpretation": {
+                "input": 1436,
+                "output": 238,
+                "total": 1674
+              },
+              "structure": {
+                "input": 344,
+                "output": 40,
+                "total": 384
+              },
+              "verification": {
+                "input": 645,
+                "output": 44,
+                "total": 689
+              }
+            }
+          },
+          "estimated_cost_usd": 0.010375,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007878,
+            "structure": 0.001632,
+            "verification": 0.000865
+          },
+          "judge_token_usage": {
+            "input": 549,
+            "output": 120,
+            "total": 669
+          },
+          "estimated_judge_cost_usd": 6.174e-05
+        },
+        {
+          "id": "T21",
+          "transcript": "Ah Ma say 她不要 chicken, 她要鱼.",
+          "languages": [
+            "english",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Ma said that she does not want chicken and wants fish instead.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Ma said she does not want chicken; she wants fish instead.",
+          "critical_facts": [
+            "Ah Ma",
+            "does not want chicken",
+            "wants fish"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Ma says she doesn't want chicken, she wants fish.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "Ah Ma",
+            "action": "refuse chicken, want fish",
+            "object": "chicken (refused), fish (wanted)",
+            "timing": "now",
+            "negated": true,
+            "negation_cue": "不要",
+            "negation_scope": "chicken",
+            "urgency": "normal",
+            "ambiguity": [
+              "Whether this is a one-time refusal of chicken or a standing preference is unclear"
+            ],
+            "clarification_question": "Ah Ma this time only don't want chicken, or she never eat chicken one?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Ah Ma say 她不要 chicken, 她要鱼."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts that Ah Ma does not want chicken and wants fish instead. The negation, timing, quantity, and sequence are all preserved. There is no unsupported information added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 2,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 378.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g003",
+                "term": "don't want",
+                "language": "Chinese/Singlish",
+                "meaning": "declines or refuses something being offered right now",
+                "example": "ah ma dowan the porridge",
+                "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 8529,
+          "token_usage": {
+            "input": 2282,
+            "output": 287,
+            "total": 2569,
+            "by_stage": {
+              "interpretation": {
+                "input": 1376,
+                "output": 210,
+                "total": 1586
+              },
+              "structure": {
+                "input": 316,
+                "output": 33,
+                "total": 349
+              },
+              "verification": {
+                "input": 590,
+                "output": 44,
+                "total": 634
+              }
+            }
+          },
+          "estimated_cost_usd": 0.009531,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007278,
+            "structure": 0.001443,
+            "verification": 0.00081
+          },
+          "judge_token_usage": {
+            "input": 512,
+            "output": 114,
+            "total": 626
+          },
+          "estimated_judge_cost_usd": 5.808e-05
+        },
+        {
+          "id": "T22",
+          "transcript": "Zhe ge medicine jiak liao 会想睡觉, so let her rest.",
+          "languages": [
+            "mandarin",
+            "english",
+            "hokkien"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The medicine may make her sleepy after she takes it, so she should be allowed to rest.",
+            "utterance_type": "statement",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "This medicine may make her sleepy, so let her rest after taking it.",
+          "critical_facts": [
+            "medicine",
+            "may cause sleepiness",
+            "let her rest"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "After taking this medicine, she will feel sleepy, so let her rest.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": null,
+            "action": "rest",
+            "object": "her",
+            "timing": "after taking medicine",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "Referent 'her' cannot be resolved from context - identity of person who should rest is unclear"
+            ],
+            "clarification_question": "Who needs to rest ah?",
+            "source_language": "mixed (English, Mandarin, Hokkien)",
+            "cleaned_transcript": "Zhe ge medicine jiak liao 会想睡觉, so let her rest."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the meaning of the original transcript. It preserves the critical facts that the medicine may cause sleepiness and that she should be allowed to rest. The timing, sequence, and negation are preserved, and no unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 0,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 426.8,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g019",
+                "term": "睡不着",
+                "language": "Chinese",
+                "meaning": "unable to fall asleep",
+                "example": "她整晚睡不着",
+                "ambiguity": null,
+                "category": "symptom",
+                "match_type": "vector",
+                "score": 0.3061
+              }
+            ]
+          },
+          "latency_ms": 9384,
+          "token_usage": {
+            "input": 2133,
+            "output": 275,
+            "total": 2408,
+            "by_stage": {
+              "interpretation": {
+                "input": 1261,
+                "output": 196,
+                "total": 1457
+              },
+              "structure": {
+                "input": 302,
+                "output": 35,
+                "total": 337
+              },
+              "verification": {
+                "input": 570,
+                "output": 44,
+                "total": 614
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008944,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006723,
+            "structure": 0.001431,
+            "verification": 0.00079
+          },
+          "judge_token_usage": {
+            "input": 501,
+            "output": 124,
+            "total": 625
+          },
+          "estimated_judge_cost_usd": 5.982e-05
+        },
+        {
+          "id": "T23",
+          "transcript": "你看她如果不舒服 then call me, okay?",
+          "languages": [
+            "mandarin",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker wants to be called if she feels unwell.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "If she feels unwell, call me.",
+          "critical_facts": [
+            "if she feels unwell",
+            "call speaker"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "needs_clarification",
+          "answer": "Who is 她? Which person you want me to watch?",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": "you",
+            "action": "call me",
+            "object": null,
+            "timing": "if she is not comfortable/unwell",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "不舒服 (bù shūfu) can mean physically uncomfortable, unwell, or emotionally uneasy; context suggests medical concern but specific sense unclear",
+              "她 (she) refers to an unidentified female person; no person info available to resolve referent"
+            ],
+            "clarification_question": "Who is 她? Which person you want me to watch?",
+            "source_language": "Mandarin-English mix",
+            "cleaned_transcript": "你看她如果不舒服 then call me, okay?"
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": false,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": false,
+            "urgency": true
+          },
+          "interpretation_pass": false,
+          "semantic_judgement": {
+            "meaning_equivalent": false,
+            "critical_facts_preserved": false,
+            "negation_preserved": false,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation does not match the expected interpretation. The critical fact 'if she feels unwell' is not preserved because the actual interpretation asks for clarification on who '她' is. The negation is not preserved because the actual interpretation does not reflect the condition of not feeling well. The meaning is not equivalent because the actual interpretation does not convey the intended request to call if she feels unwell."
+          },
+          "semantic_pass": false,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 1,
+          "schema_passes": 1,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 0,
+            "alias_matches": 0,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 384.6,
+            "error_code": null,
+            "hits": []
+          },
+          "latency_ms": 7379,
+          "token_usage": {
+            "input": 1223,
+            "output": 237,
+            "total": 1460,
+            "by_stage": {
+              "interpretation": {
+                "input": 1223,
+                "output": 237,
+                "total": 1460
+              },
+              "structure": {
+                "input": 0,
+                "output": 0,
+                "total": 0
+              },
+              "verification": {
+                "input": 0,
+                "output": 0,
+                "total": 0
+              }
+            }
+          },
+          "estimated_cost_usd": 0.007224,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007224,
+            "structure": 0.0,
+            "verification": 0.0
+          },
+          "judge_token_usage": {
+            "input": 502,
+            "output": 153,
+            "total": 655
+          },
+          "estimated_judge_cost_usd": 6.684e-05
+        },
+        {
+          "id": "T24",
+          "transcript": "Ah Gong 今日有 appointment, 三点要出门 hor.",
+          "languages": [
+            "english",
+            "hokkien",
+            "mandarin",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Gong has an appointment today and needs to leave at 3 p.m.",
+            "utterance_type": "statement",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Gong has an appointment today and needs to leave at 3 p.m.",
+          "critical_facts": [
+            "Ah Gong",
+            "appointment today",
+            "leave at 3 p.m."
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Gong has an appointment today and needs to leave at 3pm.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "Ah Gong",
+            "action": "go out / leave for appointment",
+            "object": "appointment",
+            "timing": "today, 3pm",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "Ah Gong: specific person not identified in PERSON INFO"
+            ],
+            "clarification_question": "Which Ah Gong you talking about?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Ah Gong 今日有 appointment, 三点要出门 hor."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts of the original transcript, including the person (Ah Gong), the event (appointment today), and the timing (needs to leave at 3 p.m.). There is no negation, and no unsupported information is added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 1,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 389.8,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g043",
+                "term": "ah gong",
+                "language": "Chinese/Singlish",
+                "meaning": "grandfather, or a respectful term of address for an elderly man",
+                "example": "ah gong already take his medicine",
+                "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 8942,
+          "token_usage": {
+            "input": 2186,
+            "output": 282,
+            "total": 2468,
+            "by_stage": {
+              "interpretation": {
+                "input": 1288,
+                "output": 201,
+                "total": 1489
+              },
+              "structure": {
+                "input": 307,
+                "output": 37,
+                "total": 344
+              },
+              "verification": {
+                "input": 591,
+                "output": 44,
+                "total": 635
+              }
+            }
+          },
+          "estimated_cost_usd": 0.009166,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006879,
+            "structure": 0.001476,
+            "verification": 0.000811
+          },
+          "judge_token_usage": {
+            "input": 489,
+            "output": 126,
+            "total": 615
+          },
+          "estimated_judge_cost_usd": 5.958e-05
+        },
+        {
+          "id": "T25",
+          "transcript": "Wa ka li kong already, mai put this inside fridge.",
+          "languages": [
+            "hokkien",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "The speaker has already told the listener not to put the item in the refrigerator.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "I already told you not to put this in the refrigerator.",
+          "critical_facts": [
+            "already told",
+            "do not put in refrigerator"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Don't put this inside the fridge.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "put inside fridge",
+            "object": "this",
+            "timing": null,
+            "negated": true,
+            "negation_cue": "mai",
+            "negation_scope": "put this inside fridge",
+            "urgency": "normal",
+            "ambiguity": [
+              "Referent of 'this' cannot be resolved; no context provided"
+            ],
+            "clarification_question": "Which one you don't want inside fridge?",
+            "source_language": "Singlish",
+            "cleaned_transcript": "Wa ka li kong already, mai put this inside fridge."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": false,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the negation and the critical fact that the speaker has already told the listener not to put the item in the refrigerator. The actual final translation 'Don't put this inside the fridge.' is a natural paraphrase of the expected final 'I already told you not to put this in the refrigerator.' However, the timing aspect ('already') is not explicitly preserved in the actual final translation."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 0,
+            "alias_matches": 0,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 400.9,
+            "error_code": null,
+            "hits": []
+          },
+          "latency_ms": 8358,
+          "token_usage": {
+            "input": 2041,
+            "output": 256,
+            "total": 2297,
+            "by_stage": {
+              "interpretation": {
+                "input": 1221,
+                "output": 184,
+                "total": 1405
+              },
+              "structure": {
+                "input": 290,
+                "output": 28,
+                "total": 318
+              },
+              "verification": {
+                "input": 530,
+                "output": 44,
+                "total": 574
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008463,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006423,
+            "structure": 0.00129,
+            "verification": 0.00075
+          },
+          "judge_token_usage": {
+            "input": 465,
+            "output": 157,
+            "total": 622
+          },
+          "estimated_judge_cost_usd": 6.558e-05
+        },
+        {
+          "id": "T26",
+          "transcript": "她还没吃饭, so medicine later then give.",
+          "languages": [
+            "mandarin",
+            "english",
+            "singlish"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "She has not eaten yet, so the medicine should be given later.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "She has not eaten yet, so give her the medicine later.",
+          "critical_facts": [
+            "has not eaten",
+            "medicine",
+            "give later"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "She hasn't eaten yet, so give her the medicine later, after she eats.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "她",
+            "action": "give medicine",
+            "object": "medicine",
+            "timing": "later, after she eats",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "'later' could mean 'afterwards' (schedule) or 'in case' (warning), but context strongly suggests schedule reading: medicine will be given after the meal",
+              "'later' timing is vague — could be immediately after eating or several hours later"
+            ],
+            "clarification_question": "Medicine give right after she eat, or wait how long?",
+            "source_language": "Chinese-English mix",
+            "cleaned_transcript": "她还没吃饭, so medicine later then give."
+          },
+          "retry_count": 1,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": false,
+            "urgency": true
+          },
+          "interpretation_pass": false,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation preserves the critical facts of the original statement, including the negation that she has not eaten yet, the action of giving medicine, and the timing that it should be given later. The actual interpretation also maintains the correct sequence and does not add any unsupported information."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": true,
+          "repair_succeeded": true,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 4,
+            "alias_matches": 2,
+            "vector_matches": 2,
+            "vector_search_used": true,
+            "latency_ms": 383.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g038",
+                "term": "later",
+                "language": "Singlish",
+                "meaning": "either 'afterwards' (a schedule) or 'in case / lest' (a warning about a bad outcome)",
+                "example": "hold the rail, later you fall down",
+                "ambiguity": "The warning reading appears before an undesirable outcome and is a caution, not a plan. 'Later she fall down' means 'in case she falls', NOT 'she will fall later'. This entry fires often — check which reading applies before using it.",
+                "category": "time",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g002",
+                "term": "not yet",
+                "language": "Chinese/Singlish",
+                "meaning": "the action has not happened but is still expected",
+                "example": "she 还没 eat lunch",
+                "ambiguity": "'Not yet' implies the action is still pending, unlike a refusal. Do not translate as a refusal.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "vector",
+                "score": 0.4008
+              },
+              {
+                "id": "g037",
+                "term": "等下",
+                "language": "Chinese/Singlish",
+                "meaning": "in a while; shortly",
+                "example": "等下才吃，现在还饱",
+                "ambiguity": "Deliberately vague — could mean five minutes or several hours. If it is attached to medication, toileting or a meal, the timing is unresolved and should be clarified.",
+                "category": "time",
+                "match_type": "vector",
+                "score": 0.2822
+              }
+            ]
+          },
+          "latency_ms": 14972,
+          "token_usage": {
+            "input": 3559,
+            "output": 595,
+            "total": 4154,
+            "by_stage": {
+              "interpretation": {
+                "input": 1561,
+                "output": 224,
+                "total": 1785
+              },
+              "structure": {
+                "input": 806,
+                "output": 68,
+                "total": 874
+              },
+              "verification": {
+                "input": 1192,
+                "output": 303,
+                "total": 1495
+              }
+            }
+          },
+          "estimated_cost_usd": 0.014188,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.008043,
+            "structure": 0.003438,
+            "verification": 0.002707
+          },
+          "judge_token_usage": {
+            "input": 528,
+            "output": 128,
+            "total": 656
+          },
+          "estimated_judge_cost_usd": 6.24e-05
+        },
+        {
+          "id": "T27",
+          "transcript": "Ah Ma beh chia porridge, 但是不要太热.",
+          "languages": [
+            "english",
+            "hokkien",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Ma wants porridge, but it should not be too hot.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Ma wants porridge, but make sure it is not too hot.",
+          "critical_facts": [
+            "Ah Ma",
+            "wants porridge",
+            "not too hot"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Ma wants to eat porridge now, but does not want it too hot.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": "ah ma",
+            "action": "wants to eat",
+            "object": "porridge",
+            "timing": "now",
+            "negated": true,
+            "negation_cue": "不要",
+            "negation_scope": "too hot",
+            "urgency": "normal",
+            "ambiguity": [
+              "ah ma: identity not specified in PERSON INFO; could be care recipient or another elderly woman"
+            ],
+            "clarification_question": "Which ah ma you talking about?",
+            "source_language": "Hokkien-Mandarin-English mix",
+            "cleaned_transcript": "Ah Ma beh chia porridge, 但是不要太热."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": false,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": false,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": false,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts that Ah Ma wants porridge and it should not be too hot. The negation is preserved, and no unsupported information is added. However, the timing is not preserved as the actual interpretation specifies 'now', which is not mentioned in the expected interpretation."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 2,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 397.3,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g003",
+                "term": "don't want",
+                "language": "Chinese/Singlish",
+                "meaning": "declines or refuses something being offered right now",
+                "example": "ah ma dowan the porridge",
+                "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 8292,
+          "token_usage": {
+            "input": 2262,
+            "output": 278,
+            "total": 2540,
+            "by_stage": {
+              "interpretation": {
+                "input": 1376,
+                "output": 197,
+                "total": 1573
+              },
+              "structure": {
+                "input": 303,
+                "output": 37,
+                "total": 340
+              },
+              "verification": {
+                "input": 583,
+                "output": 44,
+                "total": 627
+              }
+            }
+          },
+          "estimated_cost_usd": 0.00935,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007083,
+            "structure": 0.001464,
+            "verification": 0.000803
+          },
+          "judge_token_usage": {
+            "input": 498,
+            "output": 132,
+            "total": 630
+          },
+          "estimated_judge_cost_usd": 6.156e-05
+        },
+        {
+          "id": "T28",
+          "transcript": "Later raining maybe, 记得带 umbrella 给 Ah Gong.",
+          "languages": [
+            "english",
+            "singlish",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "It might rain later, so the speaker is reminding someone to bring an umbrella for Ah Gong.",
+            "utterance_type": "request",
+            "negated": false,
+            "urgency": "normal"
+          },
+          "expected_final": "It might rain later. Remember to bring an umbrella for Ah Gong.",
+          "critical_facts": [
+            "might rain later",
+            "bring umbrella",
+            "Ah Gong"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": false,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Please bring an umbrella to Ah Gong later when it rains.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "bring umbrella",
+            "object": "umbrella",
+            "timing": "later (when it rains)",
+            "negated": false,
+            "negation_cue": null,
+            "negation_scope": null,
+            "urgency": "normal",
+            "ambiguity": [
+              "'later' could mean either 'afterwards/in the future' (schedule reading) or 'in case' (warning reading); context suggests schedule reading since rain is predicted, not warned against",
+              "recipient 'Ah Gong' not resolved to specific person from PERSON INFO"
+            ],
+            "clarification_question": "Which Ah Gong you want me bring umbrella to?",
+            "source_language": "Singlish with Mandarin",
+            "cleaned_transcript": "Later raining maybe, 记得带 umbrella 给 Ah Gong."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the original meaning, including the potential for rain later, the need to bring an umbrella, and the intended recipient, Ah Gong. The translation maintains the original request nature and does not introduce any unsupported information."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 2,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 468.1,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g043",
+                "term": "ah gong",
+                "language": "Chinese/Singlish",
+                "meaning": "grandfather, or a respectful term of address for an elderly man",
+                "example": "ah gong already take his medicine",
+                "ambiguity": "Same caution as 'ah ma' — resolve the specific person from PERSON INFO.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g038",
+                "term": "later",
+                "language": "Singlish",
+                "meaning": "either 'afterwards' (a schedule) or 'in case / lest' (a warning about a bad outcome)",
+                "example": "hold the rail, later you fall down",
+                "ambiguity": "The warning reading appears before an undesirable outcome and is a caution, not a plan. 'Later she fall down' means 'in case she falls', NOT 'she will fall later'. This entry fires often — check which reading applies before using it.",
+                "category": "time",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 9196,
+          "token_usage": {
+            "input": 2368,
+            "output": 325,
+            "total": 2693,
+            "by_stage": {
+              "interpretation": {
+                "input": 1398,
+                "output": 245,
+                "total": 1643
+              },
+              "structure": {
+                "input": 351,
+                "output": 36,
+                "total": 387
+              },
+              "verification": {
+                "input": 619,
+                "output": 44,
+                "total": 663
+              }
+            }
+          },
+          "estimated_cost_usd": 0.010301,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007869,
+            "structure": 0.001593,
+            "verification": 0.000839
+          },
+          "judge_token_usage": {
+            "input": 521,
+            "output": 120,
+            "total": 641
+          },
+          "estimated_judge_cost_usd": 6.006e-05
+        },
+        {
+          "id": "T29",
+          "transcript": "这个药一次一粒 nia, mai give two.",
+          "languages": [
+            "mandarin",
+            "hokkien",
+            "english"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Only one tablet of the medicine should be given at a time, not two.",
+            "utterance_type": "request",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Give only one tablet of this medicine at a time. Do not give two.",
+          "critical_facts": [
+            "medicine",
+            "one tablet",
+            "not two",
+            "at a time"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": true,
+            "must_preserve_quantity": true,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Give only one pill of this medicine per dose, do not give two.",
+          "interpretation": {
+            "utterance_type": "request",
+            "actor": null,
+            "action": "give medication",
+            "object": "this medicine",
+            "timing": "each time / per dose",
+            "negated": true,
+            "negation_cue": "mai",
+            "negation_scope": "give two",
+            "urgency": "normal",
+            "ambiguity": [],
+            "clarification_question": null,
+            "source_language": "Singlish (Mandarin + Hokkien)",
+            "cleaned_transcript": "这个药一次一粒 nia, mai give two."
+          },
+          "retry_count": 0,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly conveys the original meaning, preserving the negation, timing, quantity, and sequence. No unsupported information was added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": false,
+          "repair_succeeded": false,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 1,
+            "alias_matches": 0,
+            "vector_matches": 1,
+            "vector_search_used": true,
+            "latency_ms": 641.1,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g029",
+                "term": "吃药",
+                "language": "Chinese/Singlish",
+                "meaning": "to take medicine",
+                "example": "记得吃药，饭后吃",
+                "ambiguity": "Chinese 吃药 is literally 'eat medicine'. Render it as 'take medicine' in English; 'eat medicine' is a literal translation error.",
+                "category": "daily_living",
+                "match_type": "vector",
+                "score": 0.2927
+              }
+            ]
+          },
+          "latency_ms": 8373,
+          "token_usage": {
+            "input": 2122,
+            "output": 242,
+            "total": 2364,
+            "by_stage": {
+              "interpretation": {
+                "input": 1301,
+                "output": 164,
+                "total": 1465
+              },
+              "structure": {
+                "input": 270,
+                "output": 34,
+                "total": 304
+              },
+              "verification": {
+                "input": 551,
+                "output": 44,
+                "total": 595
+              }
+            }
+          },
+          "estimated_cost_usd": 0.008454,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.006363,
+            "structure": 0.00132,
+            "verification": 0.000771
+          },
+          "judge_token_usage": {
+            "input": 474,
+            "output": 100,
+            "total": 574
+          },
+          "estimated_judge_cost_usd": 5.244e-05
+        },
+        {
+          "id": "T30",
+          "transcript": "Ah Ma say bo eng, 她现在不要讲话.",
+          "languages": [
+            "english",
+            "hokkien",
+            "mandarin"
+          ],
+          "expected_interpretation": {
+            "semantic_summary": "Ah Ma said that she is busy and does not want to talk right now.",
+            "utterance_type": "statement",
+            "negated": true,
+            "urgency": "normal"
+          },
+          "expected_final": "Ah Ma said she is busy and does not want to talk right now.",
+          "critical_facts": [
+            "Ah Ma",
+            "busy",
+            "does not want to talk",
+            "right now"
+          ],
+          "safety_requirements": {
+            "must_preserve_negation": true,
+            "must_preserve_sequence": false,
+            "must_preserve_quantity": false,
+            "must_not_add_information": true
+          },
+          "transformation_required": true,
+          "expected_status": "verified",
+          "actual_status": "verified",
+          "answer": "Ah Ma says she doesn't want to talk right now.",
+          "interpretation": {
+            "utterance_type": "statement",
+            "actor": "Ah Ma",
+            "action": "decline",
+            "object": "talking / speaking",
+            "timing": "now",
+            "negated": true,
+            "negation_cue": "不要",
+            "negation_scope": "讲话 (speaking)",
+            "urgency": "normal",
+            "ambiguity": [
+              "bo eng: meaning unclear from context – could mean 'no time', 'busy', or 'not free'. Without glossary entry, exact sense unresolved."
+            ],
+            "clarification_question": "Ah Ma bo eng means she busy now, or she not feeling well?",
+            "source_language": "mixed Singlish, Hokkien, Mandarin",
+            "cleaned_transcript": "Ah Ma say bo eng, 她现在不要讲话."
+          },
+          "retry_count": 1,
+          "max_retries": 1,
+          "loop_disciplined": true,
+          "task_completed": true,
+          "interpretation_checks": {
+            "utterance_type": true,
+            "negated": true,
+            "urgency": true
+          },
+          "interpretation_pass": true,
+          "semantic_judgement": {
+            "meaning_equivalent": true,
+            "critical_facts_preserved": true,
+            "negation_preserved": true,
+            "timing_preserved": true,
+            "quantity_preserved": true,
+            "sequence_preserved": true,
+            "unsupported_information_added": false,
+            "reason": "The actual interpretation correctly captures the critical facts of the original transcript, including the negation, timing, and the fact that Ah Ma does not want to talk right now. The actual final translation is a natural paraphrase of the expected final interpretation, and no unsupported information has been added."
+          },
+          "semantic_pass": true,
+          "verifier_false_pass": false,
+          "repair_attempted": true,
+          "repair_succeeded": true,
+          "schema_checks": 3,
+          "schema_passes": 3,
+          "glossary": {
+            "node": "glossary",
+            "tool_success": true,
+            "matches": 2,
+            "alias_matches": 2,
+            "vector_matches": 0,
+            "vector_search_used": true,
+            "latency_ms": 650.4,
+            "error_code": null,
+            "hits": [
+              {
+                "id": "g042",
+                "term": "ah ma",
+                "language": "Chinese/Singlish",
+                "meaning": "grandmother, or a respectful term of address for an elderly woman",
+                "example": "ah ma say she want to rest",
+                "ambiguity": "May refer to the care recipient or to any elderly woman. Resolve against PERSON INFO before assigning an actor; do not assume it is the care recipient.",
+                "category": "referent",
+                "match_type": "alias",
+                "score": 1.0
+              },
+              {
+                "id": "g003",
+                "term": "don't want",
+                "language": "Chinese/Singlish",
+                "meaning": "declines or refuses something being offered right now",
+                "example": "ah ma dowan the porridge",
+                "ambiguity": "Refusing this instance is not the same as never wanting it. If the utterance is about medication or food, note whether it is a one-time refusal or a standing preference.",
+                "category": "negation",
+                "match_type": "alias",
+                "score": 1.0
+              }
+            ]
+          },
+          "latency_ms": 15149,
+          "token_usage": {
+            "input": 3411,
+            "output": 551,
+            "total": 3962,
+            "by_stage": {
+              "interpretation": {
+                "input": 1375,
+                "output": 228,
+                "total": 1603
+              },
+              "structure": {
+                "input": 768,
+                "output": 88,
+                "total": 856
+              },
+              "verification": {
+                "input": 1268,
+                "output": 235,
+                "total": 1503
+              }
+            }
+          },
+          "estimated_cost_usd": 0.013612,
+          "estimated_cost_by_stage_usd": {
+            "interpretation": 0.007545,
+            "structure": 0.003624,
+            "verification": 0.002443
+          },
+          "judge_token_usage": {
+            "input": 528,
+            "output": 129,
+            "total": 657
+          },
+          "estimated_judge_cost_usd": 6.264e-05
+        }
+      ],
+      "summary": {
+        "task_completion_rate": 0.9666666666666667,
+        "loop_discipline_rate": 1.0,
+        "interpretation_accuracy_rate": 0.8666666666666667,
+        "semantic_equivalence_rate": 0.9666666666666667,
+        "verifier_false_pass_rate": 0.0,
+        "repair_attempts": 5,
+        "successful_repairs": 5,
+        "negation_preservation_rate": 0.9411764705882353,
+        "sequence_preservation_rate": 1.0,
+        "quantity_preservation_rate": 1.0,
+        "unsupported_information_rate": 0.0,
+        "schema_validation_pass_rate": 1.0,
+        "input_tokens": 71100,
+        "output_tokens": 9408,
+        "estimated_cost_usd": 0.29247,
+        "estimated_judge_cost_usd": 0.00176556,
+        "token_usage_by_stage": {
+          "interpretation": {
+            "input": 40810,
+            "output": 5954,
+            "total": 46764
+          },
+          "structure": {
+            "input": 10795,
+            "output": 1158,
+            "total": 11953
+          },
+          "verification": {
+            "input": 19495,
+            "output": 2296,
+            "total": 21791
+          }
+        },
+        "estimated_cost_by_stage_usd": {
+          "interpretation": 0.21174,
+          "structure": 0.049755,
+          "verification": 0.030975
+        },
+        "price_per_million_tokens_usd": {
+          "interpretation": {
+            "input": 3.0,
+            "output": 15.0
+          },
+          "structure": {
+            "input": 3.0,
+            "output": 15.0
+          },
+          "verification": {
+            "input": 1.0,
+            "output": 5.0
+          }
+        },
+        "meets_quality_thresholds": true
+      }
+    }
+  ]
+}

@@ -16,6 +16,7 @@ defaults, so code that ignores them still works. Agree them before merging, and
 move this model into schemas.py once that file exists.
 """
 
+import json
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError
@@ -70,11 +71,14 @@ elderly users who speak Singlish (English mixed with Hokkien, Malay and Mandarin
 
 Your job is to extract the STRUCTURE of what was said, not to translate it.
 
-You are given four inputs and they resolve different things:
+You are given five inputs and they resolve different things:
 - GLOSSARY TERMS: what a dialect word means. Use these meanings; do not guess your own.
 - PERSON INFO: who people and objects refer to. Use it to resolve "ah girl", "my pill", "auntie".
 - RECENT CONTEXT: earlier turns. Use it to resolve pronouns, "that one", "same as just now".
 - TRANSCRIPT: the raw speech-to-text output, which may contain recognition errors.
+- VERIFICATION FEEDBACK: problems found in the previous draft. Reconsider the
+  interpretation where those problems indicate that meaning was extracted incorrectly.
+  Do not invent details solely to satisfy the feedback.
 
 Rules on glossary terms:
 - A term tagged (paraphrase match) was retrieved by similarity, not because the word
@@ -202,6 +206,7 @@ class InterpretationAgent(BaseAgent):
         glossary_hits: list[dict] | None = None,
         recent_context: list[dict] | None = None,
         person_info: dict | None = None,
+        verification_issues: list[str] | None = None,
     ) -> InterpretationResult:
 
         if isinstance(transcript, list):
@@ -223,6 +228,9 @@ PERSON INFO:
 
 RECENT CONTEXT:
 {_format_context(recent_context)}
+
+VERIFICATION FEEDBACK:
+{json.dumps(verification_issues or [], ensure_ascii=False)}
 """
 
         # temperature=0: this is structured extraction, not generation.

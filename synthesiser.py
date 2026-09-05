@@ -47,13 +47,16 @@ def build_workflow(
                 glossary_hits=state.get("glossary_hits"),
                 recent_context=state.get("recent_context"),
                 person_info=state.get("person_info"),
+                verification_issues=state.get("verification_issues"),
             )
 
-            return {
+            update = {
                 "interpretation": result,
                 "status": "processing",
                 "error": None,
             }
+
+            return update
 
         except InterpretationError as error:
             return {
@@ -73,6 +76,7 @@ def build_workflow(
             result = await structure_agent.run(
                 interpretation=state["interpretation"],
                 recent_context=state.get("recent_context"),
+                verification_issues=state.get("verification_issues"),
             )
 
             return {
@@ -123,6 +127,11 @@ def build_workflow(
             ),
             "status": "verified",
         }
+
+    def consume_retry_node(state: CareBridgeState) -> dict[str, Any]:
+        """Consume exactly one retry before returning to an upstream agent."""
+
+        return {"retry_count": state["retry_count"] + 1}
 
     def clarify_node(
         state: CareBridgeState,
@@ -205,9 +214,16 @@ def build_workflow(
         if verification.verdict == "PASS":
             return "accept"
 
-        # RETRY and CLARIFY both stop for clarification for now.
-        # A retry loop should only be added after StructureAgent can
-        # receive the verifier's issues and revise its earlier draft.
+        if (
+            verification.verdict == "RETRY"
+            and state["retry_count"] < state["max_retries"]
+        ):
+            if verification.fault_source == "interpretation":
+                return "retry_interpretation"
+            # "translation" remains supported for older verifier responses.
+            return "retry_structure"
+
+        # CLARIFY, or RETRY after the retry budget is exhausted.
         return "clarify"
 
     # Build the graph.
@@ -234,6 +250,8 @@ def build_workflow(
         "clarify",
         clarify_node,
     )
+    builder.add_node("retry_interpretation", consume_retry_node)
+    builder.add_node("retry_structure", consume_retry_node)
 
     # Starting edge.
     builder.add_edge(
@@ -267,9 +285,14 @@ def build_workflow(
         route_after_verification,
         {
             "accept": "accept",
+            "retry_interpretation": "retry_interpretation",
+            "retry_structure": "retry_structure",
             "clarify": "clarify",
         },
     )
+
+    builder.add_edge("retry_interpretation", "interpret")
+    builder.add_edge("retry_structure", "structure_step")
 
     # Terminal edges.
     builder.add_edge("accept", END)

@@ -1,6 +1,6 @@
 """HTTP layer for the CareBridge parallel transcription pipeline.
 
-Run from the backend/ directory (same place transcribe_parallel.py lives):
+Run from the repository root (the same directory as this file):
 
     uvicorn frontend:app --reload
 
@@ -12,15 +12,42 @@ import logging
 import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from configs.settings import QWEN_ASR_MODEL, WHISPER_MODEL
+from agents.interpretation_agent import InterpretationAgent
+from agents.structure_agent import StructureAgent
+from agents.verify_agent import VerifyAgent
+from configs.settings import (
+    INTERPRETATION_MODEL,
+    QWEN_ASR_MODEL,
+    TRANSLATION_MODEL,
+    VERIFICATION_MODEL,
+    WHISPER_MODEL,
+)
+from models.model_factory import ModelFactory
 from models.qwen_asr_model import QwenAsrModel
 from models.whisper_model import WhisperSinglishModel
 from services.transcription_service import ParallelTranscriptionService
+from state import create_initial_state
+from synthesiser import build_workflow
+from tools.glossary_lookup import get_retriever
+
+from pydantic import BaseModel, Field
+
+
+class ContextTurn(BaseModel):
+    speaker: str
+    text: str
+
+
+class TranslationRequest(BaseModel):
+    transcript: str | list[str]
+    recent_context: list[ContextTurn] = Field(default_factory=list)
+    person_info: dict[str, Any] = Field(default_factory=dict)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("carebridge")
@@ -34,10 +61,9 @@ state: dict = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load both ASR models once. First run downloads weights, so this is slow."""
-    logger.info("Loading ASR models. First run downloads weights from HuggingFace.")
+    logger.info("Loading CareBridge services.")
 
-    def build() -> ParallelTranscriptionService:
+    def build_transcription_service() -> ParallelTranscriptionService:
         return ParallelTranscriptionService(
             [
                 ("singlish_whisper", WhisperSinglishModel(WHISPER_MODEL)),
@@ -45,9 +71,23 @@ async def lifespan(app: FastAPI):
             ]
         )
 
-    # load() blocks, so keep it off the event loop
-    state["service"] = await asyncio.to_thread(build)
-    logger.info("Models ready.")
+    state["service"] = await asyncio.to_thread(build_transcription_service)
+
+    state["workflow"] = build_workflow(
+        interpretation_agent=InterpretationAgent(
+            model=ModelFactory.create(INTERPRETATION_MODEL)
+        ),
+        structure_agent=StructureAgent(
+            model=ModelFactory.create(TRANSLATION_MODEL)
+        ),
+        verify_agent=VerifyAgent(
+            model=ModelFactory.create(VERIFICATION_MODEL)
+        ),
+    )
+
+    state["glossary"] = get_retriever()
+
+    logger.info("CareBridge services ready.")
     yield
     state.clear()
 
@@ -101,6 +141,43 @@ async def transcribe(audio: UploadFile = File(...)) -> dict:
         Path(tmp.name).unlink(missing_ok=True)
 
     return {"candidates": candidates}
+
+
+@app.post("/api/translate")
+async def translate(request: TranslationRequest) -> dict:
+    """Interpret, translate, and verify one or more ASR candidates."""
+    workflow = state.get("workflow")
+    glossary = state.get("glossary")
+    if workflow is None or glossary is None:
+        raise HTTPException(status_code=503, detail="Translation service is still loading.")
+
+    context = [turn.model_dump() for turn in request.recent_context]
+
+    try:
+        glossary_result = await glossary.alookup(request.transcript)
+        initial_state = create_initial_state(
+            request.transcript,
+            glossary_hits=glossary_result.hits,
+            recent_context=context,
+            person_info=request.person_info,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+    try:
+        result = await workflow.ainvoke(initial_state)
+    except Exception as error:
+        logger.exception("Translation workflow failed")
+        raise HTTPException(
+            status_code=500,
+            detail="The translation could not be completed.",
+        ) from error
+
+    return {
+        "status": result.get("status", "failed"),
+        "translation": result.get("final_text"),
+        "clarification_question": result.get("clarification_question"),
+    }
 
 
 async def _transcribe_tolerantly(

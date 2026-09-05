@@ -243,6 +243,33 @@
   .heard.empty { color: var(--muted); font-size: calc(21px * var(--scale)); }
   .heard.failed { border-color: var(--live); color: var(--live); font-size: calc(20px * var(--scale)); }
 
+  .translation {
+    margin-top: 24px;
+    padding: 24px;
+    border: 3px solid var(--brand);
+    border-radius: 18px;
+    background: var(--brand-tint);
+  }
+
+  .translation-label {
+    margin: 0 0 10px;
+    color: var(--brand-dark);
+    font-size: calc(18px * var(--scale));
+    font-weight: 700;
+  }
+
+  .translation-text {
+    margin: 0;
+    font-size: calc(28px * var(--scale));
+    line-height: 1.45;
+  }
+
+  .translation-note {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: calc(18px * var(--scale));
+  }
+
   .row { display: flex; gap: 14px; margin-top: 18px; }
   .row .plain { margin-top: 0; }
 
@@ -308,6 +335,21 @@
       <button class="plain" id="speak">Read it aloud</button>
       <button class="plain" id="copy">Copy the words</button>
     </div>
+
+    <button class="big" id="translate" style="margin-top:24px">
+      Translate to English
+    </button>
+
+    <div class="translation" id="translation" hidden aria-live="polite">
+      <p class="translation-label" id="translationLabel">English translation</p>
+      <p class="translation-text" id="translationText"></p>
+      <p class="translation-note" id="translationNote"></p>
+      <div class="row" id="translationActions">
+        <button class="plain" id="speakTranslation">Read translation aloud</button>
+        <button class="plain" id="copyTranslation">Copy translation</button>
+      </div>
+    </div>
+
     <p class="ok" id="ok" aria-live="polite"></p>
 
     <button class="big" id="again" style="margin-top:28px">
@@ -337,6 +379,8 @@ const steps = {
 
 let recorder = null, chunks = [], ticker = null, seconds = 0;
 let candidates = [], chosen = 0, lastBlob = null, lastName = "";
+let translatedText = "";
+let recentContext = [];
 
 /* ---------- text size ---------- */
 
@@ -465,6 +509,8 @@ el("retry").addEventListener("click", () => {
 
 el("again").addEventListener("click", () => {
   el("ok").textContent = "";
+  translatedText = "";
+  el("translation").hidden = true;
   show("start");
   el("record").focus();
 });
@@ -483,7 +529,12 @@ function render() {
       button.type = "button";
       button.textContent = meta.label;
       button.setAttribute("aria-pressed", String(index === chosen));
-      button.addEventListener("click", () => { chosen = index; render(); });
+      button.addEventListener("click", () => {
+        chosen = index;
+        translatedText = "";
+        el("translation").hidden = true;
+        render();
+      });
       box.append(button);
     });
   } else {
@@ -506,9 +557,93 @@ function render() {
 
   el("speak").disabled = !current.text;
   el("copy").disabled = !current.text;
+  el("translate").disabled = !current.text;
   el("ok").textContent = "";
   show("result");
 }
+
+/* ---------- context-aware translation ---------- */
+
+el("translate").addEventListener("click", async () => {
+  const successfulTranscripts = candidates
+    .filter((candidate) => candidate.text && !candidate.error)
+    .map((candidate) => candidate.text);
+
+  if (!successfulTranscripts.length) return;
+
+  const button = el("translate");
+  button.disabled = true;
+  button.textContent = "Translating…";
+  el("translation").hidden = true;
+  el("ok").textContent = "Using the conversation context to translate.";
+
+  try {
+    const response = await fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transcript: successfulTranscripts.length === 1
+          ? successfulTranscripts[0]
+          : successfulTranscripts,
+        recent_context: recentContext,
+        person_info: {},
+      }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.detail || `Translation failed (${response.status}).`);
+    }
+
+    const isVerified = result.status === "verified" && result.translation;
+    translatedText = isVerified ? result.translation : "";
+
+    el("translationLabel").textContent = isVerified
+      ? "English translation"
+      : "Please clarify";
+    el("translationText").textContent = isVerified
+      ? translatedText
+      : (result.clarification_question || "Could you say that a different way?");
+    el("translationNote").textContent = isVerified
+      ? "Checked against what was originally said."
+      : "The meaning was not clear enough to translate safely.";
+    el("translationActions").hidden = !isVerified;
+    el("translation").hidden = false;
+    el("ok").textContent = "";
+
+    if (isVerified) {
+      recentContext.push(
+        { speaker: "user", text: candidates[chosen]?.text || successfulTranscripts[0] },
+        { speaker: "CareBridge", text: translatedText },
+      );
+      recentContext = recentContext.slice(-10);
+    }
+  } catch (err) {
+    el("ok").textContent = err.message || "We could not translate this recording.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Translate to English";
+  }
+});
+
+el("speakTranslation").addEventListener("click", () => {
+  if (!translatedText || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(translatedText);
+  utterance.lang = "en-SG";
+  utterance.rate = 0.85;
+  window.speechSynthesis.speak(utterance);
+});
+
+el("copyTranslation").addEventListener("click", async () => {
+  if (!translatedText) return;
+  try {
+    await navigator.clipboard.writeText(translatedText);
+    el("ok").textContent = "Translation copied.";
+  } catch {
+    el("ok").textContent = "Copying is blocked here. Select the translation and copy it by hand.";
+  }
+});
 
 /* ---------- read aloud, copy ---------- */
 

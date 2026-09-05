@@ -176,6 +176,20 @@ class StructureAgentTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIn("Recent context:\n[]", fake.last_prompt)
 
+    async def test_verification_feedback_is_added_to_retry_prompt(self):
+        fake = FakeModel('{"draft_translation": "Give it after dinner."}')
+        agent = StructureAgent(model=fake)
+
+        await agent.run(
+            make_interpretation(),
+            verification_issues=["The draft omitted the timing."],
+        )
+
+        self.assertIn(
+            '["The draft omitted the timing."]',
+            fake.last_prompt,
+        )
+
     async def test_model_is_called_with_deterministic_settings(self):
         fake = FakeModel(
             '{"draft_translation": '

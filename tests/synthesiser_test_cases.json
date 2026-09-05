@@ -1,0 +1,863 @@
+[
+  {
+    "id": "T01",
+    "input": "Ah Ma 吃完饭记得吃药 hor.",
+    "languages": [
+      "english",
+      "mandarin",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker is reminding someone that Ah Ma should take her medicine after finishing dinner.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Remember to give Ah Ma her medicine after she finishes dinner.",
+    "critical_facts": [
+      "Ah Ma",
+      "take medicine",
+      "after dinner"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T02",
+    "input": "等下帮 Ah Gong 买 kopi, 少糖 can?",
+    "languages": [
+      "mandarin",
+      "english",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker is asking someone to buy coffee with less sugar for Ah Gong later.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Later, please buy coffee for Ah Gong with less sugar.",
+    "critical_facts": [
+      "Ah Gong",
+      "buy coffee",
+      "less sugar",
+      "later"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T03",
+    "input": "这个药 before breakfast 不可以吃 leh.",
+    "languages": [
+      "mandarin",
+      "english",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The medicine must not be taken before breakfast.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Do not take this medicine before breakfast.",
+    "critical_facts": [
+      "medicine",
+      "do not take",
+      "before breakfast"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T04",
+    "input": "Ah Ma 今天很累, let her rest first lah.",
+    "languages": [
+      "english",
+      "mandarin",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Ma is very tired today and should be allowed to rest first.",
+      "utterance_type": "statement",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Ma is very tired today, so let her rest first.",
+    "critical_facts": [
+      "Ah Ma",
+      "tired today",
+      "rest first"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T05",
+    "input": "你帮我 remind 她 8点吃药 can?",
+    "languages": [
+      "mandarin",
+      "english",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker wants someone to remind her to take her medicine at 8 o'clock.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Please remind her to take her medicine at 8 p.m.",
+    "critical_facts": [
+      "remind her",
+      "take medicine",
+      "8 p.m."
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T06",
+    "input": "Wa bo beh chia png, stomach not feeling good.",
+    "languages": [
+      "hokkien",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker does not want to eat because their stomach does not feel well.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "I do not want to eat because my stomach does not feel well.",
+    "critical_facts": [
+      "does not want to eat",
+      "stomach feels unwell"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T07",
+    "input": "Ah Ma kong 伊 beh lim zui first.",
+    "languages": [
+      "english",
+      "hokkien"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Ma said that she wants to drink water first.",
+      "utterance_type": "statement",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Ma said she wants to drink water first.",
+    "critical_facts": [
+      "Ah Ma",
+      "said",
+      "drink water",
+      "first"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T08",
+    "input": "Mai give her the blue one, give 白色那个.",
+    "languages": [
+      "hokkien",
+      "english",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker says not to give her the blue item and to give her the white item instead.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Do not give her the blue one; give her the white one instead.",
+    "critical_facts": [
+      "do not give blue",
+      "give white instead"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T09",
+    "input": "食饱了才可以吃这个药, understand?",
+    "languages": [
+      "mandarin",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The medicine should only be taken after eating.",
+      "utterance_type": "statement",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "This medicine should only be taken after eating.",
+    "critical_facts": [
+      "medicine",
+      "only after eating"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T10",
+    "input": "等她睡醒先, then bring her downstairs.",
+    "languages": [
+      "mandarin",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker wants someone to wait for her to wake up before bringing her downstairs.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Wait until she wakes up before bringing her downstairs.",
+    "critical_facts": [
+      "wait until she wakes up",
+      "bring her downstairs",
+      "correct sequence"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T11",
+    "input": "Ah Gong say 今日 mai go out, outside very hot lah.",
+    "languages": [
+      "english",
+      "hokkien",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Gong said that he does not want to go out today because it is very hot outside.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Gong said he does not want to go out today because it is very hot outside.",
+    "critical_facts": [
+      "Ah Gong",
+      "does not want to go out",
+      "today",
+      "hot outside"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T12",
+    "input": "这个不要丢 hor, tomorrow still need to use.",
+    "languages": [
+      "mandarin",
+      "singlish",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The item should not be thrown away because it is still needed tomorrow.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Do not throw this away because it is still needed tomorrow.",
+    "critical_facts": [
+      "do not throw away",
+      "needed tomorrow"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T13",
+    "input": "Wa ai jiak mee, but 不要辣的.",
+    "languages": [
+      "hokkien",
+      "english",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker wants noodles but does not want them to be spicy.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "I want noodles, but I do not want them spicy.",
+    "critical_facts": [
+      "wants noodles",
+      "not spicy"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T14",
+    "input": "Ah Ma 咳嗽很多, give her warm water first can.",
+    "languages": [
+      "english",
+      "mandarin",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Ma is coughing a lot, and the speaker wants her to be given warm water first.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Ma is coughing a lot. Please give her some warm water first.",
+    "critical_facts": [
+      "Ah Ma",
+      "coughing",
+      "warm water",
+      "first"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T15",
+    "input": "你出去的时候记得 lock door hor.",
+    "languages": [
+      "mandarin",
+      "english",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker is reminding someone to lock the door when leaving.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Remember to lock the door when you leave.",
+    "critical_facts": [
+      "lock the door",
+      "when leaving"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T16",
+    "input": "Mai wake her up now lah, 她刚刚才睡.",
+    "languages": [
+      "hokkien",
+      "singlish",
+      "english",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker says not to wake her because she has only just fallen asleep.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Do not wake her up now; she has just fallen asleep.",
+    "critical_facts": [
+      "do not wake her",
+      "now",
+      "just fell asleep"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T17",
+    "input": "Ah Gong 要去厕所, can help him walk slowly?",
+    "languages": [
+      "english",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Gong needs to go to the toilet and should be helped to walk slowly.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Gong needs to go to the toilet. Please help him walk slowly.",
+    "critical_facts": [
+      "Ah Gong",
+      "go to toilet",
+      "help him",
+      "walk slowly"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T18",
+    "input": "Wa bo hiao how to use this one, 你帮我一下.",
+    "languages": [
+      "hokkien",
+      "english",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker does not know how to use the item and is asking for help.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "I do not know how to use this. Please help me.",
+    "critical_facts": [
+      "does not know how to use",
+      "asks for help"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T19",
+    "input": "Dinner 后两个小时才吃药, not immediately hor.",
+    "languages": [
+      "english",
+      "mandarin",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The medicine should be taken two hours after dinner and not immediately after eating.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Take the medicine two hours after dinner, not immediately after eating.",
+    "critical_facts": [
+      "take medicine",
+      "two hours after dinner",
+      "not immediately"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T20",
+    "input": "先不要给她吃, wait for Ah Gong to come back first.",
+    "languages": [
+      "mandarin",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker says not to give it to her yet and to wait until Ah Gong returns.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Do not give it to her yet. Wait until Ah Gong comes back first.",
+    "critical_facts": [
+      "do not give yet",
+      "wait for Ah Gong",
+      "Ah Gong returns first"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T21",
+    "input": "Ah Ma say 她不要 chicken, 她要鱼.",
+    "languages": [
+      "english",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Ma said that she does not want chicken and wants fish instead.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Ma said she does not want chicken; she wants fish instead.",
+    "critical_facts": [
+      "Ah Ma",
+      "does not want chicken",
+      "wants fish"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T22",
+    "input": "Zhe ge medicine jiak liao 会想睡觉, so let her rest.",
+    "languages": [
+      "mandarin",
+      "english",
+      "hokkien"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The medicine may make her sleepy after she takes it, so she should be allowed to rest.",
+      "utterance_type": "statement",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "This medicine may make her sleepy, so let her rest after taking it.",
+    "critical_facts": [
+      "medicine",
+      "may cause sleepiness",
+      "let her rest"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T23",
+    "input": "你看她如果不舒服 then call me, okay?",
+    "languages": [
+      "mandarin",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker wants to be called if she feels unwell.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "If she feels unwell, call me.",
+    "critical_facts": [
+      "if she feels unwell",
+      "call speaker"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T24",
+    "input": "Ah Gong 今日有 appointment, 三点要出门 hor.",
+    "languages": [
+      "english",
+      "hokkien",
+      "mandarin",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Gong has an appointment today and needs to leave at 3 p.m.",
+      "utterance_type": "statement",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Gong has an appointment today and needs to leave at 3 p.m.",
+    "critical_facts": [
+      "Ah Gong",
+      "appointment today",
+      "leave at 3 p.m."
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T25",
+    "input": "Wa ka li kong already, mai put this inside fridge.",
+    "languages": [
+      "hokkien",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "The speaker has already told the listener not to put the item in the refrigerator.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "I already told you not to put this in the refrigerator.",
+    "critical_facts": [
+      "already told",
+      "do not put in refrigerator"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T26",
+    "input": "她还没吃饭, so medicine later then give.",
+    "languages": [
+      "mandarin",
+      "english",
+      "singlish"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "She has not eaten yet, so the medicine should be given later.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "She has not eaten yet, so give her the medicine later.",
+    "critical_facts": [
+      "has not eaten",
+      "medicine",
+      "give later"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T27",
+    "input": "Ah Ma beh chia porridge, 但是不要太热.",
+    "languages": [
+      "english",
+      "hokkien",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Ma wants porridge, but it should not be too hot.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Ma wants porridge, but make sure it is not too hot.",
+    "critical_facts": [
+      "Ah Ma",
+      "wants porridge",
+      "not too hot"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T28",
+    "input": "Later raining maybe, 记得带 umbrella 给 Ah Gong.",
+    "languages": [
+      "english",
+      "singlish",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "It might rain later, so the speaker is reminding someone to bring an umbrella for Ah Gong.",
+      "utterance_type": "request",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "expected_final": "It might rain later. Remember to bring an umbrella for Ah Gong.",
+    "critical_facts": [
+      "might rain later",
+      "bring umbrella",
+      "Ah Gong"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": false,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T29",
+    "input": "这个药一次一粒 nia, mai give two.",
+    "languages": [
+      "mandarin",
+      "hokkien",
+      "english"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Only one tablet of the medicine should be given at a time, not two.",
+      "utterance_type": "request",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Give only one tablet of this medicine at a time. Do not give two.",
+    "critical_facts": [
+      "medicine",
+      "one tablet",
+      "not two",
+      "at a time"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": true,
+      "must_preserve_quantity": true,
+      "must_not_add_information": true
+    }
+  },
+  {
+    "id": "T30",
+    "input": "Ah Ma say bo eng, 她现在不要讲话.",
+    "languages": [
+      "english",
+      "hokkien",
+      "mandarin"
+    ],
+    "expected_interpretation": {
+      "semantic_summary": "Ah Ma said that she is busy and does not want to talk right now.",
+      "utterance_type": "statement",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "expected_final": "Ah Ma said she is busy and does not want to talk right now.",
+    "critical_facts": [
+      "Ah Ma",
+      "busy",
+      "does not want to talk",
+      "right now"
+    ],
+    "transformation_required": true,
+    "expected_status": "verified",
+    "safety_requirements": {
+      "must_preserve_negation": true,
+      "must_preserve_sequence": false,
+      "must_preserve_quantity": false,
+      "must_not_add_information": true
+    }
+  }
+]

@@ -28,7 +28,9 @@ from configs.settings import VERIFICATION_MODEL
 class VerificationResult(PydanticModel):
     verdict: Literal["PASS", "RETRY", "CLARIFY"] # groups determined through system prompt
     issues: list[str] = Field(default_factory=list)
-    fault_source: Literal["translation", "source_ambiguity"] | None = None
+    fault_source: Literal[
+        "interpretation", "structure", "translation", "source_ambiguity"
+    ] | None = None
     clarification_question: str | None = None
 
 
@@ -47,15 +49,21 @@ translation, judge whether critical meaning survived translation. Check
 specifically: actor, action, object, timing, negation, urgency.
 
 - If meaning is preserved: verdict = "PASS".
-- If the translation's wording/phrasing dropped or distorted meaning, but a
-  re-draft could plausibly fix it: verdict = "RETRY", fault_source = "translation".
+- If the extracted interpretation is wrong but the transcript is clear:
+  verdict = "RETRY", fault_source = "interpretation".
+- If the interpretation is correct but the draft dropped or distorted meaning:
+  verdict = "RETRY", fault_source = "structure".
 - If the transcript or interpretation itself is ambiguous (e.g. an unresolved
   "that one", unclear timing) such that no re-translation could fix it:
   verdict = "CLARIFY", fault_source = "source_ambiguity".
 
+Use "translation" only for backwards compatibility; prefer "structure" for new
+responses. Every RETRY issue must state what should be corrected by the selected
+upstream agent.
+
 Respond with ONLY a JSON object, no other text, no markdown fences, matching
 exactly this shape:
-{"verdict": "PASS" | "RETRY" | "CLARIFY", "issues": [string, ...], "fault_source": "translation" | "source_ambiguity" | null, "clarification_question": string | null}"""
+{"verdict": "PASS" | "RETRY" | "CLARIFY", "issues": [string, ...], "fault_source": "interpretation" | "structure" | "source_ambiguity" | null, "clarification_question": string | null}"""
         )
 
     async def run(self, input_data: dict) -> VerificationResult:

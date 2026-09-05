@@ -21,6 +21,20 @@ export AWS_PROFILE=hackathon
 uvicorn frontend:app --reload
 ```
 
+## Run tests
+
+```
+RUN_BEDROCK_EVAL=1 \
+BEDROCK_EVAL_CONFIG=production \
+BEDROCK_EVAL_INTERPRETATION_MODEL=sonnet \
+BEDROCK_EVAL_STRUCTURE_MODEL=sonnet \
+BEDROCK_EVAL_VERIFICATION_MODEL=haiku \
+BEDROCK_EVAL_JUDGE_MODEL=nova-lite \
+BEDROCK_EVAL_ENFORCE_THRESHOLDS=1 \
+.venv/bin/python -m unittest \
+tests.test_synthesiser.BedrockSynthesiserEvaluation
+```
+
 ## Notes
 
 ### Repo Skeleton
@@ -64,6 +78,16 @@ Model Interface
 │ AWS Bedrock     │ Local/Hugging Face │
 │ Claude/Nova/etc │ Whisper Singlish   │
 └─────────────────┴────────────────────┘
+```
+
+```
+Interpret → Structure → Verify
+    ↑           ↑         |
+    |           └ structure fault
+    └ interpretation fault
+
+source ambiguity → Clarify
+PASS → Accept
 ```
 
 so what do you need to do as agent specialists:
@@ -430,3 +454,48 @@ The unit tests validate response parsing, prompt construction, deterministic mod
 The model-backed evaluation uses simple substring assertions. This can produce false failures when the model uses a valid synonym, such as “should not” instead of “do not,” or when a forbidden phrase occurs inside a correctly negated sentence. The current checker also does not enforce the `maximum_sentences` rule included in case `s020`.
 
 The evaluation contains only 20 cases and one recorded generation per configuration. Because model output and latency can vary between runs, the results should not be treated as statistically conclusive. The negation assertions should be improved, sentence-count validation should be implemented, and the evaluation should then be repeated across multiple runs.
+
+
+## Orchestrator Evaluation Results
+
+## Summary
+
+The production Bedrock synthesiser performed strongly and passed every enforced quality threshold across 30 multilingual test cases.
+
+| Metric | Result | Threshold |
+|---|---:|---:|
+| Task completion | 96.7% (29/30) | 75% |
+| Interpretation accuracy | 86.7% (26/30) | 75% |
+| Semantic equivalence | 96.7% (29/30) | 75% |
+| Loop discipline | 100% | 100% |
+| Schema validation | 100% | 100% |
+| Verifier false-pass rate | 0% | — |
+
+Key findings:
+
+- The only overall failure was **T23**. For “If she feels unwell, call me,” the system asked who “she” referred to instead of completing the translation. It therefore returned `needs_clarification` when `verified` was expected.
+- Four interpretation classifications failed:
+  - **T13** and **T27:** classified statements as requests.
+  - **T23** and **T26:** did not mark contextual negative expressions such as “unwell” or “has not eaten” as negation.
+- All five retry/repair attempts succeeded: **T05, T16, T18, T26, and T30**.
+- Safety-sensitive preservation was generally excellent:
+  - Sequence: 100%
+  - Quantity: 100%
+  - Required negation: 94.1%
+  - Unsupported information: 0%
+- The independent judge found a few minor wording losses despite accepting the overall meaning:
+  - **T14:** “coughing a lot” was weakened to “coughing.”
+  - **T25:** “already” was omitted.
+  - **T27:** “now” was introduced without being present in the expected result.
+
+Performance and cost:
+
+- Average latency: **9.5 seconds per case**
+- Median: **8.7 seconds**
+- Range: **7.1–17.7 seconds**
+- Synthesiser usage: **80,508 tokens**
+- Estimated synthesiser cost: **$0.292**
+- Estimated judge cost: **$0.0018**
+- Interpretation was the largest cost component at **$0.212**, about 72% of synthesiser cost.
+
+Overall, the system is production-threshold compliant, reliable at preserving meaning, and effective at self-repair. The clearest improvement area is distinguishing genuine ambiguity from harmless unresolved pronouns, followed by more consistent categorical handling of contextual negation and statement-versus-request intent.

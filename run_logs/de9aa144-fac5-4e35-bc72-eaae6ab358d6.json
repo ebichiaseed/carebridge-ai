@@ -1,0 +1,68 @@
+{
+  "run_id": "de9aa144-fac5-4e35-bc72-eaae6ab358d6",
+  "started_at": "2026-09-05T09:42:11.872852+00:00",
+  "finished_at": "2026-09-05T09:42:30.475220+00:00",
+  "duration_ms": 18602.29,
+  "input": {
+    "transcript": [
+      "嗨不凯要  stored鲲鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼�",
+      "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": [
+      "嗨不凯要  stored鲲鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼鱼�",
+      "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    ],
+    "glossary_hits": [],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "question",
+      "actor": "爸爸",
+      "action": "送",
+      "object": "奶昔",
+      "timing": null,
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [
+        "Unclear who '我' (I/me) refers to - no person info provided",
+        "Unclear what '爸爸都要' means in this context - possibly 'dad also wants' or 'dad needs to'",
+        "Phrase structure uncertain: whether asking if dad will send/deliver the milkshake or if speaker is willing to give it"
+      ],
+      "clarification_question": "你是要爸爸送奶昔给你，还是你要送给爸爸？",
+      "source_language": "Mandarin",
+      "cleaned_transcript": "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    },
+    "structure": {
+      "draft_translation": "Is dad willing to send me a milkshake, or am I asking if I should give one to dad?"
+    },
+    "verification": {
+      "verdict": "CLARIFY",
+      "issues": [
+        "Original transcript is corrupted/unintelligible (contains 'stored鲲鱼鱼鱼...' repetition and encoding errors)",
+        "Extracted interpretation itself flags multiple critical ambiguities: unclear referent of '我' (I/me), unclear meaning of '爸爸都要', and uncertain phrase structure regarding direction of action (who gives to whom)",
+        "Draft translation attempts to resolve ambiguity by offering two competing interpretations, but neither can be verified against a corrupted source",
+        "Actor-action-object chain cannot be reliably established: is the actor the father or the speaker? Is the action 'send' or 'give'? Is the object being transferred to the father or to the speaker?"
+      ],
+      "fault_source": "source_ambiguity",
+      "clarification_question": "Can you provide a clean, uncorrupted recording or transcript of what was actually said? The current transcript contains data corruption. Additionally, please confirm: (1) Who is speaking? (2) Is the speaker asking the father to send/give a milkshake to the speaker, or is the speaker offering to give a milkshake to the father?"
+    },
+    "retry_count": 1,
+    "max_retries": 1,
+    "verification_issues": [
+      "Original transcript is corrupted/unintelligible (contains 'stored鲲鱼鱼鱼...' repetition and encoding errors)",
+      "Extracted interpretation itself flags multiple critical ambiguities: unclear referent of '我' (I/me), unclear meaning of '爸爸都要', and uncertain phrase structure regarding direction of action (who gives to whom)",
+      "Draft translation attempts to resolve ambiguity by offering two competing interpretations, but neither can be verified against a corrupted source",
+      "Actor-action-object chain cannot be reliably established: is the actor the father or the speaker? Is the action 'send' or 'give'? Is the object being transferred to the father or to the speaker?"
+    ],
+    "clarification_question": "Can you provide a clean, uncorrupted recording or transcript of what was actually said? The current transcript contains data corruption. Additionally, please confirm: (1) Who is speaking? (2) Is the speaker asking the father to send/give a milkshake to the speaker, or is the speaker offering to give a milkshake to the father?",
+    "error": null,
+    "status": "needs_clarification"
+  },
+  "error": null
+}

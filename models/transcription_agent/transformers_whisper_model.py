@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 from models.base_model import SpeechToTextModel
-from models.transcription_agent.romanization import romanize_chinese_text
 
 
 class TransformersWhisperSinglishModel(SpeechToTextModel):
@@ -33,4 +32,4 @@ class TransformersWhisperSinglishModel(SpeechToTextModel):
             raise FileNotFoundError(f"Audio file not found: {file_path}")
 
         result = await asyncio.to_thread(self._pipeline, str(file_path), **kwargs)
-        return romanize_chinese_text(result["text"])
+        return result["text"]

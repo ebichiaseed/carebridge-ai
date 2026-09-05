@@ -167,9 +167,10 @@ tests/transcription_agent/    # transcription tests
 
 This portion of the project runs two local speech-to-text models. Both receive
 the same audio file and return independent candidates
-for a later word-level consensus stage. Chinese characters in either model's
-output are converted to tone-less Mandarin pinyin; English, Singlish, and
-punctuation are retained as returned by the model.
+for a later word-level consensus stage. The frontend displays each model's raw
+transcript, including Chinese characters. The matching `text` field sent to
+downstream agents is converted to tone-less Mandarin pinyin; English, Singlish,
+and punctuation are retained as returned by the model.
 
 ```text
 Audio file

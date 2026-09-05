@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 from models.base_model import SpeechToTextModel
-from models.transcription_agent.romanization import romanize_chinese_text
 
 
 DEFAULT_MODEL_ID = "wysie/whisper-large-v3-turbo-singlish-mlx"
@@ -47,4 +46,4 @@ class WhisperSinglishModel(SpeechToTextModel):
             **kwargs,
         )
 
-        return romanize_chinese_text(result["text"])
+        return result["text"]

@@ -317,3 +317,97 @@ including the glossary trace (`tool_success`, alias vs vector match counts,
 latency) and the interpret trace (`schema_valid`, `utterance_type`, `negated`,
 `urgency`, `ambiguity_count`). This is the evidence behind the schema-validity,
 tool-success and clarification-rate metrics in the observability plan.
+
+## Structure Agent
+
+### Structure Agent evaluation
+
+Six hand-written evaluation cases are defined in `tests/structure_test_cases.json`. Each case checks that the Structure Agent converts an `InterpretationResult` into natural language without changing safety-critical information such as timing, negation, object, or urgency.
+
+The deterministic unit tests use a fake model and can be run with:
+
+```bash
+# Baseline strips out context
+python3 -m tests.test_structure_agent --no-context \
+  --results tests/structure_baseline_eval.jsonl
+
+# Full evaluation passes context
+python3 -m tests.test_structure_agent \
+  --results tests/structure_full_eval.jsonl
+```
+
+Model-backed evaluation results can be recorded in:
+
+- `tests/structure_baseline_eval.jsonl` — evaluation without recent context
+- `tests/structure_full_eval.jsonl` — evaluation with recent context
+
+The Structure Agent uses `temperature=0` and `max_tokens=300`.
+#### What each case tests
+
+| Case | Probe | What a failure would mean |
+| --- | --- | --- |
+| s001 | Preserve medication timing | Changing “after dinner” to “before dinner” could cause medication to be given at the wrong time. |
+| s002 | Preserve medication negation | Losing or weakening the negation could turn a prohibited action into an instruction. |
+| s003 | Preserve high urgency | Omitting “immediately” or “now” could delay emergency assistance. |
+| s004 | Do not invent an action for a statement | Turning an observation into advice or an instruction would add information that was not supplied. |
+| s005 | Use recent context safely | Context may improve the wording, but it must not replace the resolved actor or requested object. |
+| s006 | Preserve scoped negation and the alternative action | Applying the negation to the wrong pill could reverse which medication must be withheld and which should be given. |
+| s007 | Preserve a named actor | Dropping or replacing “Siti” could assign the instruction to the wrong person. |
+| s008 | Preserve low urgency | Escalating a routine statement into an emergency would misrepresent its urgency. |
+| s009 | Preserve a question | Turning a question into a command would change the speaker’s intent. |
+| s010 | Preserve a future appointment time | Changing the day or time could cause the appointment to be missed. |
+| s011 | Preserve a completed action | Rewriting an action that already happened as a future instruction could lead to it being repeated. |
+| s012 | Preserve a missed dose | Losing the negation or time scope could incorrectly imply that the medication was taken or that the issue is ongoing. |
+| s013 | Preserve a compound request | Dropping either action would make the resulting instruction incomplete. |
+| s014 | Preserve a fall as an urgent event | Rewriting an actual fall as a possible future fall would change both the event and its urgency. |
+| s015 | Do not invent a diagnosis | Adding an unsupported medical cause would turn a reported symptom into an unverified diagnosis. |
+| s016 | Preserve breathing difficulty and urgency | Weakening either the symptom or its urgency could delay necessary assistance. |
+| s017 | Preserve a prohibition and its timing | Losing “must not” or changing “after midnight” could reverse an important restriction. |
+| s018 | Use context without changing the resolved object | Context may supply a location, but it must not replace the requested blood-pressure monitor with another item. |
+| s019 | Ignore conflicting older context | Previous details must not override the current medication or timing resolved by the Interpretation Agent. |
+| s020 | Keep the output concise | Adding explanations, unrelated medical details, or excessive sentences would make the translation less direct. |
+
+#### Unit-test coverage
+
+`tests/test_structure_agent.py` contains nine unit tests covering:
+
+- Parsing a valid JSON model response
+- Parsing JSON wrapped in Markdown code fences
+- Supporting dictionary-shaped model responses
+- Rejecting responses that are not valid JSON
+- Rejecting responses with a missing `draft_translation`
+- Rejecting a `draft_translation` that is not a string
+- Adding interpretation fields and recent context to the prompt
+- Serializing missing recent context as an empty list
+- Calling the model with deterministic settings: `temperature=0` and `max_tokens=300`
+
+The unit tests use a fake model, so they do not call Bedrock or consume model tokens.
+
+The same file also contains the model-backed evaluation runner. It loads the JSON test cases, runs each case with or without recent context, applies phrase-based assertions, records latency and failures, and writes one result record per case.
+
+#### Results
+
+| Metric | Baseline (no recent context) | Full pipeline |
+| --- | ---: | ---: |
+| Cases passing all automated assertions | 18/20 | **18/20** |
+| Valid structured responses | 20/20 | **20/20** |
+| Mean latency | 2.01 s | **1.90 s** |
+| Median latency | 1.84 s | **1.87 s** |
+
+Both runs generated a valid `draft_translation` for all 20 cases. Eighteen cases passed every automated assertion in each configuration.
+
+Cases `s002` and `s006` were marked as failures because the evaluator accepts only “do not” or “don’t,” while the generated responses used semantically valid alternatives such as “should not” and “requests not to.” In `s006`, the forbidden-phrase check also matched the substring “give the blue pill tonight” inside the correctly negated sentence “should not give the blue pill tonight.”
+
+The outputs therefore appear to preserve the intended negation, but the current phrase-based evaluator does not recognise all valid wording. These results should be reported as **18/20 automated assertion passes**, rather than 20/20, until the assertions are corrected and the evaluation is rerun.
+
+The full pipeline was approximately 0.10 seconds faster in mean latency, although its median latency was approximately 0.02 seconds slower. This small difference is not sufficient to conclude that recent context consistently improves or reduces latency.
+
+Each JSONL result record contains the case ID, probe, status, latency, assertion failures, and generated `draft_translation`, allowing baseline and full-context behaviour to be compared case by case.
+
+#### Known limitations
+
+The unit tests validate response parsing, prompt construction, deterministic model settings, and error handling, but they do not directly assess translation quality because they use canned fake-model responses.
+
+The model-backed evaluation uses simple substring assertions. This can produce false failures when the model uses a valid synonym, such as “should not” instead of “do not,” or when a forbidden phrase occurs inside a correctly negated sentence. The current checker also does not enforce the `maximum_sentences` rule included in case `s020`.
+
+The evaluation contains only 20 cases and one recorded generation per configuration. Because model output and latency can vary between runs, the results should not be treated as statistically conclusive. The negation assertions should be improved, sentence-count validation should be implemented, and the evaluation should then be repeated across multiple runs.

@@ -1,0 +1,207 @@
+[
+  {
+    "id": "s001",
+    "probe": "Preserve medication timing",
+    "status": "PASS",
+    "latency_ms": 2986,
+    "failures": [],
+    "result": {
+      "draft_translation": "The caregiver should give grandmother her medicine after dinner."
+    }
+  },
+  {
+    "id": "s002",
+    "probe": "Preserve medication negation",
+    "status": "FAIL",
+    "latency_ms": 1847,
+    "failures": [
+      "none of required_any_phrases found: ['do not', \"don't\"]"
+    ],
+    "result": {
+      "draft_translation": "The caregiver requests not to give the blue pill."
+    }
+  },
+  {
+    "id": "s003",
+    "probe": "Preserve high urgency",
+    "status": "PASS",
+    "latency_ms": 1883,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother needs an ambulance called immediately because she cannot breathe."
+    }
+  },
+  {
+    "id": "s004",
+    "probe": "Do not invent an action for a plain statement",
+    "status": "PASS",
+    "latency_ms": 2048,
+    "failures": [],
+    "result": {
+      "draft_translation": "It is very hot today."
+    }
+  },
+  {
+    "id": "s005",
+    "probe": "Use recent context without changing the instruction",
+    "status": "PASS",
+    "latency_ms": 1742,
+    "failures": [],
+    "result": {
+      "draft_translation": "Siti, please bring the walking stick now."
+    }
+  },
+  {
+    "id": "s006",
+    "probe": "Preserve scoped negation and alternative action",
+    "status": "FAIL",
+    "latency_ms": 1975,
+    "failures": [
+      "none of required_any_phrases found: ['do not', \"don't\"]",
+      "found forbidden phrase: 'give the blue pill tonight'"
+    ],
+    "result": {
+      "draft_translation": "The caregiver should not give the blue pill tonight; instead, give the white pill."
+    }
+  },
+  {
+    "id": "s007",
+    "probe": "Preserve a named actor",
+    "status": "PASS",
+    "latency_ms": 1916,
+    "failures": [],
+    "result": {
+      "draft_translation": "Siti, please help grandmother stand up now."
+    }
+  },
+  {
+    "id": "s008",
+    "probe": "Preserve low urgency",
+    "status": "PASS",
+    "latency_ms": 1740,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother can rest this afternoon."
+    }
+  },
+  {
+    "id": "s009",
+    "probe": "Preserve a question",
+    "status": "PASS",
+    "latency_ms": 1806,
+    "failures": [],
+    "result": {
+      "draft_translation": "Should grandmother take her medicine now?"
+    }
+  },
+  {
+    "id": "s010",
+    "probe": "Preserve a future appointment time",
+    "status": "PASS",
+    "latency_ms": 1761,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother will attend her clinic appointment tomorrow at 10 a.m."
+    }
+  },
+  {
+    "id": "s011",
+    "probe": "Preserve a completed action",
+    "status": "PASS",
+    "latency_ms": 1746,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother already took her morning medicine."
+    }
+  },
+  {
+    "id": "s012",
+    "probe": "Preserve a missed dose",
+    "status": "PASS",
+    "latency_ms": 1958,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother did not take her morning medicine this morning."
+    }
+  },
+  {
+    "id": "s013",
+    "probe": "Preserve a compound request",
+    "status": "PASS",
+    "latency_ms": 2049,
+    "failures": [],
+    "result": {
+      "draft_translation": "The caregiver requests to turn off the fan and close the window before leaving."
+    }
+  },
+  {
+    "id": "s014",
+    "probe": "Preserve a fall as an urgent event",
+    "status": "PASS",
+    "latency_ms": 1738,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother fell just now."
+    }
+  },
+  {
+    "id": "s015",
+    "probe": "Do not invent a diagnosis",
+    "status": "PASS",
+    "latency_ms": 1640,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother felt dizzy this morning."
+    }
+  },
+  {
+    "id": "s016",
+    "probe": "Preserve breathing difficulty",
+    "status": "PASS",
+    "latency_ms": 1937,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother is experiencing difficulty breathing right now. This is urgent."
+    }
+  },
+  {
+    "id": "s017",
+    "probe": "Preserve a prohibition and its timing",
+    "status": "PASS",
+    "latency_ms": 1910,
+    "failures": [],
+    "result": {
+      "draft_translation": "Grandmother must not eat food after midnight."
+    }
+  },
+  {
+    "id": "s018",
+    "probe": "Use context to produce a resolved location",
+    "status": "PASS",
+    "latency_ms": 1681,
+    "failures": [],
+    "result": {
+      "draft_translation": "Siti, bring the blood-pressure monitor now."
+    }
+  },
+  {
+    "id": "s019",
+    "probe": "Do not let conflicting context override the interpretation",
+    "status": "PASS",
+    "latency_ms": 1742,
+    "failures": [],
+    "result": {
+      "draft_translation": "The caregiver should give the white pill after lunch."
+    }
+  },
+  {
+    "id": "s020",
+    "probe": "Keep output concise",
+    "status": "PASS",
+    "latency_ms": 1955,
+    "failures": [],
+    "result": {
+      "draft_translation": "The caregiver requests to remind grandmother to drink water at 3 p.m."
+    }
+  }
+]

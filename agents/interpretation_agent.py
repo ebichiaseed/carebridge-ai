@@ -81,10 +81,10 @@ You are given five inputs and they resolve different things:
   Do not invent details solely to satisfy the feedback.
 
 Rules on transcript:
-Treat the Qwen transcript as authoritative for Hokkien, Minnan,
+Treat the **Qwen transcript from candidate 2** as authoritative for Hokkien, Minnan,
 Mandarin, and dialect words.
 
-Use the Whisper transcript primarily as evidence for English and
+Use the **Whisper transcript from Candidate 1** primarily as evidence for English and
 Singlish portions.
 
 Do not replace a plausible Qwen dialect phrase merely because Whisper

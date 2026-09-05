@@ -17,7 +17,7 @@ class FakeModel:
 
 
 class VerifyAgentTests(unittest.TestCase):
-    def test_pass_verdict_is_parsed_correctly(self):
+    def test_pass_verdict_is_parsed_correctly(self): # test 1: PASS case
         fake = FakeModel(
             '{"verdict": "PASS", "issues": [], "fault_source": null, '
             '"clarification_question": null}'
@@ -32,7 +32,7 @@ class VerifyAgentTests(unittest.TestCase):
 
         self.assertEqual(result, VerificationResult(verdict="PASS"))
 
-    def test_retry_verdict_flags_translation_fault(self):
+    def test_retry_verdict_flags_translation_fault(self): # test 2: RETRY case
         fake = FakeModel(
             '{"verdict": "RETRY", "issues": ["timing was flipped"], '
             '"fault_source": "translation", "clarification_question": null}'
@@ -48,7 +48,7 @@ class VerifyAgentTests(unittest.TestCase):
         self.assertEqual(result.verdict, "RETRY")
         self.assertEqual(result.fault_source, "translation")
 
-    def test_unparseable_response_fails_safe_to_clarify(self):
+    def test_unparseable_response_fails_safe_to_clarify(self): # test 3: UNPARSEABLE case
         fake = FakeModel("this is not json at all")
         agent = VerifyAgent(model=fake)
 
@@ -62,7 +62,7 @@ class VerifyAgentTests(unittest.TestCase):
         self.assertEqual(result.verdict, "CLARIFY")
         self.assertTrue(len(result.issues) > 0)
 
-    def test_response_wrapped_in_markdown_fences_still_parses(self):
+    def test_response_wrapped_in_markdown_fences_still_parses(self): # test 4: MARKDOWN FENCES case
         fake = FakeModel(
             '```json\n{"verdict": "PASS", "issues": [], '
             '"fault_source": null, "clarification_question": null}\n```'

@@ -1,4 +1,4 @@
-# config/settings.py
+# Shared application settings.
 
 from dotenv import load_dotenv
 import os

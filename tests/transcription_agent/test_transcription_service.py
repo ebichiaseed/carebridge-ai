@@ -1,7 +1,7 @@
 import asyncio
 import unittest
 
-from services.transcription_service import ParallelTranscriptionService
+from services.transcription_agent.transcription_service import ParallelTranscriptionService
 
 
 class FakeSpeechModel:

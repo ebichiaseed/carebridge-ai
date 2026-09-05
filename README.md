@@ -150,26 +150,41 @@ aws configure sso
 aws sso login --profile hackathon
 ```
 
+### Transcription workflow layout
+
+Files specific to `transcription_agent` belong in the matching layer directory
+below. Top-level files remain shared infrastructure.
+
+```text
+agents/transcription_agent/   # transcription agent implementations
+configs/transcription_agent/  # ASR backend and model settings
+models/transcription_agent/   # Whisper, Qwen, and text-normalisation adapters
+services/transcription_agent/ # parallel transcription service
+tests/transcription_agent/    # transcription tests
+```
+
 ## ASR demo: parallel Singlish and multilingual transcription
 
-This portion of the project runs two local speech-to-text models on an Apple
-Silicon Mac. Both receive the same audio file and return independent candidates
-for a later word-level consensus stage.
+This portion of the project runs two local speech-to-text models. Both receive
+the same audio file and return independent candidates
+for a later word-level consensus stage. Chinese characters in either model's
+output are converted to tone-less Mandarin pinyin; English, Singlish, and
+punctuation are retained as returned by the model.
 
 ```text
 Audio file
-  ├─ Singlish Whisper MLX      → English / Singlish candidate
-  └─ Qwen3-ASR MLX 8-bit       → Mandarin / Cantonese / Minnan candidate
+  ├─ Singlish Whisper          → English / Singlish candidate
+  └─ Qwen3-ASR                 → Mandarin / Cantonese / Minnan candidate
                                       ↓
                            JSON candidate output
 ```
 
 ### Requirements
 
-- Apple Silicon Mac (M-series)
-- 16 GB unified memory minimum; 24 GB or more is more comfortable
-- Python 3.13 (the version used for the verified practice run)
-- Homebrew, to install `ffmpeg`
+- Python 3.13
+- `ffmpeg` available on your system
+- 16 GB memory minimum is recommended; CUDA makes the portable models much
+  faster, while CPU-only inference is supported but slower.
 
 ### Setup
 
@@ -180,8 +195,24 @@ pip install -r requirements.txt
 brew install ffmpeg
 ```
 
-`ffmpeg` reads common input formats such as WAV, MP3, and M4A. The direct Python
-dependencies are pinned to the versions used for the verified practice run.
+`ffmpeg` reads common input formats such as WAV, MP3, and M4A. The installer
+skips MLX dependencies except on Apple Silicon. Install the PyTorch build that
+matches your NVIDIA CUDA version before installing the requirements if you want
+GPU acceleration on Linux or Windows.
+
+### Platform model selection
+
+`ASR_BACKEND=auto` (the default) selects the models below:
+
+| System | Whisper | Qwen ASR |
+| --- | --- | --- |
+| Apple Silicon | MLX conversion of the Singlish checkpoint | MLX 8-bit Qwen3-ASR |
+| NVIDIA CUDA (Linux/Windows) | Original Singlish checkpoint via Transformers | Qwen3-ASR Transformers checkpoint |
+| CPU-only Linux/Windows/Intel Mac | Original Singlish checkpoint via Transformers | Qwen3-ASR Transformers checkpoint |
+
+The CUDA and CPU backends download their model weights on first use. Set
+`ASR_BACKEND` to `mlx`, `cuda`, or `cpu` to override auto-detection, for example
+when diagnosing a GPU installation.
 
 ### Run the included practice test
 
@@ -216,8 +247,11 @@ Copy `env_template` to `.env` only when you need to override model identifiers
 or AWS settings. Do not commit `.env`.
 
 ```dotenv
-WHISPER_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
-QWEN_ASR_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
+ASR_BACKEND=auto
+WHISPER_MLX_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
+QWEN_ASR_MLX_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
+WHISPER_PORTABLE_MODEL=mjwong/whisper-large-v3-turbo-singlish
+QWEN_ASR_PORTABLE_MODEL=Qwen/Qwen3-ASR-0.6B-hf
 AWS_REGION=ap-southeast-1
 ```
 

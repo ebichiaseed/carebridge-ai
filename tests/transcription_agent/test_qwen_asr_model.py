@@ -1,13 +1,15 @@
 import asyncio
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import unittest
 
-from models.qwen_asr_model import QwenAsrModel
+from models.transcription_agent.qwen_asr_model import QwenAsrModel
 
 
 class QwenAsrModelTests(unittest.TestCase):
-    def test_transcribe_returns_model_text(self):
+    @patch("models.transcription_agent.qwen_asr_model.romanize_chinese_text")
+    def test_transcribe_romanizes_model_text(self, romanize_chinese_text):
+        romanize_chinese_text.return_value = "wo jin tian okay lah"
         with self.subTest("existing audio file"):
             import tempfile
 
@@ -20,8 +22,9 @@ class QwenAsrModelTests(unittest.TestCase):
 
                 text = asyncio.run(model.transcribe(str(audio_file)))
 
-        self.assertEqual(text, "我今天 okay lah")
+        self.assertEqual(text, "wo jin tian okay lah")
         model._model.generate.assert_called_once_with(str(audio_file))
+        romanize_chinese_text.assert_called_once_with("我今天 okay lah")
 
     def test_transcribe_rejects_missing_audio_file(self):
         model = QwenAsrModel.__new__(QwenAsrModel)

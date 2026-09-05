@@ -11,7 +11,14 @@ Ensure `.env` file looks like this
 ```plain text
 AWS_PROFILE=hackathon
 AWS_REGION=ap-southeast-1
+POLLY_VOICE_ID=Jasmine
+POLLY_ENGINE=neural
 ```
+
+The AWS role behind that profile must allow `polly:SynthesizeSpeech`. CareBridge
+uses Polly's Singapore English `Jasmine` neural voice for the **Read translation
+aloud** button. AWS credentials remain on the server and are never sent to the
+browser.
 
 Then copy and paste these into the terminal
 
@@ -20,6 +27,11 @@ aws sso login --profile hackathon
 export AWS_PROFILE=hackathon
 uvicorn frontend:app --reload
 ```
+
+Each completed translation workflow is written locally as a separate JSON file
+under `run_logs/`. Set `CAREBRIDGE_RUN_LOG_DIR` to use a different directory.
+The directory is ignored by Git because logs may contain private conversation
+content.
 
 ## Run tests
 

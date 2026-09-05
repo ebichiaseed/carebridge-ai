@@ -51,7 +51,7 @@ def create_initial_state(
     glossary_hits: list[dict[str, Any]] | None = None,
     recent_context: list[dict[str, Any]] | None = None,
     person_info: dict[str, Any] | None = None,
-    max_retries: int = 0,
+    max_retries: int = 1,
 ) -> CareBridgeState:
     """Create the initial state for one workflow execution."""
 

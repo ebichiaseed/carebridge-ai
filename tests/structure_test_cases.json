@@ -1,0 +1,513 @@
+[
+  {
+    "id": "s001",
+    "probe": "Preserve medication timing",
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": "the caregiver",
+      "action": "give",
+      "object": "grandmother's medicine",
+      "timing": "after dinner",
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "English",
+      "cleaned_transcript": "Give ah ma her medicine after dinner."
+    },
+    "recent_context": [{"speaker": "caregiver", "text": "Dinner is usually served at 7 p.m."}],
+    "assert": {
+      "required_phrases": [
+        "medicine",
+        "after dinner"
+      ],
+      "forbidden_phrases": [
+        "before dinner"
+      ]
+    },
+    "watch_for": "The timing must remain after dinner and must not be reversed."
+  },
+  {
+    "id": "s002",
+    "probe": "Preserve medication negation",
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": "the caregiver",
+      "action": "give",
+      "object": "the blue pill",
+      "timing": null,
+      "negated": true,
+      "negation_cue": "don't",
+      "negation_scope": "give the blue pill",
+      "urgency": "normal",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "English",
+      "cleaned_transcript": "Don't give her the blue pill."
+    },
+    "recent_context": [{"speaker": "caregiver", "text": "Her tablets are arranged in the pill box."}],
+    "assert": {
+      "required_phrases": [
+        "blue pill"
+      ],
+      "required_any_phrases": [
+        "do not",
+        "don't"
+      ],
+      "forbidden_phrases": [
+        "give her the blue pill now"
+      ]
+    },
+    "watch_for": "The generated sentence must clearly preserve the negation."
+  },
+  {
+    "id": "s003",
+    "probe": "Preserve high urgency",
+    "interpretation": {
+      "utterance_type": "distress",
+      "actor": "grandmother",
+      "action": "call",
+      "object": "an ambulance",
+      "timing": "immediately",
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "high",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "English",
+      "cleaned_transcript": "Call an ambulance now, ah ma cannot breathe."
+    },
+    "recent_context": [{"speaker": "grandmother", "text": "I am having trouble breathing."}],
+    "assert": {
+      "required_phrases": [
+        "ambulance"
+      ],
+      "required_any_phrases": [
+        "immediately",
+        "now"
+      ],
+      "forbidden_phrases": [
+        "later",
+        "when convenient"
+      ]
+    },
+    "watch_for": "The output must communicate immediate action without weakening the urgency."
+  },
+  {
+    "id": "s004",
+    "probe": "Do not invent an action for a plain statement",
+    "interpretation": {
+      "utterance_type": "statement",
+      "actor": null,
+      "action": null,
+      "object": null,
+      "timing": "today",
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "Singlish",
+      "cleaned_transcript": "Aiyo, so hot today."
+    },
+    "recent_context": [{"speaker": "grandmother", "text": "The weather has been warm all morning."}],
+    "assert": {
+      "required_phrases": [
+        "hot",
+        "today"
+      ],
+      "forbidden_phrases": [
+        "drink water",
+        "turn on",
+        "call",
+        "medicine"
+      ]
+    },
+    "watch_for": "The agent should produce a natural statement without inventing instructions."
+  },
+  {
+    "id": "s005",
+    "probe": "Use recent context without changing the instruction",
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": "Siti",
+      "action": "bring",
+      "object": "the walking stick",
+      "timing": "now",
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "English",
+      "cleaned_transcript": "Siti, bring that one here."
+    },
+    "recent_context": [
+      {
+        "speaker": "caregiver",
+        "text": "The walking stick is beside the bed."
+      }
+    ],
+    "assert": {
+      "required_phrases": [
+        "Siti",
+        "walking stick"
+      ],
+      "required_any_phrases": [
+        "now",
+        "please"
+      ],
+      "forbidden_phrases": [
+        "wheelchair",
+        "medicine"
+      ]
+    },
+    "watch_for": "The context may improve natural wording but must not replace the resolved object."
+  },
+  {
+    "id": "s006",
+    "probe": "Preserve scoped negation and alternative action",
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": "the caregiver",
+      "action": "give the white pill instead of the blue pill",
+      "object": "the white pill",
+      "timing": "tonight",
+      "negated": true,
+      "negation_cue": "don't",
+      "negation_scope": "give the blue pill",
+      "urgency": "normal",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "English",
+      "cleaned_transcript": "Don't give the blue pill tonight; give the white one."
+    },
+    "recent_context": [{"speaker": "caregiver", "text": "The blue and white pills look similar."}],
+    "assert": {
+      "required_phrases": [
+        "blue pill",
+        "white pill",
+        "tonight"
+      ],
+      "required_any_phrases": [
+        "do not",
+        "don't"
+      ],
+      "forbidden_phrases": [
+        "give the blue pill tonight",
+        "do not give the white pill"
+      ]
+    },
+    "watch_for": "Negation applies only to the blue pill; the white pill should still be given."
+  },
+{
+  "id": "s007",
+  "probe": "Preserve a named actor",
+  "interpretation": {
+    "utterance_type": "request",
+    "actor": "Siti",
+    "action": "help",
+    "object": "grandmother stand up",
+    "timing": "now",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Siti, help ah ma stand up now."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "Grandmother is sitting beside the bed."}],
+  "assert": {
+    "required_phrases": ["Siti", "grandmother", "stand"],
+    "required_any_phrases": ["now", "immediately"],
+    "forbidden_phrases": ["later"]
+  },
+  "watch_for": "The named actor must not be dropped or replaced."
+},
+{
+  "id": "s008",
+  "probe": "Preserve low urgency",
+  "interpretation": {
+    "utterance_type": "statement",
+    "actor": "grandmother",
+    "action": "rest",
+    "object": null,
+    "timing": "this afternoon",
+    "negated": false,
+    "urgency": "low",
+    "cleaned_transcript": "No concern, grandmother can rest this afternoon."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "She has no urgent appointments today."}],
+  "assert": {
+    "required_phrases": ["grandmother", "rest", "this afternoon"],
+    "forbidden_phrases": ["emergency", "ambulance", "immediately"]
+  },
+  "watch_for": "A low-urgency statement must not be escalated into an emergency."
+},
+{
+  "id": "s009",
+  "probe": "Preserve a question",
+  "interpretation": {
+    "utterance_type": "question",
+    "actor": "grandmother",
+    "action": "take",
+    "object": "her medicine",
+    "timing": "now",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Should grandmother take her medicine now?"
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "Her medicine is ready on the table."}],
+  "assert": {
+    "required_phrases": ["grandmother", "medicine", "now"],
+    "required_any_phrases": ["should", "?"],
+    "forbidden_phrases": ["must take", "do not take"]
+  },
+  "watch_for": "The agent must preserve the question rather than turn it into an instruction."
+},
+{
+  "id": "s010",
+  "probe": "Preserve a future appointment time",
+  "interpretation": {
+    "utterance_type": "statement",
+    "actor": "grandmother",
+    "action": "attend",
+    "object": "her clinic appointment",
+    "timing": "tomorrow at 10 a.m.",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Grandmother's clinic appointment is tomorrow at 10 a.m."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "The clinic confirmed the appointment yesterday."}],
+  "assert": {
+    "required_phrases": ["clinic appointment", "tomorrow", "10"],
+    "forbidden_phrases": ["today", "10 p.m."]
+  },
+  "watch_for": "The date and time must not be changed."
+},
+{
+  "id": "s011",
+  "probe": "Preserve a completed action",
+  "interpretation": {
+    "utterance_type": "statement",
+    "actor": "grandmother",
+    "action": "take",
+    "object": "her morning medicine",
+    "timing": "already",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Grandmother already took her morning medicine."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "The morning pill box is empty."}],
+  "assert": {
+    "required_phrases": ["grandmother", "morning medicine"],
+    "required_any_phrases": ["already took", "has taken"],
+    "forbidden_phrases": ["should take", "has not taken"]
+  },
+  "watch_for": "A completed action must not become a future instruction."
+},
+{
+  "id": "s012",
+  "probe": "Preserve a missed dose",
+  "interpretation": {
+    "utterance_type": "statement",
+    "actor": "grandmother",
+    "action": "take",
+    "object": "her morning medicine",
+    "timing": "this morning",
+    "negated": true,
+    "negation_cue": "did not",
+    "negation_scope": "take her morning medicine",
+    "urgency": "normal",
+    "cleaned_transcript": "Grandmother did not take her medicine this morning."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "The morning medicine is still in the pill box."}],
+  "assert": {
+    "required_phrases": ["grandmother", "medicine", "this morning"],
+    "required_any_phrases": ["did not take", "has not taken", "missed"],
+    "forbidden_phrases": ["took her medicine"]
+  },
+  "watch_for": "The output must describe one missed dose, not lifelong non-adherence."
+},
+{
+  "id": "s013",
+  "probe": "Preserve a compound request",
+  "interpretation": {
+    "utterance_type": "request",
+    "actor": "the caregiver",
+    "action": "turn off the fan and close the window",
+    "object": "the fan and the window",
+    "timing": "before leaving",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Turn off the fan and close the window before leaving."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "We are about to leave the room."}],
+  "assert": {
+    "required_phrases": ["fan", "window", "before leaving"],
+    "required_any_phrases": ["turn off", "switch off"],
+    "forbidden_phrases": ["turn on", "open the window"]
+  },
+  "watch_for": "Neither action in the compound request should be dropped."
+},
+{
+  "id": "s014",
+  "probe": "Preserve a fall as an urgent event",
+  "interpretation": {
+    "utterance_type": "distress",
+    "actor": "grandmother",
+    "action": "fell",
+    "object": null,
+    "timing": "just now",
+    "negated": false,
+    "urgency": "high",
+    "cleaned_transcript": "Grandmother fell just now."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "I heard a noise from grandmother's room."}],
+  "assert": {
+    "required_phrases": ["grandmother", "fell"],
+    "required_any_phrases": ["just now", "has fallen"],
+    "forbidden_phrases": ["might fall", "tomorrow"]
+  },
+  "watch_for": "A fall that already happened must not become a warning about a future fall."
+},
+{
+  "id": "s015",
+  "probe": "Do not invent a diagnosis",
+  "interpretation": {
+    "utterance_type": "statement",
+    "actor": "grandmother",
+    "action": "feel",
+    "object": "dizzy",
+    "timing": "this morning",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Grandmother felt dizzy this morning."
+  },
+    "recent_context": [{"speaker": "grandmother", "text": "I felt unsteady after getting out of bed."}],
+  "assert": {
+    "required_phrases": ["grandmother", "dizzy", "this morning"],
+    "forbidden_phrases": ["stroke", "infection", "diagnosis", "heart attack"]
+  },
+  "watch_for": "The agent should state the symptom without inventing its cause."
+},
+{
+  "id": "s016",
+  "probe": "Preserve breathing difficulty",
+  "interpretation": {
+    "utterance_type": "distress",
+    "actor": "grandmother",
+    "action": "is experiencing",
+    "object": "difficulty breathing",
+    "timing": "now",
+    "negated": false,
+    "urgency": "high",
+    "cleaned_transcript": "Grandmother is having difficulty breathing now."
+  },
+    "recent_context": [{"speaker": "grandmother", "text": "My chest feels tight."}],
+  "assert": {
+    "required_phrases": ["grandmother"],
+    "required_any_phrases": ["difficulty breathing", "cannot breathe", "trouble breathing"],
+    "required_any_urgency_phrases": ["now", "immediately", "urgent"],
+    "forbidden_phrases": ["later", "mild"]
+  },
+  "watch_for": "The breathing difficulty and high urgency must both survive restructuring."
+},
+{
+  "id": "s017",
+  "probe": "Preserve a prohibition and its timing",
+  "interpretation": {
+    "utterance_type": "request",
+    "actor": "grandmother",
+    "action": "eat",
+    "object": "food",
+    "timing": "after midnight",
+    "negated": true,
+    "negation_cue": "must not",
+    "negation_scope": "eat food after midnight",
+    "urgency": "normal",
+    "cleaned_transcript": "Grandmother must not eat after midnight."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "Her medical procedure is tomorrow morning."}],
+  "assert": {
+    "required_phrases": ["grandmother", "after midnight"],
+    "required_any_phrases": ["must not eat", "should not eat", "do not eat"],
+    "forbidden_phrases": ["must eat", "before midnight"]
+  },
+  "watch_for": "Both the prohibition and its time boundary must be preserved."
+},
+{
+  "id": "s018",
+  "probe": "Use context to produce a resolved location",
+  "interpretation": {
+    "utterance_type": "request",
+    "actor": "Siti",
+    "action": "bring",
+    "object": "the blood-pressure monitor",
+    "timing": "now",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Siti, bring the blood-pressure monitor."
+  },
+  "recent_context": [
+    {
+      "speaker": "caregiver",
+      "text": "The blood-pressure monitor is in the bedroom cabinet."
+    }
+  ],
+  "assert": {
+    "required_phrases": ["Siti", "blood-pressure monitor"],
+    "required_any_phrases": ["bring", "get"],
+    "forbidden_phrases": ["thermometer", "medicine box"]
+  },
+  "watch_for": "Context may add the location but must not change the requested object."
+},
+{
+  "id": "s019",
+  "probe": "Do not let conflicting context override the interpretation",
+  "interpretation": {
+    "utterance_type": "request",
+    "actor": "the caregiver",
+    "action": "give",
+    "object": "the white pill",
+    "timing": "after lunch",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Give her the white pill after lunch."
+  },
+  "recent_context": [
+    {
+      "speaker": "caregiver",
+      "text": "Yesterday she took the blue pill after breakfast."
+    }
+  ],
+  "assert": {
+    "required_phrases": ["white pill", "after lunch"],
+    "forbidden_phrases": ["blue pill", "after breakfast"]
+  },
+  "watch_for": "Old context must not replace the current resolved object or timing."
+},
+{
+  "id": "s020",
+  "probe": "Keep output concise",
+  "interpretation": {
+    "utterance_type": "request",
+    "actor": "the caregiver",
+    "action": "remind",
+    "object": "grandmother to drink water",
+    "timing": "at 3 p.m.",
+    "negated": false,
+    "urgency": "normal",
+    "cleaned_transcript": "Remind grandmother to drink water at 3 p.m."
+  },
+    "recent_context": [{"speaker": "caregiver", "text": "Grandmother has been drinking less water today."}],
+  "assert": {
+    "required_phrases": ["grandmother", "drink water", "3 p.m."],
+    "forbidden_phrases": ["medication", "doctor", "because"],
+    "maximum_sentences": 2
+  },
+  "watch_for": "The response must remain one or two sentences and avoid explanations."
+}
+]

@@ -219,7 +219,7 @@ def build_workflow(
         interpretation_node,
     )
     builder.add_node(
-        "structure",
+        "structure_step",
         structure_node,
     )
     builder.add_node(
@@ -246,14 +246,14 @@ def build_workflow(
         "interpret",
         route_after_interpretation,
         {
-            "structure": "structure",
+            "structure": "structure_step",
             "clarify": "clarify",
         },
     )
 
     # Structure routing.
     builder.add_conditional_edges(
-        "structure",
+        "structure_step",
         route_after_structure,
         {
             "verify": "verify",

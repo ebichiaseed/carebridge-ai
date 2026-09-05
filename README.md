@@ -2,6 +2,25 @@
 
 for now i shall use readme to introduce the repo to all, then later we amend nice nice
 
+## Instructions to start up the app
+
+Pre-requisite: ensures u have created a profile ('hackathon') instead of the original name
+
+Ensure `.env` file looks like this
+
+```plain text
+AWS_PROFILE=hackathon
+AWS_REGION=ap-southeast-1
+```
+
+Then copy and paste these into the terminal
+
+```
+aws sso login --profile hackathon
+export AWS_PROFILE=hackathon
+uvicorn frontend:app --reload
+```
+
 ## Notes
 
 ### Repo Skeleton

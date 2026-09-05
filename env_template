@@ -1,9 +1,10 @@
 # The original env file is not committed to github so please copy and paste this into your own repo
 
-AWS_REGION=ap-southeast-1
+AWS_REGION=us-east-1
 
 INTERPRETATION_MODEL=sonnet
 TRANSLATION_MODEL=sonnet
 
 WHISPER_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
 QWEN_ASR_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
+VERIFICATION_MODEL=nova-lite

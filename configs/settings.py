@@ -1,6 +1,9 @@
 # config/settings.py
 
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 
 AWS_REGION = os.getenv(
@@ -28,4 +31,4 @@ QWEN_ASR_MODEL = os.getenv(
     "mlx-community/Qwen3-ASR-0.6B-8bit"
 )
 
-VERIFICATION_MODEL = os.getenv("VERIFICATION_MODEL", "nova-lite")
+VERIFICATION_MODEL = os.getenv("VERIFICATION_MODEL", "haiku")

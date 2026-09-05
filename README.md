@@ -10,7 +10,7 @@ Ensure `.env` file looks like this
 
 ```plain text
 AWS_PROFILE=hackathon
-AWS_REGION=ap-southeast-1
+AWS_REGION=us-east-1
 POLLY_VOICE_ID=Jasmine
 POLLY_ENGINE=neural
 ```

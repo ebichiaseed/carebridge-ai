@@ -39,10 +39,17 @@ class ModelFactory:
     @staticmethod
     def create(model_name: str):
 
-        if model_name == "sonnet":
+        if model_name == "nova-lite":
 
             return BedrockModel(
-                model_id="us.anthropic.claude-sonnet-4-20250514-v1:0",
+                model_id="amazon.nova-lite-v1:0",
+                region=AWS_REGION
+            )
+
+        elif model_name == "sonnet":
+
+            return BedrockModel(
+                model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
                 region=AWS_REGION
             )
 

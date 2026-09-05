@@ -8,21 +8,28 @@ Both ASR models load once at startup, not per request.
 """
 
 import asyncio
+import io
 import logging
 import tempfile
+import time
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from agents.interpretation_agent import InterpretationAgent
 from agents.structure_agent import StructureAgent
 from agents.verify_agent import VerifyAgent
 from configs.settings import (
+    AWS_REGION,
     INTERPRETATION_MODEL,
+    POLLY_ENGINE,
+    POLLY_VOICE_ID,
     QWEN_ASR_MODEL,
     TRANSLATION_MODEL,
     VERIFICATION_MODEL,
@@ -32,6 +39,8 @@ from models.model_factory import ModelFactory
 from models.qwen_asr_model import QwenAsrModel
 from models.whisper_model import WhisperSinglishModel
 from services.transcription_service import ParallelTranscriptionService
+from services.polly_service import PollyService
+from services.run_log_service import write_run_log
 from state import create_initial_state
 from synthesiser import build_workflow
 from tools.glossary_lookup import get_retriever
@@ -48,6 +57,10 @@ class TranslationRequest(BaseModel):
     transcript: str | list[str]
     recent_context: list[ContextTurn] = Field(default_factory=list)
     person_info: dict[str, Any] = Field(default_factory=dict)
+
+
+class SpeechRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=3000)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("carebridge")
@@ -86,6 +99,7 @@ async def lifespan(app: FastAPI):
     )
 
     state["glossary"] = get_retriever()
+    state["polly"] = PollyService(AWS_REGION, POLLY_VOICE_ID, POLLY_ENGINE)
 
     logger.info("CareBridge services ready.")
     yield
@@ -164,20 +178,93 @@ async def translate(request: TranslationRequest) -> dict:
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
+    run_id = str(uuid4())
+    started_at = datetime.now(UTC)
+    started_timer = time.perf_counter()
+
     try:
         result = await workflow.ainvoke(initial_state)
     except Exception as error:
         logger.exception("Translation workflow failed")
+        await _log_workflow_run(
+            run_id,
+            request,
+            started_at,
+            started_timer,
+            result=None,
+            error=error,
+        )
         raise HTTPException(
             status_code=500,
             detail="The translation could not be completed.",
         ) from error
 
+    await _log_workflow_run(
+        run_id,
+        request,
+        started_at,
+        started_timer,
+        result=result,
+    )
+
     return {
+        "run_id": run_id,
         "status": result.get("status", "failed"),
         "translation": result.get("final_text"),
         "clarification_question": result.get("clarification_question"),
     }
+
+
+@app.post("/api/speech")
+async def speech(request: SpeechRequest) -> StreamingResponse:
+    """Synthesize translated text with the configured Amazon Polly voice."""
+    polly = state.get("polly")
+    if polly is None:
+        raise HTTPException(status_code=503, detail="Speech service is still loading.")
+
+    try:
+        audio = await asyncio.to_thread(polly.synthesize, request.text)
+    except Exception as error:
+        logger.exception("Amazon Polly synthesis failed")
+        raise HTTPException(
+            status_code=502,
+            detail="Amazon Polly could not generate speech. Check AWS access and configuration.",
+        ) from error
+
+    return StreamingResponse(io.BytesIO(audio), media_type="audio/mpeg")
+
+
+async def _log_workflow_run(
+    run_id: str,
+    request: TranslationRequest,
+    started_at: datetime,
+    started_timer: float,
+    *,
+    result: dict | None,
+    error: Exception | None = None,
+) -> None:
+    """Persist a workflow result without allowing logging to break the API."""
+
+    finished_at = datetime.now(UTC)
+    record = {
+        "run_id": run_id,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "duration_ms": round((time.perf_counter() - started_timer) * 1000, 2),
+        "input": request,
+        "result": result,
+        "error": (
+            {"type": type(error).__name__, "message": str(error)}
+            if error is not None
+            else None
+        ),
+    }
+
+    try:
+        path = await asyncio.to_thread(write_run_log, run_id, record)
+        logger.info("Workflow run %s logged to %s", run_id, path)
+    except Exception:
+        logger.exception("Could not write workflow run log %s", run_id)
 
 
 async def _transcribe_tolerantly(

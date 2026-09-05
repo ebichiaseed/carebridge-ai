@@ -2,7 +2,7 @@
 
 Run from the backend/ directory (same place transcribe_parallel.py lives):
 
-    uvicorn main:app --reload
+    uvicorn frontend:app --reload
 
 Both ASR models load once at startup, not per request.
 """
@@ -129,4 +129,4 @@ async def _transcribe_tolerantly(
 
 @app.get("/")
 async def index() -> FileResponse:
-    return FileResponse(Path(__file__).parent / "static" / "index.html")
+    return FileResponse(Path(__file__).parent / "index.html")

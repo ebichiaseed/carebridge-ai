@@ -1,0 +1,59 @@
+{
+  "run_id": "f2637af6-6c57-44c5-ba85-d27afc6aa91f",
+  "started_at": "2026-09-05T09:45:33.498841+00:00",
+  "finished_at": "2026-09-05T09:45:50.605706+00:00",
+  "duration_ms": 17106.82,
+  "input": {
+    "transcript": "二點鐘來，外加烹外加雞跟飯。",
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": "二點鐘來，外加烹外加雞跟飯。",
+    "glossary_hits": [],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": null,
+      "action": "deliver food",
+      "object": "外加烹 (extra dish), 外加雞 (extra chicken), and rice",
+      "timing": "2 o'clock",
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [
+        "外加烹 is unclear - may be a recognition error or dialect term for a specific dish type",
+        "Actor (who should come/deliver) is not specified"
+      ],
+      "clarification_question": "Who is coming at 2 o'clock? And what is 外加烹?",
+      "source_language": "Mandarin",
+      "cleaned_transcript": "二點鐘來，外加烹外加雞跟飯。"
+    },
+    "structure": {
+      "draft_translation": "Someone should deliver extra dish, extra chicken, and rice at 2 o'clock, though it's unclear who should deliver and what specific dish '外加烹' refers to."
+    },
+    "verification": {
+      "verdict": "RETRY",
+      "issues": [
+        "Draft translation uses vague 'Someone should deliver' instead of preserving the imperative/request structure directed at a specific person (likely the FDW)",
+        "The phrase '外加烹' remains unresolved in the draft; the translation should either clarify it or flag it explicitly as uncertain rather than burying it in a parenthetical",
+        "Actor ambiguity is acknowledged but not handled clearly—the draft should either state 'You (FDW) should bring...' if context supports it, or explicitly mark the actor as unspecified"
+      ],
+      "fault_source": "structure",
+      "clarification_question": "Does the original transcript direct this request to the FDW (implied 'you'), or is the actor genuinely unspecified? And can '外加烹' be confirmed as a dish type or cooking method in the employer's dialect?"
+    },
+    "retry_count": 1,
+    "max_retries": 1,
+    "verification_issues": [
+      "Draft translation uses vague 'Someone should deliver' instead of preserving the imperative/request structure directed at a specific person (likely the FDW)",
+      "The phrase '外加烹' remains unresolved in the draft; the translation should either clarify it or flag it explicitly as uncertain rather than burying it in a parenthetical",
+      "Actor ambiguity is acknowledged but not handled clearly—the draft should either state 'You (FDW) should bring...' if context supports it, or explicitly mark the actor as unspecified"
+    ],
+    "clarification_question": "Does the original transcript direct this request to the FDW (implied 'you'), or is the actor genuinely unspecified? And can '外加烹' be confirmed as a dish type or cooking method in the employer's dialect?",
+    "error": null,
+    "status": "needs_clarification"
+  },
+  "error": null
+}

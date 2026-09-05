@@ -1,0 +1,59 @@
+{
+  "run_id": "27dd4bdc-d278-41c2-ace3-7d68fa58815a",
+  "started_at": "2026-09-05T09:37:00.932992+00:00",
+  "finished_at": "2026-09-05T09:37:05.281426+00:00",
+  "duration_ms": 4348.41,
+  "input": {
+    "transcript": [
+      "我怕都听了 我不会是在大便 你可以帮我一下吗 求求你",
+      "我怕多天，我唔会晒大便，你可以帮我一下嘛，求求你。"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": [
+      "我怕都听了 我不会是在大便 你可以帮我一下吗 求求你",
+      "我怕多天，我唔会晒大便，你可以帮我一下嘛，求求你。"
+    ],
+    "glossary_hits": [
+      {
+        "id": "g014",
+        "term": "pass motion",
+        "language": "Singapore English",
+        "meaning": "to have a bowel movement",
+        "example": "she never pass motion for two days",
+        "ambiguity": "'Pass motion' is standard Singapore healthcare usage and is not idiomatic in other English varieties. Translate to the plain clinical sense, not literally.",
+        "category": "daily_living",
+        "match_type": "alias",
+        "score": 1.0
+      }
+    ],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": "speaker",
+      "action": "help",
+      "object": "bowel movement difficulty",
+      "timing": "immediate",
+      "negated": true,
+      "negation_cue": "唔会",
+      "negation_scope": "able to have bowel movement",
+      "urgency": "high",
+      "ambiguity": [
+        "Duration unclear: '多天' (many days) suggests multiple days without bowel movement, but exact timeframe not specified"
+      ],
+      "clarification_question": "几天没有大便了？",
+      "source_language": "Cantonese-influenced Mandarin",
+      "cleaned_transcript": "我怕多天，我唔会晒大便，你可以帮我一下嘛，求求晒。"
+    },
+    "retry_count": 0,
+    "max_retries": 1,
+    "verification_issues": [],
+    "clarification_question": "几天没有大便了？",
+    "error": null,
+    "status": "needs_clarification"
+  },
+  "error": null
+}

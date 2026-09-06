@@ -1,26 +1,61 @@
-# carebridge-ai
+# CareBridge
 
-for now i shall use readme to introduce the repo to all, then later we amend nice nice
+## Problem Statement
+
+A caregiver in his/her first few months caring for a Hokkien- or Cantonese-speaking elderly employer needs a way to understand daily-care instructions, be it medication, meals, mobility, in the moment they're given, because misunderstanding them causes confusion and distress on both sides. This gap is real enough that NTUC and the Centre for Domestic Employees launched dedicated Hokkien and Cantonese classes for migrant domestic workers in December 2024 specifically to address it (NTUC/CDE, Dec 2024), building on earlier findings that caregivers may experience embarrassment and humiliation when unable to understand their employers (McKay, 2013). This problem also extends to caregivers in general, where a miscommunication may potentially be life-threatening such as when symptoms are down-played due to the translation gap.
+
+## Motivation
+Caregivers in Singapore are mostly trained in English and often cannot speak the dialect of the elderly Chinese employers whom they care for. This is an acute gap especially in the first few months of their placement as they have yet to informally picked up on dialect phrases - and for foreign domestic workers (FDWs) Singlish slang - cultivated through constant communication. FDW interviewees have described the embarrassment and humiliation this causes when they struggle to understand instructions from their employers (McKay, 2013), risking confusion or frustration when needs and demands are misread in daily caregiving routines.
+This gap is already recognised at a national level: in December 2024, NTUC and the Centre for Domestic Employees began running Hokkien and Cantonese classes for domestic workers. One participant, Enik Suparmi, who has worked for over 25 years in Singapore, described the direct caregiving impact: "It helps me a lot, especially to communicate with grandma... when my grandma orders things from me, asks me to cook... I can say yes, okay" (NTUC/CDE, Dec 2024). But these pilot classes are small (11 participants in the Hokkien pilot, 25 in the Cantonese pilot) and take months to build fluency. This leaves a real-time gap for FDWs who are mid-placement, not yet enrolled, or facing a dialect/idiom the curriculum doesn't cover. Local caregivers whose primary language may be English can potentially struggle with speaking Chinese or dialects, hence also facing the same issue as FDWs. This communication gap is what we're proposing to close, which we believe will benefit all the caregivers.
+
+## Key Features
+- **Parallel speech recognition:** Processes the same audio using separate models for English and Singlish, as well as Mandarin, Cantonese, and Hokkien.
+- **Caregiving-aware interpretation:** Identifies requests, statements, symptoms, timing, negation, urgency, and referenced people or objects.
+- **Glossary-assisted understanding:** Uses a curated caregiving glossary and semantic retrieval to interpret local expressions, dialect terms, and common ambiguities.
+- **Context-aware translation:** Uses recent conversation context and known information about the people involved when interpreting an utterance.
+- **Safety verification:** Checks whether important information was preserved before accepting a translation.
+- **Targeted retries:** Re-runs only the affected stage when the verifier detects an interpretation or translation problem.
+- **Clarification questions:** Requests clarification when an ambiguity could materially change the meaning or required action.
+- **Speech playback:** Reads completed English translations aloud using Amazon Polly's Singapore English `Jasmine` voice, and Mandarin `Zhiyu` voice
+- **Local observability:** Records each completed workflow as a local JSON file for evaluation and debugging.
+
+## How It Works
+
+```text
+Spoken instruction
+        ↓
+Parallel transcription
+        ↓
+Caregiving-aware interpretation
+        ↓
+Structured English translation
+        ↓
+Safety verification
+   ┌────┴───────────────────────────────────────┐
+   ↓                                            ↓
+Accept translation                    Retry affected stage
+   ↓
+Translation Agent verifies language
+   ↓
+Read aloud                                Verify again
+                                                ↓
+                                      Clarify if unresolved
 
 ## Instructions to start up the app
 
-Pre-requisite: ensures u have created a profile ('hackathon') instead of the original name
-
-Ensure `.env` file looks like this
-
+Please ensure that you have these parameters in the .env file
 ```plain text
 AWS_PROFILE=hackathon
 AWS_REGION=us-east-1
 POLLY_VOICE_ID=Jasmine
 POLLY_ENGINE=neural
 ```
-
 The AWS role behind that profile must allow `polly:SynthesizeSpeech`. CareBridge
-uses Polly's Singapore English `Jasmine` neural voice for the **Read translation
+uses Polly's Singapore English `Jasmine` and Mandarin `Zhiyu` neural voice for the **Read translation
 aloud** button. AWS credentials remain on the server and are never sent to the
 browser.
 
-Then copy and paste these into the terminal
+Assuming AWS is set up, copy and paste these commands into the terminal
 
 ```
 aws sso login --profile hackathon
@@ -28,57 +63,93 @@ export AWS_PROFILE=hackathon
 uvicorn frontend:app --reload
 ```
 
+[The above example assumes that the profile name is ‘hackathon’, which requires sso configuration]
+
 Each completed translation workflow is written locally as a separate JSON file
 under `run_logs/`. Set `CAREBRIDGE_RUN_LOG_DIR` to use a different directory.
 The directory is ignored by Git because logs may contain private conversation
 content.
 
-## Run tests
-
-```
-RUN_BEDROCK_EVAL=1 \
-BEDROCK_EVAL_CONFIG=production \
-BEDROCK_EVAL_INTERPRETATION_MODEL=sonnet \
-BEDROCK_EVAL_STRUCTURE_MODEL=sonnet \
-BEDROCK_EVAL_VERIFICATION_MODEL=haiku \
-BEDROCK_EVAL_JUDGE_MODEL=nova-lite \
-BEDROCK_EVAL_ENFORCE_THRESHOLDS=1 \
-.venv/bin/python -m unittest \
-tests.test_synthesiser.BedrockSynthesiserEvaluation
-```
-
-## Notes
+## Technical Overview
 
 ### Repo Skeleton
+
 ```
-backend/
-│
+.
+├── frontend.py                      FastAPI server and API routes
+├── index.html                       Browser interface served by FastAPI
+├── synthesiser.py                   Interpretation -> structure -> verification workflow
 ├── agents/
-│   ├── base_agent.py
-│   ├── transcription_agent.py
-│   ├── interpretation_agent.py
-│   ├── translation_agent.py
-│   └── ...
-│
+│   ├── interpretation_agent.py      Meaning, urgency, and ambiguity (Claude Sonnet)
+│   ├── structure_agent.py           English draft translation (Claude Sonnet)
+│   └── verify_agent.py              Meaning-preservation check and retry (Claude Haiku)
 ├── models/
-│   ├── base_model.py
-│   ├── bedrock_model.py
-│   ├── whisper_model.py
-│   └── model_factory.py
-│
-├── config/
-│   └── settings.py
-│
-├── services/
-│   └── ...
-│
-└── state.py
-│
-└── synthesiser.py
+│   ├── bedrock_model.py             Claude Sonnet, Claude Haiku, and Nova Lite access
+│   └── transcription_agent/         Singlish Whisper and multilingual Qwen3-ASR adapters
+├── services/                        Parallel transcription, Polly, and run logging
+├── configs/                         Runtime and ASR model configuration
+├── tools/                           Caregiving glossary and hybrid retrieval
+├── tests/                           Unit tests, fixtures, and recorded evaluations
+├── env_template.txt                 Environment-variable template
+└── requirements.txt                 Python dependencies
+```
+
+
+### Orchestration Workflow
+
+A concise mental model:
+```
+Interpret → Structure → Verify → Accept
+    ↑           ↑          |
+    |           |          ├─ interpretation fault → retry Interpret
+    |           └──────────┴─ structure fault → retry Structure
+    |
+important ambiguity → best-effort Structure → translation + Clarify
+unrecoverable/error/exhausted retry → Clarify
+
+```
+
+The full implementation:
+```
+START
+  ↓
+INTERPRET
+  ├─ agent/parsing failure ───────────────→ CLARIFY → END
+  ├─ important ambiguity detected
+  │      ↓
+  │   STRUCTURE BEST-EFFORT
+  │      ↓
+  │   return translation + question ─────→ END
+  └─ sufficiently clear
+         ↓
+      STRUCTURE
+         ├─ failure/empty draft ──────────→ CLARIFY → END
+         ↓
+      VERIFY
+         ├─ PASS ─────────────────────────→ ACCEPT → END
+         │
+         ├─ RETRY: interpretation fault
+         │    and retries remain
+         │      ↓
+         │    increment retry_count
+         │      ↓
+         │    INTERPRET → STRUCTURE → VERIFY
+         │
+         ├─ RETRY: structure/translation fault
+         │    and retries remain
+         │      ↓
+         │    increment retry_count
+         │      ↓
+         │    STRUCTURE → VERIFY
+         │
+         ├─ CLARIFY ──────────────────────→ CLARIFY → END
+         │
+         └─ RETRY with budget exhausted ─→ CLARIFY → END
+
 ```
 
 ### Agent
-le important idea
+
 ```
 Agent
   ↓
@@ -86,69 +157,21 @@ BaseAgent
   ↓
 Model Interface
   ↓
-┌─────────────────┬────────────────────┐
-│ AWS Bedrock     │ Local/Hugging Face │
-│ Claude/Nova/etc │ Whisper Singlish   │
-└─────────────────┴────────────────────┘
-```
-
-```
-Interpret → Structure → Verify
-    ↑           ↑         |
-    |           └ structure fault
-    └ interpretation fault
-
-source ambiguity → Clarify
-PASS → Accept
-```
-
-so what do you need to do as agent specialists:
-
-1. follow `agents_base_agent_example.py` for an idea on how to use the template
-
-2. create your system prompt, create any tools where needed
-
-### Orchestration Workflow
-
-overarching idea:
-
-```
-START
-  ↓
-interpretation_agent
-  ├─ needs clarification ─────────────→ CLARIFY → END
-  ↓
-structure_agent
-  ↓
-verify_agent
-  ├─ PASS ────────────────────────────→ END
-  ├─ CLARIFY ─────────────────────────→ CLARIFY → END
-  └─ RETRY and retry_count < limit ───→ structure_agent
+┌──────────────────────┬──────────────────────────┐
+│ AWS Bedrock          │ Local / Amazon Polly     │
+│ Interpretation Agent │ Whisper Singlish (MLX)   │
+│ Structure Agent      │ Qwen3-ASR Multilingual   │
+│ Verify Agent         │   (MLX, Apple Silicon)   │
+│ Display Agent        │                          │
+│ (Claude Sonnet 4.5 / │                          │
+│  Claude Haiku 4.5)   │                          │
+└──────────────────────┴──────────────────────────┘
 ```
 
 
-and then how to access the AWS
+## Description of the Agents
 
-1. ensure you have `awscli` downloaded, else download it
-```
-aws --version
-
-brew install awscli
-```
-
-2. configure ur sso
-
-refer to access keys for the info!
-```
-aws configure sso
-```
-
-3. configure profile name: hackathon
-
-4. next time, when start working
-```
-aws sso login --profile hackathon
-```
+## 1. Transcription Agent
 
 ### Transcription workflow layout
 
@@ -162,30 +185,6 @@ models/transcription_agent/   # Whisper, Qwen, and text-normalisation adapters
 services/transcription_agent/ # parallel transcription service
 tests/transcription_agent/    # transcription tests
 ```
-
-## ASR demo: parallel Singlish and multilingual transcription
-
-This portion of the project runs two local speech-to-text models. Both receive
-the same audio file and return independent candidates
-for a later word-level consensus stage. The frontend displays each model's raw
-transcript, including Chinese characters. The matching `text` field sent to
-downstream agents is converted to tone-less Mandarin pinyin; English, Singlish,
-and punctuation are retained as returned by the model.
-
-```text
-Audio file
-  ├─ Singlish Whisper          → English / Singlish candidate
-  └─ Qwen3-ASR                 → Mandarin / Cantonese / Minnan candidate
-                                      ↓
-                           JSON candidate output
-```
-
-### Requirements
-
-- Python 3.13
-- `ffmpeg` available on your system
-- 16 GB memory minimum is recommended; CUDA makes the portable models much
-  faster, while CPU-only inference is supported but slower.
 
 ### Setup
 
@@ -201,7 +200,16 @@ skips MLX dependencies except on Apple Silicon. Install the PyTorch build that
 matches your NVIDIA CUDA version before installing the requirements if you want
 GPU acceleration on Linux or Windows.
 
-### Platform model selection
+The `.env` file should be configured as below:
+
+```dotenv
+ASR_BACKEND=auto
+WHISPER_MLX_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
+QWEN_ASR_MLX_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
+WHISPER_PORTABLE_MODEL=mjwong/whisper-large-v3-turbo-singlish
+QWEN_ASR_PORTABLE_MODEL=Qwen/Qwen3-ASR-0.6B-hf
+AWS_REGION=us-east-1
+```
 
 `ASR_BACKEND=auto` (the default) selects the models below:
 
@@ -215,18 +223,12 @@ The CUDA and CPU backends download their model weights on first use. Set
 `ASR_BACKEND` to `mlx`, `cuda`, or `cpu` to override auto-detection, for example
 when diagnosing a GPU installation.
 
-### Run the included practice test
+### Test
 
 ```bash
 export HF_HUB_DISABLE_XET=1
 python3 transcribe_parallel.py TestData/SinglishTestData.m4a
 ```
-
-The first run downloads and caches both models:
-
-- [`wysie/whisper-large-v3-turbo-singlish-mlx`](https://huggingface.co/wysie/whisper-large-v3-turbo-singlish-mlx) for Singlish and English.
-- [`mlx-community/Qwen3-ASR-0.6B-8bit`](https://huggingface.co/mlx-community/Qwen3-ASR-0.6B-8bit) for multilingual transcription, including Chinese, Cantonese, and Minnan coverage.
-
 The command prints two candidates as JSON:
 
 ```json
@@ -236,25 +238,127 @@ The command prints two candidates as JSON:
 ]
 ```
 
-`TestData/SinglishTestData.m4a` is version-controlled for this practice run;
-other files under `TestData/` are ignored by default. A successful run produces
-two non-empty candidate texts. Transcript wording may vary with model-runtime
-updates, so use successful completion and output structure as the check rather
-than a fixed transcript.
 
-### Configuration
+## 2. Transcription Agent
 
-Copy `env_template` to `.env` only when you need to override model identifiers
-or AWS settings. Do not commit `.env`.
+This agent consists of 2 scripts: `tools/glossary_lookup.py` (retrieval) and
+`agents/interpretation_agent.py` (structured extraction).
 
-```dotenv
-ASR_BACKEND=auto
-WHISPER_MLX_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
-QWEN_ASR_MLX_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
-WHISPER_PORTABLE_MODEL=mjwong/whisper-large-v3-turbo-singlish
-QWEN_ASR_PORTABLE_MODEL=Qwen/Qwen3-ASR-0.6B-hf
-AWS_REGION=us-east-1
-```
+### Flow
+
+    transcript (str | list[str] ASR candidates)
+      -> glossary_lookup   -> list[hit]
+      -> InterpretationAgent(transcript, glossary_hits, person_info,
+                             recent_context, verification_issues)
+      -> InterpretationResult (Pydantic)
+
+### Glossary retrieval
+
+`data/caregiving_glossary.json` — 45 entries, 256 surface forms (term + variants).
+
+| | |
+|---|---|
+| categories | daily_living 13, symptom 11, negation 6, urgency_state 6, referent 4, tcm 3, time 2 |
+| languages | Chinese/Singlish 17, Chinese 11, Singapore English 8, Singlish 7, mixed 2 |
+
+Entry schema: `id, term, language, meaning, variants[], category, example, ambiguity`.
+Unknown keys, duplicate ids and an empty file are rejected at load
+(`GlossaryConfigError`); non-fatal problems (entry with no matchable surface form,
+a form claimed by two entries) surface as `retriever.warnings`.
+
+Hybrid lookup, alias first:
+
+1. **Alias match** — normalised, punctuation/spacing-insensitive regex over all
+   surface forms. Latin forms are word-boundary anchored; CJK forms are not.
+   Scores `1.0`, `match_type="alias"`. Longer surface forms rank first.
+2. **Vector search** — Titan Text Embeddings v2 (`amazon.titan-embed-text-v2:0`,
+   1024-dim) over `term + meaning + example`, cosine similarity,
+   `MIN_SIMILARITY = 0.28`. Entries already hit by alias are not re-added.
+   `match_type="vector"`, rendered to the agent as "(paraphrase match)".
+
+Alias hits always outrank vector hits. Defaults: `TOP_K = 3`, `MAX_HITS = 8`.
+
+Length floors are script-aware: `MIN_ALIAS_LENGTH = 3` for Latin,
+`MIN_ALIAS_LENGTH_CJK = 2`, so 头晕 / 跌倒 / 不要 stay matchable while `ok` / `GP`
+do not. `_has_latin` casefolds first, or `GP`/`BP` would take the CJK branch and
+match inside unrelated words.
+
+Embeddings are cached on disk (`glossary_embeddings.json`), keyed by SHA-256 of
+the embed text plus model id and dimensions, so a config change invalidates the
+cache rather than mixing vector spaces. Corrupt or wrong-dimension cache entries
+fall back to re-embedding.
+
+Degradation: if Bedrock is unreachable at index or query time, alias matching
+still runs and `lookup()` never raises. Zero hits on a transcript with no
+glossary terms is `success=True` — it must not count against tool-call success rate.
+
+`result.to_trace()` emits `node, matches, alias_matches, vector_matches,
+tool_success`.
+
+    # startup
+    get_retriever().index()
+    # per turn
+    hits = glossary_lookup(transcript)     # list[dict]
+
+CLI: `python3 -m tools.glossary_lookup --check` (offline alias smoke tests),
+`--calibrate` (probe positives/negatives to re-pick `MIN_SIMILARITY`; needs
+`aws sso login --profile hackathon`). Region must be `us-east-1`.
+
+### InterpretationAgent
+
+Extracts structure, does not translate. `temperature=0`, `max_tokens=800`,
+JSON-only output; `_extract_json` slices the outermost object so a preamble
+sentence can't break validation. Invalid output raises `InterpretationError` —
+no fabricated result, the graph routes to CLARIFY.
+
+`InterpretationResult`:
+
+    utterance_type   request | statement | question | distress
+    actor, action, object, timing          # all optional; action may be null
+    negated, negation_cue, negation_scope  # split so "not the blue one, the white one" survives
+    urgency          low | normal | high
+    ambiguity[], clarification_question
+    source_language, cleaned_transcript
+
+Prompt rules that carry the weight:
+
+- **Negation is the highest-cost error.** Any of don't / cannot / no need / bo /
+  mai / buay sets `negated`, plus cue and scope.
+- **`urgency` defaults to `normal`.** `low` is only for an explicit statement of
+  non-concern. `high` only for pain, falls, breathing difficulty, explicit
+  distress — vague discomfort with no named symptom is flagged, not escalated.
+- **Referent identity ≠ term sense.** Person info resolves *who*; it never
+  settles which reading of a term applies. A referent resolved from context is
+  resolved — it must not be re-flagged.
+- **A discarded paraphrase candidate is not an ambiguity.** Vector hits are
+  candidate readings; ignoring one produces no note.
+- Unresolvable referent → field null + ambiguity note, never an invented referent.
+
+Only `PROFILE_FIELDS` (`preferred_name, languages, household_terms,
+relationships, communication_preferences`) reach the prompt. A raw profile dict
+is never f-strung in.
+
+`needs_clarification(result)` is the graph's single decision point. Ambiguity
+alone is deliberately not enough (it would tank clarification precision); it
+clarifies only on high urgency, negation with unresolved scope, or a
+request/distress missing action or object.
+
+`to_trace(result)` emits `node, schema_valid, utterance_type, negated, urgency,
+ambiguity_count, needs_clarification` — no transcript text, no reasoning.
+
+### Evaluation
+
+`interp_test_cases.json` — 20 probe cases, each with a `probe`, a `watch_for`
+note and an `expect_ambiguity` flag. Current: **18/20**, baseline without
+glossary 15/20. c005 and c020 are known, documented failures from the
+`urgency`-tightening tradeoff.
+
+### Tests
+
+    python3 -m unittest tests.test_glossary_lookup -v
+
+No network, no AWS, no data file — every test injects a glossary and a
+deterministic `FakeEmbedder`.
 
 ### Tests
 
@@ -271,8 +375,7 @@ they do not prove real model accuracy or performance on your audio.
 deterministic fake embedder, so they need no AWS credentials and no network.
 
 **The interpretation eval** measures how well the agent reads real Singlish and
-Chinese caregiving utterances. It calls Bedrock, so it costs tokens and needs an
-active SSO session.
+Chinese caregiving utterances.
 
 ### Unit tests
 
@@ -546,3 +649,4 @@ Performance and cost:
 - Interpretation was the largest cost component at **$0.212**, about 72% of synthesiser cost.
 
 Overall, the system is production-threshold compliant, reliable at preserving meaning, and effective at self-repair. The clearest improvement area is distinguishing genuine ambiguity from harmless unresolved pronouns, followed by more consistent categorical handling of contextual negation and statement-versus-request intent.
+

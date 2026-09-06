@@ -59,11 +59,14 @@
     letter-spacing: -0.01em;
   }
 
+  .bar-tools { display: flex; gap: 8px; align-items: center; }
+
   .sizer { display: flex; gap: 8px; align-items: center; }
 
   .sizer span { font-size: calc(15px * var(--scale)); color: var(--muted); }
 
-  .sizer button {
+  .sizer button,
+  .icon-button {
     width: 54px;
     height: 54px;
     border: 2px solid var(--line);
@@ -83,6 +86,17 @@
   .sizer button:nth-of-type(1) { font-size: 16px; }
   .sizer button:nth-of-type(2) { font-size: 21px; }
   .sizer button:nth-of-type(3) { font-size: 26px; }
+
+  .icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+
+  .icon-button svg { width: 28px; height: 28px; fill: var(--ink); }
+
+  .icon-button:hover { background: var(--brand-tint); border-color: var(--brand); }
 
   /* ---------- instruction ---------- */
 
@@ -204,44 +218,65 @@
 
   .result { margin-top: 32px; }
 
-  .switch {
-    display: flex;
-    border: 3px solid var(--line);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 22px;
-  }
-
-  .switch button {
-    flex: 1;
-    min-height: 70px;
-    border: none;
-    background: var(--surface);
-    color: var(--muted);
-    font-size: calc(18px * var(--scale));
-    font-weight: 700;
-    padding: 10px;
-  }
-
-  .switch button[aria-pressed="true"] { background: var(--brand); color: #fff; }
-
   .heard-label {
     font-size: calc(18px * var(--scale));
+    color: var(--muted);
+    margin: 0 0 4px;
+  }
+
+  .heard-hint {
+    font-size: calc(16px * var(--scale));
     color: var(--muted);
     margin: 0 0 10px;
   }
 
   .heard {
+    display: block;
+    width: 100%;
     border: 3px solid var(--line);
     border-radius: 18px;
     padding: 24px;
+    font-family: inherit;
     font-size: calc(28px * var(--scale));
     line-height: 1.45;
     min-height: 140px;
+    color: var(--ink);
+    background: var(--surface);
+    resize: vertical;
+    overflow: hidden;
   }
 
-  .heard.empty { color: var(--muted); font-size: calc(21px * var(--scale)); }
+  .heard:focus { outline: none; border-color: var(--brand); background: #fbfdff; }
+  .heard:disabled { color: var(--muted); font-size: calc(21px * var(--scale)); background: var(--surface); }
   .heard.failed { border-color: var(--live); color: var(--live); font-size: calc(20px * var(--scale)); }
+
+  .pill {
+    display: inline-block;
+    margin: 14px 0 0;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--brand-tint);
+    color: var(--brand-dark);
+    font-size: calc(17px * var(--scale));
+    font-weight: 700;
+  }
+
+  .alt {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: calc(17px * var(--scale));
+  }
+
+  .alt .link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--brand);
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+  }
 
   .translation {
     margin-top: 24px;
@@ -282,6 +317,103 @@
     min-height: 1.5em;
   }
 
+  /* ---------- settings ---------- */
+
+  .settings { margin-top: 28px; }
+
+  .settings h2 {
+    font-size: calc(26px * var(--scale));
+    margin: 0 0 6px;
+  }
+
+  .settings-note {
+    color: var(--muted);
+    font-size: calc(17px * var(--scale));
+    margin: 0 0 8px;
+  }
+
+  .field { margin-top: 30px; }
+
+  .field > label,
+  .field > .field-name {
+    display: block;
+    font-weight: 700;
+    font-size: calc(21px * var(--scale));
+    margin-bottom: 4px;
+  }
+
+  .field .hint {
+    color: var(--muted);
+    font-size: calc(16px * var(--scale));
+    margin: 0 0 10px;
+  }
+
+  input[type="text"], textarea.box {
+    width: 100%;
+    font-family: inherit;
+    font-size: calc(20px * var(--scale));
+    color: var(--ink);
+    background: var(--surface);
+    padding: 14px;
+    border: 3px solid var(--line);
+    border-radius: 14px;
+  }
+
+  textarea.box { min-height: 110px; resize: vertical; }
+
+  input[type="text"]:focus, textarea.box:focus { outline: none; border-color: var(--brand); }
+
+  .pairs { display: flex; flex-direction: column; gap: 10px; }
+
+  .pair { display: flex; gap: 8px; align-items: center; }
+  .pair input { flex: 1; min-width: 0; }
+
+  .pair .drop {
+    width: 56px;
+    height: 56px;
+    flex: none;
+    border: 2px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .pair .drop:hover { border-color: var(--live); color: var(--live); }
+
+  .add {
+    margin-top: 12px;
+    min-height: 60px;
+    padding: 10px 18px;
+    background: var(--surface);
+    border: 3px solid var(--brand);
+    border-radius: 14px;
+    color: var(--brand-dark);
+    font-size: calc(18px * var(--scale));
+    font-weight: 700;
+  }
+
+  .switch {
+    display: flex;
+    border: 3px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .switch button {
+    flex: 1;
+    min-height: 70px;
+    border: none;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: calc(20px * var(--scale));
+    font-weight: 700;
+    padding: 10px;
+  }
+
+  .switch button[aria-pressed="true"] { background: var(--brand); color: #fff; }
+
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -291,52 +423,64 @@
 
   <div class="bar">
     <h1>CareBridge</h1>
-    <div class="sizer">
-      <span>Text size</span>
-      <button type="button" data-size="1" aria-pressed="true" aria-label="Normal text">A</button>
-      <button type="button" data-size="1.2" aria-pressed="false" aria-label="Large text">A</button>
-      <button type="button" data-size="1.45" aria-pressed="false" aria-label="Extra large text">A</button>
+    <div class="bar-tools">
+      <div class="sizer">
+        <span data-i18n="textSize">Text size</span>
+        <button type="button" data-size="1" aria-pressed="true" data-i18n-aria="sizeNormal" aria-label="Normal text">A</button>
+        <button type="button" data-size="1.2" aria-pressed="false" data-i18n-aria="sizeLarge" aria-label="Large text">A</button>
+        <button type="button" data-size="1.45" aria-pressed="false" data-i18n-aria="sizeExtra" aria-label="Extra large text">A</button>
+      </div>
+      <button type="button" class="icon-button" id="openSettings" data-i18n-aria="settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.24-1.12.55-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.67 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.39 1.04.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.24 1.12-.55 1.62-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64ZM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Z"/></svg>
+      </button>
     </div>
   </div>
 
   <section id="step-start">
-    <p class="lead">Press the button, then speak.</p>
-    <p class="lead-note">English, Singlish, Mandarin, Cantonese and Hokkien all work.</p>
+    <p class="lead" data-i18n="lead">Press the button, then speak.</p>
+    <p class="lead-note" data-i18n="leadNote">English, Mandarin, Cantonese and Hokkien all work. The language is picked up automatically.</p>
 
     <button class="big" id="record" data-live="false">
       <svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11Z"/></svg>
-      <span id="recordLabel">Start speaking</span>
+      <span id="recordLabel" data-i18n="recordStart">Start speaking</span>
     </button>
 
     <p class="timer" id="timer" hidden>0:00</p>
 
-    <button class="plain" id="pick">Use a recording saved on this device</button>
+    <button class="plain" id="pick" data-i18n="pick">Use a recording saved on this device</button>
     <input type="file" id="file" accept="audio/*" hidden>
   </section>
 
   <section class="waiting" id="step-waiting" hidden aria-live="polite">
-    <div>Writing down what you said.<br>This takes about half a minute.</div>
+    <div><span data-i18n="waiting">Writing down what you said.</span><br><span data-i18n="waitingNote">This takes about half a minute.</span></div>
     <div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   </section>
 
   <section class="problem" id="step-problem" hidden role="alert">
     <strong id="problemTitle">Something went wrong</strong>
     <span id="problemText"></span>
-    <button class="plain" id="retry">Try again</button>
+    <button class="plain" id="retry" data-i18n="retry">Try again</button>
   </section>
 
   <section class="result" id="step-result" hidden>
-    <div class="switch" id="switch" hidden role="group" aria-label="Choose a language"></div>
 
-    <p class="heard-label">What we heard</p>
-    <div class="heard" id="heard" aria-live="polite"></div>
+    <p class="heard-label" data-i18n="heardLabel">What we heard</p>
+    <p class="heard-hint" data-i18n="heardHint">Tap the words to fix anything that came out wrong.</p>
+    <textarea class="heard" id="heard" rows="3" data-i18n-aria="heardLabel" aria-label="What we heard"></textarea>
+
+    <p class="alt" id="alt" hidden>
+      <span data-i18n="alsoHeard">We also heard</span>: <span id="altText"></span>
+      <button type="button" class="link" id="useAlt" data-i18n="useAlt">Use this instead</button>
+    </p>
+
+    <p class="pill" id="detected" hidden></p>
 
     <div class="row">
-      <button class="plain" id="speak">Read it aloud</button>
-      <button class="plain" id="copy">Copy the words</button>
+      <button class="plain" id="speak" data-i18n="speak">Read it aloud</button>
+      <button class="plain" id="copy" data-i18n="copy">Copy the words</button>
     </div>
 
-    <button class="big" id="translate" style="margin-top:24px">
+    <button class="big" id="translate" style="margin-top:24px" data-i18n="translate">
       Translate to English
     </button>
 
@@ -345,8 +489,8 @@
       <p class="translation-text" id="translationText"></p>
       <p class="translation-note" id="translationNote"></p>
       <div class="row" id="translationActions">
-        <button class="plain" id="speakTranslation">Read translation aloud</button>
-        <button class="plain" id="copyTranslation">Copy translation</button>
+        <button class="plain" id="speakTranslation" data-i18n="speakTranslation">Read translation aloud</button>
+        <button class="plain" id="copyTranslation" data-i18n="copyTranslation">Copy translation</button>
       </div>
     </div>
 
@@ -354,16 +498,254 @@
 
     <button class="big" id="again" style="margin-top:28px">
       <svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11Z"/></svg>
-      Speak again
+      <span data-i18n="again">Speak again</span>
     </button>
+  </section>
+
+  <section class="settings" id="step-settings" hidden>
+    <h2 data-i18n="settingsTitle">Settings</h2>
+    <p class="settings-note" data-i18n="settingsNote">This helps CareBridge understand who and what is being talked about at home.</p>
+
+    <div class="field">
+      <label for="preferredName" data-i18n="preferredName">Preferred name</label>
+      <p class="hint" data-i18n="preferredNameHint">What the person likes to be called.</p>
+      <input type="text" id="preferredName" data-i18n-placeholder="preferredNamePlaceholder" placeholder="Mdm Tan">
+    </div>
+
+    <div class="field">
+      <label for="languages" data-i18n="languages">Languages spoken</label>
+      <p class="hint" data-i18n="languagesHint">Separate each one with a comma.</p>
+      <input type="text" id="languages" data-i18n-placeholder="languagesPlaceholder" placeholder="Hokkien, Mandarin, English">
+    </div>
+
+    <div class="field">
+      <span class="field-name" data-i18n="householdTerms">Words used at home</span>
+      <p class="hint" data-i18n="householdTermsHint">A word the household uses, and what it actually means.</p>
+      <div class="pairs" id="householdTerms"></div>
+      <button type="button" class="add" data-add="householdTerms" data-i18n="addWord">Add a word</button>
+    </div>
+
+    <div class="field">
+      <span class="field-name" data-i18n="relationships">People</span>
+      <p class="hint" data-i18n="relationshipsHint">What someone is called, and who they are.</p>
+      <div class="pairs" id="relationships"></div>
+      <button type="button" class="add" data-add="relationships" data-i18n="addPerson">Add a person</button>
+    </div>
+
+    <div class="field">
+      <label for="communicationPreferences" data-i18n="commPrefs">Communication preferences</label>
+      <p class="hint" data-i18n="commPrefsHint">Anything that helps, such as speaking slowly or avoiding certain words.</p>
+      <textarea class="box" id="communicationPreferences"></textarea>
+    </div>
+
+    <div class="field">
+      <span class="field-name" data-i18n="interfaceLanguage">App language</span>
+      <p class="hint" data-i18n="interfaceLanguageHint">Changes the words on this app only.</p>
+      <div class="switch" id="uiLanguage" role="group" data-i18n-aria="interfaceLanguage" aria-label="App language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="zh" aria-pressed="false">中文</button>
+      </div>
+    </div>
+
+    <button class="big" id="saveSettings" style="margin-top:30px" data-i18n="save">Save</button>
+    <p class="ok" id="settingsOk" aria-live="polite"></p>
+    <button class="plain" id="closeSettings" data-i18n="back">Back</button>
   </section>
 
 </main>
 
 <script>
-const MODELS = {
-  singlish_whisper:  { label: "English or Singlish", lang: "en-SG" },
-  qwen_multilingual: { label: "Chinese or dialect",  lang: "zh-CN" },
+/* ---------- interface copy ---------- */
+
+const STRINGS = {
+  en: {
+    textSize: "Text size",
+    sizeNormal: "Normal text",
+    sizeLarge: "Large text",
+    sizeExtra: "Extra large text",
+    settings: "Settings",
+
+    lead: "Press the button, then speak.",
+    leadNote: "English, Mandarin, Cantonese and Hokkien all work. The language is picked up automatically.",
+    recordStart: "Start speaking",
+    recordStop: "I am done",
+    pick: "Use a recording saved on this device",
+
+    waiting: "Writing down what you said.",
+    waitingNote: "This takes about half a minute.",
+    retry: "Try again",
+
+    heardLabel: "What we heard",
+    heardHint: "Tap the words to fix anything that came out wrong.",
+    heardEmpty: "Nothing was picked up. Try again, a little louder and closer to the microphone.",
+    heardFailed: "This recording did not work. Please speak again.",
+    alsoHeard: "We also heard",
+    useAlt: "Use this instead",
+
+    detectedLabel: "Language detected",
+    langEnglish: "English",
+    langChinese: "Chinese",
+    langMalay: "Malay",
+    langMixed: "More than one language",
+    langUnknown: "Could not tell",
+
+    speak: "Read it aloud",
+    copy: "Copy the words",
+    translate: "Translate to English",
+    translating: "Translating…",
+    translatingNote: "Using the conversation and your settings to translate.",
+    translationLabel: "English translation",
+    clarifyLabel: "Please say a bit more",
+    verifiedNote: "Checked against what was originally said.",
+    unclearNote: "The meaning was not clear enough to translate safely.",
+    fallbackQuestion: "Could you say that a different way?",
+    speakTranslation: "Read translation aloud",
+    copyTranslation: "Copy translation",
+    again: "Speak again",
+
+    readingAloud: "Reading it aloud.",
+    generatingVoice: "Generating a Singapore English voice.",
+    readingTranslation: "Reading the translation aloud.",
+    copied: "Copied.",
+    copiedTranslation: "Translation copied.",
+    copyBlocked: "Copying is blocked here. Select the words and copy them by hand.",
+    translateFailed: "We could not translate this recording.",
+    speechFailed: "Could not generate speech.",
+
+    micTitle: "This page cannot hear you",
+    micText: "The microphone is switched off for this page. Turn it on in your browser settings, or use a recording saved on this device.",
+    transcribeTitle: "We could not write down what you said",
+    serverError: "The server replied with an error.",
+    emptyReply: "Nothing came back from the server.",
+
+    settingsTitle: "Settings",
+    settingsNote: "This helps CareBridge understand who and what is being talked about at home.",
+    preferredName: "Preferred name",
+    preferredNameHint: "What the person likes to be called.",
+    preferredNamePlaceholder: "Mdm Tan",
+    languages: "Languages spoken",
+    languagesHint: "Separate each one with a comma.",
+    languagesPlaceholder: "Hokkien, Mandarin, English",
+    householdTerms: "Words used at home",
+    householdTermsHint: "A word the household uses, and what it actually means.",
+    householdKey: "The word",
+    householdValue: "What it means",
+    addWord: "Add a word",
+    relationships: "People",
+    relationshipsHint: "What someone is called, and who they are.",
+    relationshipKey: "What they are called",
+    relationshipValue: "Who they are",
+    addPerson: "Add a person",
+    commPrefs: "Communication preferences",
+    commPrefsHint: "Anything that helps, such as speaking slowly or avoiding certain words.",
+    interfaceLanguage: "App language",
+    interfaceLanguageHint: "Changes the words on this app only.",
+    remove: "Remove",
+    save: "Save",
+    saving: "Saving…",
+    saved: "Settings saved.",
+    saveFailed: "Settings could not be saved.",
+    loadFailed: "Saved settings could not be loaded.",
+    back: "Back",
+  },
+  zh: {
+    textSize: "字体大小",
+    sizeNormal: "普通字体",
+    sizeLarge: "大字体",
+    sizeExtra: "特大字体",
+    settings: "设置",
+
+    lead: "按下按钮，然后说话。",
+    leadNote: "英语、华语、广东话和福建话都可以。系统会自动识别语言。",
+    recordStart: "开始说话",
+    recordStop: "我说完了",
+    pick: "使用手机里的录音",
+
+    waiting: "正在记录您说的话。",
+    waitingNote: "大约需要半分钟。",
+    retry: "再试一次",
+
+    heardLabel: "我们听到的内容",
+    heardHint: "如果有错，请点击文字修改。",
+    heardEmpty: "没有听到声音。请靠近麦克风，大声一点再试。",
+    heardFailed: "这段录音无法处理，请再说一次。",
+    alsoHeard: "我们也听到",
+    useAlt: "改用这个",
+
+    detectedLabel: "识别到的语言",
+    langEnglish: "英语",
+    langChinese: "中文",
+    langMalay: "马来语",
+    langMixed: "多种语言",
+    langUnknown: "无法确定",
+
+    speak: "朗读",
+    copy: "复制文字",
+    translate: "翻译成英文",
+    translating: "翻译中…",
+    translatingNote: "正在结合对话内容和您的设置进行翻译。",
+    translationLabel: "英文翻译",
+    clarifyLabel: "请再说清楚一点",
+    verifiedNote: "已与原话核对。",
+    unclearNote: "意思不够清楚，无法安全翻译。",
+    fallbackQuestion: "可以换一个说法吗？",
+    speakTranslation: "朗读翻译",
+    copyTranslation: "复制翻译",
+    again: "再说一次",
+
+    readingAloud: "正在朗读。",
+    generatingVoice: "正在生成语音。",
+    readingTranslation: "正在朗读翻译。",
+    copied: "已复制。",
+    copiedTranslation: "翻译已复制。",
+    copyBlocked: "此处无法复制。请自行选取文字复制。",
+    translateFailed: "无法翻译这段录音。",
+    speechFailed: "无法生成语音。",
+
+    micTitle: "无法听到您的声音",
+    micText: "此页面的麦克风已关闭。请在浏览器设置中打开，或使用手机里的录音。",
+    transcribeTitle: "无法记录您说的话",
+    serverError: "服务器返回错误。",
+    emptyReply: "服务器没有返回内容。",
+
+    settingsTitle: "设置",
+    settingsNote: "这些资料能帮助 CareBridge 明白家里谈到的人和事。",
+    preferredName: "称呼",
+    preferredNameHint: "平时怎么称呼这位长辈。",
+    preferredNamePlaceholder: "陈女士",
+    languages: "使用语言",
+    languagesHint: "用逗号分开。",
+    languagesPlaceholder: "福建话、华语、英语",
+    householdTerms: "家里的用语",
+    householdTermsHint: "家里常用的说法，以及它的意思。",
+    householdKey: "说法",
+    householdValue: "意思",
+    addWord: "加一个说法",
+    relationships: "家里的人",
+    relationshipsHint: "怎么称呼这个人，以及他是谁。",
+    relationshipKey: "称呼",
+    relationshipValue: "是谁",
+    addPerson: "加一个人",
+    commPrefs: "沟通偏好",
+    commPrefsHint: "任何有帮助的事，例如说慢一点或避免某些词。",
+    interfaceLanguage: "界面语言",
+    interfaceLanguageHint: "只改变这个应用的文字。",
+    remove: "删除",
+    save: "保存",
+    saving: "保存中…",
+    saved: "设置已保存。",
+    saveFailed: "无法保存设置。",
+    loadFailed: "无法读取已保存的设置。",
+    back: "返回",
+  },
+};
+
+const LANGUAGE_KEYS = {
+  english: "langEnglish",
+  chinese: "langChinese",
+  malay: "langMalay",
+  mixed: "langMixed",
+  unknown: "langUnknown",
 };
 
 const MIC_PATH = "M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11Z";
@@ -371,18 +753,59 @@ const MIC_PATH = "M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 
 const el = (id) => document.getElementById(id);
 
 const steps = {
-  start:   el("step-start"),
-  waiting: el("step-waiting"),
-  problem: el("step-problem"),
-  result:  el("step-result"),
+  start:    el("step-start"),
+  waiting:  el("step-waiting"),
+  problem:  el("step-problem"),
+  result:   el("step-result"),
+  settings: el("step-settings"),
 };
 
 let recorder = null, chunks = [], ticker = null, seconds = 0;
-let candidates = [], chosen = 0, lastBlob = null, lastName = "";
+let candidates = [], primary = 0, lastBlob = null, lastName = "";
 let translatedText = "";
 let currentSpeechAudio = null;
 let currentSpeechUrl = null;
 let recentContext = [];
+let detectedCode = null;
+let returnStep = "start";
+let uiLanguage = "en";
+
+const t = (key) => (STRINGS[uiLanguage] || STRINGS.en)[key] || STRINGS.en[key] || key;
+
+/* ---------- interface language ---------- */
+
+function applyLanguage(code) {
+  uiLanguage = STRINGS[code] ? code : "en";
+  document.documentElement.lang = uiLanguage === "zh" ? "zh" : "en";
+
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((node) => {
+    node.setAttribute("aria-label", t(node.dataset.i18nAria));
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.placeholder = t(node.dataset.i18nPlaceholder);
+  });
+
+  // Strings held in JS rather than markup.
+  el("recordLabel").textContent =
+    recorder && recorder.state === "recording" ? t("recordStop") : t("recordStart");
+
+  document.querySelectorAll("#uiLanguage button").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.lang === uiLanguage));
+  });
+
+  document.querySelectorAll(".pair").forEach((pair) => {
+    const group = pair.dataset.group;
+    const inputs = pair.querySelectorAll("input");
+    inputs[0].placeholder = t(group === "relationships" ? "relationshipKey" : "householdKey");
+    inputs[1].placeholder = t(group === "relationships" ? "relationshipValue" : "householdValue");
+    pair.querySelector(".drop").setAttribute("aria-label", t("remove"));
+  });
+
+  showDetected();
+}
 
 /* ---------- text size ---------- */
 
@@ -423,6 +846,134 @@ function stopIcon() {
   return box;
 }
 
+/* ---------- settings ---------- */
+
+function pairRow(group, key = "", value = "") {
+  const row = document.createElement("div");
+  row.className = "pair";
+  row.dataset.group = group;
+
+  const keyInput = document.createElement("input");
+  keyInput.type = "text";
+  keyInput.value = key;
+  keyInput.placeholder = t(group === "relationships" ? "relationshipKey" : "householdKey");
+
+  const valueInput = document.createElement("input");
+  valueInput.type = "text";
+  valueInput.value = value;
+  valueInput.placeholder = t(group === "relationships" ? "relationshipValue" : "householdValue");
+
+  const drop = document.createElement("button");
+  drop.type = "button";
+  drop.className = "drop";
+  drop.textContent = "×";
+  drop.setAttribute("aria-label", t("remove"));
+  drop.addEventListener("click", () => row.remove());
+
+  row.append(keyInput, valueInput, drop);
+  return row;
+}
+
+function fillPairs(group, mapping) {
+  const holder = el(group);
+  holder.innerHTML = "";
+  Object.entries(mapping || {}).forEach(([key, value]) => {
+    holder.append(pairRow(group, key, value));
+  });
+  if (!holder.children.length) holder.append(pairRow(group));
+}
+
+function readPairs(group) {
+  const mapping = {};
+  el(group).querySelectorAll(".pair").forEach((row) => {
+    const [keyInput, valueInput] = row.querySelectorAll("input");
+    const key = keyInput.value.trim();
+    if (key) mapping[key] = valueInput.value.trim();
+  });
+  return mapping;
+}
+
+function fillSettings(profile) {
+  el("preferredName").value = profile.preferred_name || "";
+  el("languages").value = (profile.languages || []).join(", ");
+  el("communicationPreferences").value = profile.communication_preferences || "";
+  fillPairs("householdTerms", profile.household_terms);
+  fillPairs("relationships", profile.relationships);
+  applyLanguage(profile.ui_language || "en");
+}
+
+function collectSettings() {
+  return {
+    preferred_name: el("preferredName").value.trim(),
+    languages: el("languages").value
+      .split(/[,、，]/)
+      .map((item) => item.trim())
+      .filter(Boolean),
+    household_terms: readPairs("householdTerms"),
+    relationships: readPairs("relationships"),
+    communication_preferences: el("communicationPreferences").value.trim(),
+    ui_language: uiLanguage,
+  };
+}
+
+document.querySelectorAll(".add").forEach((button) => {
+  button.addEventListener("click", () => {
+    const group = button.dataset.add;
+    const row = pairRow(group);
+    el(group).append(row);
+    row.querySelector("input").focus();
+  });
+});
+
+document.querySelectorAll("#uiLanguage button").forEach((button) => {
+  // Applies straight away so the change is visible before saving.
+  button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+});
+
+el("openSettings").addEventListener("click", () => {
+  returnStep = Object.entries(steps)
+    .find(([key, node]) => key !== "settings" && !node.hidden)?.[0] || "start";
+  el("settingsOk").textContent = "";
+  show("settings");
+  el("preferredName").focus();
+});
+
+el("closeSettings").addEventListener("click", () => show(returnStep));
+
+el("saveSettings").addEventListener("click", async () => {
+  const button = el("saveSettings");
+  button.disabled = true;
+  button.textContent = t("saving");
+  try {
+    const response = await fetch("/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(collectSettings()),
+    });
+    if (!response.ok) throw new Error();
+    el("settingsOk").textContent = t("saved");
+  } catch {
+    el("settingsOk").textContent = t("saveFailed");
+  } finally {
+    button.disabled = false;
+    button.textContent = t("save");
+  }
+});
+
+async function loadSettings() {
+  try {
+    const response = await fetch("/api/profile");
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+    fillSettings(data.profile || {});
+  } catch {
+    fillSettings({});
+    el("settingsOk").textContent = t("loadFailed");
+  }
+}
+
+loadSettings();
+
 /* ---------- recording ---------- */
 
 el("record").addEventListener("click", async () => {
@@ -432,10 +983,7 @@ el("record").addEventListener("click", async () => {
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (err) {
-    problem(
-      "This page cannot hear you",
-      "The microphone is switched off for this page. Turn it on in your browser settings, or use a recording saved on this device."
-    );
+    problem(t("micTitle"), t("micText"));
     return;
   }
 
@@ -447,7 +995,7 @@ el("record").addEventListener("click", async () => {
     clearInterval(ticker);
     el("timer").hidden = true;
     el("record").dataset.live = "false";
-    el("recordLabel").textContent = "Start speaking";
+    el("recordLabel").textContent = t("recordStart");
     const marker = el("record").querySelector(".square");
     if (marker) marker.replaceWith(micIcon());
     send(new Blob(chunks, { type: "audio/webm" }), "recording.webm");
@@ -463,7 +1011,7 @@ el("record").addEventListener("click", async () => {
   }, 1000);
 
   el("record").dataset.live = "true";
-  el("recordLabel").textContent = "I am done";
+  el("recordLabel").textContent = t("recordStop");
   el("record").querySelector(".mic").replaceWith(stopIcon());
 });
 
@@ -482,6 +1030,7 @@ el("file").addEventListener("change", () => {
 async function send(blob, name) {
   lastBlob = blob;
   lastName = name;
+  detectedCode = null;
   show("waiting");
 
   const body = new FormData();
@@ -491,16 +1040,24 @@ async function send(blob, name) {
     const response = await fetch("/api/transcribe", { method: "POST", body });
     if (!response.ok) {
       const detail = await response.json().catch(() => ({}));
-      throw new Error(detail.detail || `The server replied with an error (${response.status}).`);
+      throw new Error(detail.detail || t("serverError"));
     }
     const data = await response.json();
     candidates = data.candidates || [];
-    if (!candidates.length) throw new Error("Nothing came back from the server.");
-    chosen = candidates.findIndex((candidate) => candidate.text);
-    if (chosen < 0) chosen = 0;
+    if (!candidates.length) throw new Error(t("emptyReply"));
+
+    // No input toggle any more: show the fullest transcript, since the model
+    // that heard more of the utterance is the better starting point to edit.
+    primary = 0;
+    let best = -1;
+    candidates.forEach((candidate, index) => {
+      const length = candidate.text ? candidate.text.trim().length : -1;
+      if (length > best) { best = length; primary = index; }
+    });
+
     render();
   } catch (err) {
-    problem("We could not write down what you said", err.message);
+    problem(t("transcribeTitle"), err.message);
   }
 }
 
@@ -512,119 +1069,154 @@ el("retry").addEventListener("click", () => {
 el("again").addEventListener("click", () => {
   el("ok").textContent = "";
   translatedText = "";
+  detectedCode = null;
   el("translation").hidden = true;
+  el("detected").hidden = true;
   show("start");
   el("record").focus();
 });
 
 /* ---------- results ---------- */
 
+function grow(area) {
+  area.style.height = "auto";
+  area.style.height = `${Math.max(area.scrollHeight, 140)}px`;
+}
+
+function otherCandidate() {
+  return candidates.find(
+    (candidate, index) =>
+      index !== primary &&
+      candidate.text &&
+      !candidate.error &&
+      candidate.text.trim() !== (candidates[primary].text || "").trim()
+  );
+}
+
 function render() {
-  const box = el("switch");
-  box.innerHTML = "";
-
-  if (candidates.length > 1) {
-    box.hidden = false;
-    candidates.forEach((candidate, index) => {
-      const meta = MODELS[candidate.model] || { label: candidate.model };
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = meta.label;
-      button.setAttribute("aria-pressed", String(index === chosen));
-      button.addEventListener("click", () => {
-        chosen = index;
-        translatedText = "";
-        el("translation").hidden = true;
-        render();
-      });
-      box.append(button);
-    });
-  } else {
-    box.hidden = true;
-  }
-
-  const current = candidates[chosen];
+  const current = candidates[primary];
   const heard = el("heard");
   heard.className = "heard";
+  heard.disabled = false;
 
   if (current.error) {
     heard.classList.add("failed");
-    heard.textContent = "This one did not work. Try the other language above, or speak again.";
+    heard.value = "";
+    heard.placeholder = t("heardFailed");
+    heard.disabled = true;
   } else if (!current.text) {
-    heard.classList.add("empty");
-    heard.textContent = "Nothing was picked up. Try again, a little louder and closer to the microphone.";
+    heard.value = "";
+    heard.placeholder = t("heardEmpty");
+    heard.disabled = true;
   } else {
-    heard.textContent = current.raw_text || current.text;
+    heard.value = current.text;
   }
 
-  el("speak").disabled = !current.text;
-  el("copy").disabled = !current.text;
-  el("translate").disabled = !current.text;
+  grow(heard);
+
+  const alternative = otherCandidate();
+  el("alt").hidden = !alternative;
+  if (alternative) el("altText").textContent = alternative.text;
+
+  el("detected").hidden = !detectedCode;
+  showDetected();
+
+  const usable = Boolean(heard.value.trim());
+  el("speak").disabled = !usable;
+  el("copy").disabled = !usable;
+  el("translate").disabled = !usable;
   el("ok").textContent = "";
   show("result");
 }
 
+function showDetected() {
+  if (!detectedCode) return;
+  el("detected").textContent = `${t("detectedLabel")}: ${t(LANGUAGE_KEYS[detectedCode] || "langUnknown")}`;
+}
+
+el("heard").addEventListener("input", () => {
+  grow(el("heard"));
+  const usable = Boolean(el("heard").value.trim());
+  el("speak").disabled = !usable;
+  el("copy").disabled = !usable;
+  el("translate").disabled = !usable;
+});
+
+el("useAlt").addEventListener("click", () => {
+  const alternative = otherCandidate();
+  if (!alternative) return;
+  primary = candidates.indexOf(alternative);
+  translatedText = "";
+  el("translation").hidden = true;
+  render();
+  el("heard").focus();
+});
+
 /* ---------- context-aware translation ---------- */
 
 el("translate").addEventListener("click", async () => {
-  const successfulTranscripts = candidates
-    .filter((candidate) => candidate.text && !candidate.error)
-    .map((candidate) => candidate.text);
+  const edited = el("heard").value.trim();
+  if (!edited) return;
 
-  if (!successfulTranscripts.length) return;
+  const untouched = edited === (candidates[primary]?.text || "").trim();
+
+  // Untouched: send every candidate and let the pipeline reconcile them.
+  // Corrected: the user's wording is the truth, so send only that.
+  const others = candidates
+    .filter((candidate, index) => index !== primary && candidate.text && !candidate.error)
+    .map((candidate) => candidate.text);
+  const transcript = untouched && others.length ? [edited, ...others] : edited;
 
   const button = el("translate");
   button.disabled = true;
-  button.textContent = "Translating…";
+  button.textContent = t("translating");
   el("translation").hidden = true;
-  el("ok").textContent = "Using the conversation context to translate.";
+  el("ok").textContent = t("translatingNote");
 
   try {
     const response = await fetch("/api/translate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        transcript: successfulTranscripts.length === 1
-          ? successfulTranscripts[0]
-          : successfulTranscripts,
+        transcript,
         recent_context: recentContext,
-        person_info: {},
+        // person_info omitted on purpose: the backend uses the saved profile.
       }),
     });
 
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(result.detail || `Translation failed (${response.status}).`);
+      throw new Error(result.detail || t("translateFailed"));
     }
+
+    detectedCode = result.detected_language?.code || null;
+    el("detected").hidden = !detectedCode;
+    showDetected();
 
     const isVerified = result.status === "verified" && result.translation;
     translatedText = isVerified ? result.translation : "";
 
-    el("translationLabel").textContent = isVerified
-      ? "English translation"
-      : "Please clarify";
+    el("translationLabel").textContent = isVerified ? t("translationLabel") : t("clarifyLabel");
     el("translationText").textContent = isVerified
       ? translatedText
-      : (result.clarification_question || "Could you say that a different way?");
-    el("translationNote").textContent = isVerified
-      ? "Checked against what was originally said."
-      : "The meaning was not clear enough to translate safely.";
+      : (result.clarification_question || t("fallbackQuestion"));
+    el("translationNote").textContent = isVerified ? t("verifiedNote") : t("unclearNote");
     el("translationActions").hidden = !isVerified;
     el("translation").hidden = false;
     el("ok").textContent = "";
 
     if (isVerified) {
       recentContext.push(
-        { speaker: "user", text: candidates[chosen]?.text || successfulTranscripts[0] },
+        { speaker: "user", text: edited },
         { speaker: "CareBridge", text: translatedText },
       );
       recentContext = recentContext.slice(-10);
     }
   } catch (err) {
-    el("ok").textContent = err.message || "We could not translate this recording.";
+    el("ok").textContent = err.message || t("translateFailed");
   } finally {
     button.disabled = false;
-    button.textContent = "Translate to English";
+    button.textContent = t("translate");
   }
 });
 
@@ -632,7 +1224,7 @@ el("speakTranslation").addEventListener("click", async () => {
   if (!translatedText) return;
   const button = el("speakTranslation");
   button.disabled = true;
-  el("ok").textContent = "Generating a Singapore English voice.";
+  el("ok").textContent = t("generatingVoice");
   try {
     const response = await fetch("/api/speech", {
       method: "POST",
@@ -641,16 +1233,16 @@ el("speakTranslation").addEventListener("click", async () => {
     });
     if (!response.ok) {
       const result = await response.json().catch(() => ({}));
-      throw new Error(result.detail || `Speech generation failed (${response.status}).`);
+      throw new Error(result.detail || t("speechFailed"));
     }
     if (currentSpeechAudio) currentSpeechAudio.pause();
     if (currentSpeechUrl) URL.revokeObjectURL(currentSpeechUrl);
     currentSpeechUrl = URL.createObjectURL(await response.blob());
     currentSpeechAudio = new Audio(currentSpeechUrl);
     await currentSpeechAudio.play();
-    el("ok").textContent = "Reading the translation aloud.";
+    el("ok").textContent = t("readingTranslation");
   } catch (err) {
-    el("ok").textContent = err.message || "Could not generate speech.";
+    el("ok").textContent = err.message || t("speechFailed");
   } finally {
     button.disabled = false;
   }
@@ -660,33 +1252,34 @@ el("copyTranslation").addEventListener("click", async () => {
   if (!translatedText) return;
   try {
     await navigator.clipboard.writeText(translatedText);
-    el("ok").textContent = "Translation copied.";
+    el("ok").textContent = t("copiedTranslation");
   } catch {
-    el("ok").textContent = "Copying is blocked here. Select the translation and copy it by hand.";
+    el("ok").textContent = t("copyBlocked");
   }
 });
 
 /* ---------- read aloud, copy ---------- */
 
 el("speak").addEventListener("click", () => {
-  const current = candidates[chosen];
-  if (!current || !current.text || !window.speechSynthesis) return;
+  const text = el("heard").value.trim();
+  if (!text || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(current.raw_text || current.text);
-  utterance.lang = (MODELS[current.model] || {}).lang || "en-SG";
+  const utterance = new SpeechSynthesisUtterance(text);
+  // Guess from the script, since there is no input toggle to read.
+  utterance.lang = /[\u4e00-\u9fff]/.test(text) ? "zh-CN" : "en-SG";
   utterance.rate = 0.85;
   window.speechSynthesis.speak(utterance);
-  el("ok").textContent = "Reading it aloud.";
+  el("ok").textContent = t("readingAloud");
 });
 
 el("copy").addEventListener("click", async () => {
-  const current = candidates[chosen];
-  if (!current || !current.text) return;
+  const text = el("heard").value.trim();
+  if (!text) return;
   try {
-    await navigator.clipboard.writeText(current.raw_text || current.text);
-    el("ok").textContent = "Copied.";
+    await navigator.clipboard.writeText(text);
+    el("ok").textContent = t("copied");
   } catch {
-    el("ok").textContent = "Copying is blocked here. Select the words and copy them by hand.";
+    el("ok").textContent = t("copyBlocked");
   }
 });
 </script>

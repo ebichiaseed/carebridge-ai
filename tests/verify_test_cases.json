@@ -18,7 +18,7 @@
     "interpretation": {"actor": "FDW", "action": "give medicine", "object": "ah ma", "timing": "after dinner", "negated": false, "urgency": "normal"},
     "draft_translation": "Please give grandmother her medicine before dinner.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "if verdict comes back PASS, the verifier is only checking fluency, not meaning -- this is the single most important case in the set."
   },
   {
@@ -40,7 +40,7 @@
     "interpretation": {"actor": "FDW", "action": "close window", "object": "window", "timing": "now", "negated": true, "urgency": "normal"},
     "draft_translation": "Please close the window, I want fresh air.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "a dropped negation flips the instruction's meaning entirely -- this is the highest-stakes error type for caregiving."
   },
   {
@@ -62,7 +62,7 @@
     "interpretation": {"actor": "FDW", "action": "call to eat", "object": "ah ma", "timing": "now, urgently", "negated": false, "urgency": "high"},
     "draft_translation": "Whenever convenient, you could call grandmother to eat.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "urgency loss is subtle -- the sentence still reads as fluent, plausible English. Checks the verifier isn't just fluency-scoring."
   },
   {
@@ -95,7 +95,7 @@
     "interpretation": {"actor": "FDW", "action": "bring item", "object": "the shawl (from recent_context)", "timing": "now", "negated": false, "urgency": "normal"},
     "draft_translation": "Please bring the blanket to her room, she asked for it earlier.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "the interpretation already resolved the reference correctly -- this tests whether verify catches the TRANSLATION step losing it, not the interpretation step."
   },
   {
@@ -139,7 +139,7 @@
     "interpretation": {"actor": "FDW", "action": "give soup after medicine + wait", "object": "hot soup, medicine", "timing": "after 6pm, 30 min after medicine", "negated": true, "urgency": "normal"},
     "draft_translation": "Please give her the hot soup before 6pm, then give the medicine.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "two elements broken at once (negation + sequence) -- checks the verifier doesn't stop looking after finding one issue."
   },
   {
@@ -161,7 +161,7 @@
     "interpretation": {"actor": "FDW", "action": "call employer's family immediately", "object": "phone call", "timing": "immediately, conditional on chest pain", "negated": true, "urgency": "high"},
     "draft_translation": "If she mentions chest discomfort, you can call me sometime after.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "if this one is ever missed, it goes straight into the demo as the strongest justification for having a verifier at all."
   },
   {
@@ -183,7 +183,7 @@
     "interpretation": {"actor": "FDW", "action": "fetch glasses", "object": "glasses in the drawer", "timing": "now", "negated": false, "urgency": "normal"},
     "draft_translation": "Please fetch her gloves from the drawer.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "single-word substitution, plausible in isolation -- checks the verifier is cross-referencing the interpretation, not just judging fluency."
   },
   {
@@ -205,7 +205,7 @@
     "interpretation": {"actor": "care recipient", "action": "feeling heaty/unwell after fried food", "object": "self", "timing": "now", "negated": false, "urgency": "normal"},
     "draft_translation": "She said she has a fever after eating too much fried food.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "translation invents a clinical symptom (fever) that was never in the interpretation -- checks the verifier catches fabrication, not just omission."
   },
    {
@@ -236,7 +236,7 @@
     "interpretation": {"actor": "FDW", "action": "administer dose", "object": "the diaper (from recent_context)", "timing": "now", "negated": false, "urgency": "normal"},
     "draft_translation": "It's about time now.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "an omission error, not a substitution -- the object vanishes rather than being swapped. Checks the verifier catches missing information, not just wrong information."
   },
    {
@@ -289,7 +289,7 @@
     "interpretation": {"actor": "FDW", "action": "check temperature, then conditionally dress or call", "object": "thermometer, clothes, phone", "timing": "now, sequential", "negated": false, "urgency": "normal"},
     "draft_translation": "Please check her temperature, then help her get dressed.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "drops the entire conditional call-for-help branch -- a safety-relevant omission, not just an inaccuracy."
   },
   {
@@ -311,7 +311,7 @@
     "interpretation": {"actor": "FDW", "action": "give medicine, changed dose", "object": "tablets, quantity 2", "timing": "now", "negated": true, "urgency": "normal"},
     "draft_translation": "Please give her three tablets, as the doctor said.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "a single swapped number, otherwise fluent and plausible -- if this is ever missed, it is a more serious real-world failure than any other case in this set."
   },
   {
@@ -333,7 +333,7 @@
     "interpretation": {"actor": "FDW", "action": "do not force standing, call for help instead", "object": "self, phone", "timing": "conditional, immediate", "negated": true, "urgency": "high"},
     "draft_translation": "If she has trouble standing, you could try helping her up.",
     "is_injected_error": true,
-    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "assert": {"verdict": "RETRY", "fault_source": "structure"},
     "watch_for": "the negation ('don't force it') is inverted into its opposite ('try helping her up') -- this is the same failure category as v004 but at higher real-world stakes."
   },
   {

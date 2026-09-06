@@ -26,11 +26,9 @@ from configs.settings import VERIFICATION_MODEL
 
 # schema
 class VerificationResult(PydanticModel):
-    verdict: Literal["PASS", "RETRY", "CLARIFY"] # groups determined through system prompt
+    verdict: Literal["PASS", "RETRY", "CLARIFY"]
     issues: list[str] = Field(default_factory=list)
-    fault_source: Literal[
-        "interpretation", "structure", "translation", "source_ambiguity"
-    ] | None = None
+    fault_source: Literal["interpretation", "structure", "source_ambiguity"] | None = None
     clarification_question: str | None = None
 
 

@@ -11,6 +11,7 @@ import asyncio
 import io
 import json
 import logging
+import os
 import tempfile
 import time
 from contextlib import asynccontextmanager
@@ -23,6 +24,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 
+from agents.display_agent import DisplayAgent, DisplayError
 from agents.interpretation_agent import InterpretationAgent
 from agents.interpretation_agent import PROFILE_FIELDS
 from agents.structure_agent import StructureAgent
@@ -54,6 +56,9 @@ class ContextTurn(BaseModel):
 class TranslationRequest(BaseModel):
     transcript: str | list[str]
     recent_context: list[ContextTurn] = Field(default_factory=list)
+    # Display only. The pipeline reasons in English regardless; this decides
+    # what language the finished text is rendered in for the reader.
+    target_language: Literal["english", "chinese"] = "english"
     # Omit to use the saved settings profile. Send a value only to override it
     # for this one turn; send {} to deliberately run with no person info.
     person_info: dict[str, Any] | None = None
@@ -61,6 +66,16 @@ class TranslationRequest(BaseModel):
 
 class SpeechRequest(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
+    # Which voice to use. The caller falls back to the browser voice if the
+    # requested language has no Polly voice available.
+    language: Literal["english", "chinese"] = "english"
+
+
+# Polly has Zhiyu for Mandarin (cmn-CN) and Hiujin for Cantonese (yue-CN).
+# Zhiyu is the right default here: the display agent emits Simplified Chinese,
+# and Hiujin only has limited support for simplified characters. There is no
+# Hokkien voice at all.
+POLLY_CHINESE_VOICE_ID = os.getenv("POLLY_CHINESE_VOICE_ID", "Zhiyu")
 
 
 PROFILE_PATH = Path(__file__).parent / "data" / "profile.json"
@@ -184,8 +199,23 @@ async def lifespan(app: FastAPI):
         ),
     )
 
+    state["display"] = DisplayAgent(model=ModelFactory.create(INTERPRETATION_MODEL))
     state["glossary"] = get_retriever()
     state["polly"] = PollyService(AWS_REGION, POLLY_VOICE_ID, POLLY_ENGINE)
+
+    # Built separately so a missing or misconfigured Chinese voice degrades to
+    # the browser voice instead of taking down startup.
+    try:
+        state["polly_zh"] = PollyService(
+            AWS_REGION, POLLY_CHINESE_VOICE_ID, POLLY_ENGINE
+        )
+    except Exception:
+        logger.exception(
+            "Could not create the Chinese Polly voice %s; the browser voice "
+            "will be used for Chinese speech.",
+            POLLY_CHINESE_VOICE_ID,
+        )
+        state["polly_zh"] = None
     state["profile"] = await asyncio.to_thread(_read_profile)
 
     logger.info("CareBridge services ready.")
@@ -328,16 +358,42 @@ async def translate(request: TranslationRequest) -> dict:
 
     interpretation = result.get("interpretation")
     source_language = getattr(interpretation, "source_language", None)
+    source_code = _normalise_language(source_language)
+
+    english_translation = result.get("final_text")
+    english_question = result.get("clarification_question")
+    display_translation = english_translation
+    display_question = english_question
+    question_code = source_code if source_code in {"english", "chinese"} else "english"
+
+    display = state.get("display")
+    if display is not None:
+        try:
+            rendered = await display.run(
+                translation=english_translation,
+                clarification_question=english_question,
+                target_language=request.target_language,
+                question_language=question_code,
+            )
+            display_translation = rendered.translation
+            display_question = rendered.clarification_question
+        except DisplayError:
+            logger.exception("Display rendering failed for run %s", run_id)
 
     return {
         "run_id": run_id,
         "status": result.get("status", "failed"),
-        "translation": result.get("final_text"),
-        "follow_up_question": result.get("clarification_question"),
+        "translation": display_translation,
+        "follow_up_question": display_question,
+        # The checked English, kept so the run log and the evaluation set stay
+        # in one language whatever the screen is showing.
+        "translation_en": english_translation,
+        "follow_up_question_en": english_question,
+        "target_language": request.target_language,
         # Kept temporarily for clients still using the original field name.
-        "clarification_question": result.get("clarification_question"),
+        "clarification_question": display_question,
         "detected_language": {
-            "code": _normalise_language(source_language),
+            "code": source_code,
             "detail": source_language,
         },
         # What the pipeline settled on after reconciling the ASR candidates.
@@ -347,15 +403,30 @@ async def translate(request: TranslationRequest) -> dict:
 
 @app.post("/api/speech")
 async def speech(request: SpeechRequest) -> StreamingResponse:
-    """Synthesize translated text with the configured Amazon Polly voice."""
-    polly = state.get("polly")
-    if polly is None:
+    """Synthesize text with the Amazon Polly voice for the requested language.
+
+    Any failure here is answered with an error status, and the caller falls
+    back to the browser's own speech synthesis. Speech is an aid, not the
+    result, so a missing voice must never block the demo.
+    """
+    if "polly" not in state:
         raise HTTPException(status_code=503, detail="Speech service is still loading.")
 
+    voice = (
+        state.get("polly_zh") if request.language == "chinese" else state.get("polly")
+    )
+    if voice is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"No Amazon Polly voice is configured for {request.language}.",
+        )
+
     try:
-        audio = await asyncio.to_thread(polly.synthesize, request.text)
+        audio = await asyncio.to_thread(voice.synthesize, request.text)
     except Exception as error:
-        logger.exception("Amazon Polly synthesis failed")
+        logger.exception(
+            "Amazon Polly synthesis failed for language %s", request.language
+        )
         raise HTTPException(
             status_code=502,
             detail="Amazon Polly could not generate speech. Check AWS access and configuration.",

@@ -1,21 +1,3 @@
-# agents/interpretation_agent.py
-"""
-Interpretation node: turns a raw transcript into a structured InterpretationResult.
-
-Does NOT call the glossary itself -- glossary retrieval is a separate upstream node
-(see graph flow step 4). Hits are passed in via `glossary_hits`, in the shape
-produced by glossary_lookup.GlossaryEntry.to_hit().
-
-Instantiate at app startup, not on import:
-    agent = InterpretationAgent(model=ModelFactory.create("haiku"))
-
-SCHEMA NOTE FOR THE TEAM: InterpretationResult is a shared integration boundary.
-Fields added since the first draft -- utterance_type, negation_cue,
-negation_scope, clarification_question, and `action` becoming optional -- all have
-defaults, so code that ignores them still works. Agree them before merging, and
-move this model into schemas.py once that file exists.
-"""
-
 import json
 from typing import Any, Literal
 
@@ -30,32 +12,21 @@ class InterpretationResult(BaseModel):
     # What was said
     utterance_type: Literal["request", "statement", "question", "distress"] = "statement"
     actor: str | None = None
-    action: str | None = None          # optional: "aiyo, so hot today" has no action
+    action: str | None = None         
     object: str | None = None
     timing: str | None = None
-
-    # Negation, split out because a single bool cannot express
-    # "don't give the BLUE pill, give the white one"
     negated: bool = False
-    negation_cue: str | None = None    # the trigger word: "mai", "bo", "don't"
+    negation_cue: str | None = None   
     negation_scope: str | None = None  # what the negation applies to
-
     urgency: Literal["low", "normal", "high"] = "normal"
     ambiguity: list[str] = Field(default_factory=list)
     clarification_question: str | None = None
-
-    # CareBridge additions
     source_language: str | None = None
     cleaned_transcript: str | None = None
 
 
 class InterpretationError(Exception):
     """Raised when the model output cannot be validated. Node should route to CLARIFY."""
-
-
-# Only these keys are ever put in a prompt. The Definition of Done forbids
-# sensitive profile data leaving the process, and a raw dict dump would include
-# whatever anyone happened to store.
 PROFILE_FIELDS = (
     "preferred_name",
     "languages",
@@ -145,11 +116,6 @@ Return ONLY a JSON object. No preamble, no markdown fences, no trailing commenta
 
 
 def _format_hits(hits: list[dict] | None) -> str:
-    """Render glossary_lookup hits for the prompt.
-
-    Uses .get() throughout: as the glossary grows, one entry missing a field
-    should degrade the line, not KeyError the whole node.
-    """
     if not hits:
         return "(none matched)"
 
@@ -169,7 +135,6 @@ def _format_hits(hits: list[dict] | None) -> str:
 
 
 def _format_person_info(person_info: dict | None) -> str:
-    """Whitelist, then format. Never f-string a raw profile dict into a prompt."""
     if not person_info:
         return "(none)"
 
@@ -233,28 +198,17 @@ VERIFICATION FEEDBACK:
 {json.dumps(verification_issues or [], ensure_ascii=False)}
 """
 
-        # temperature=0: this is structured extraction, not generation.
+        # temperature=0
         raw = await self.ask_model(prompt, temperature=0, max_tokens=800)
         text = raw["text"] if isinstance(raw, dict) else raw
 
         try:
             return InterpretationResult.model_validate_json(_extract_json(text))
         except (ValidationError, ValueError) as error:
-            # Do NOT fabricate a result. Let the graph route this to CLARIFY.
             raise InterpretationError(f"invalid interpretation output: {error}") from error
 
 
 def needs_clarification(result: InterpretationResult) -> bool:
-    """Should the graph ask a question instead of translating?
-
-    Provided here so orchestration has one place to call; the edge itself is
-    the orchestration lead's to wire in.
-
-    Ambiguity alone is deliberately NOT enough. Clarifying on every flagged
-    ambiguity makes the system ask constantly and tanks Clarification Precision.
-    Clarify only when the unresolved part is load-bearing for what the listener
-    has to do.
-    """
     if not result.ambiguity:
         return False
     if result.urgency == "high":
@@ -270,7 +224,6 @@ def needs_clarification(result: InterpretationResult) -> bool:
 
 
 def to_trace(result: InterpretationResult, schema_valid: bool = True) -> dict[str, Any]:
-    """Trace fields for the run log. No chain-of-thought, no transcript text."""
     return {
         "node": "interpret",
         "schema_valid": schema_valid,
@@ -283,11 +236,6 @@ def to_trace(result: InterpretationResult, schema_valid: bool = True) -> dict[st
 
 
 def _extract_json(text: str) -> str:
-    """Slice the outermost JSON object.
-
-    Always slices, not only when fences are present -- a bare preamble sentence
-    ("Here is the JSON:") would otherwise sail through and fail validation.
-    """
     text = text.strip()
     start = text.find("{")
     end = text.rfind("}")

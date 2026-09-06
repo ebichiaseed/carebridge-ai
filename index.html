@@ -41,8 +41,6 @@
     padding: 20px 20px 56px;
   }
 
-  /* ---------- top bar ---------- */
-
   .bar {
     display: flex;
     align-items: center;
@@ -160,8 +158,6 @@
   .plain:hover:not(:disabled) { background: var(--brand-tint); }
   .plain:disabled { border-color: var(--line); color: var(--muted); cursor: not-allowed; }
 
-  /* ---------- recording ---------- */
-
   .timer {
     text-align: center;
     font-size: calc(40px * var(--scale));
@@ -170,8 +166,6 @@
     color: var(--live);
     font-weight: 700;
   }
-
-  /* ---------- waiting ---------- */
 
   .waiting {
     margin-top: 32px;
@@ -201,8 +195,6 @@
     .bars i, .big[data-live="true"] .square { animation: none; }
   }
 
-  /* ---------- problem ---------- */
-
   .problem {
     margin-top: 32px;
     padding: 24px;
@@ -213,8 +205,6 @@
   }
 
   .problem strong { display: block; margin-bottom: 8px; font-size: calc(23px * var(--scale)); }
-
-  /* ---------- result ---------- */
 
   .result { margin-top: 32px; }
 
@@ -261,6 +251,50 @@
     font-weight: 700;
   }
 
+  .result-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-bottom: 18px;
+  }
+
+  .result-top .pill {
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .plain.compact {
+    width: auto;
+    min-height: 0;
+    flex: none;
+    margin: 0 0 0 auto;
+    padding: 7px 14px;
+    border-width: 2px;
+    border-radius: 999px;
+    font-size: calc(16px * var(--scale));
+  }
+
+  .plain.compact .btn-icon {
+    width: 17px; height: 17px;
+    margin-right: 6px;
+    vertical-align: -3px;
+  }
+
+  .plain.danger { border-color: var(--live); color: var(--live); }
+  .plain.danger:hover:not(:disabled) { background: #fdf3f2; }
+
+  .btn-icon {
+    width: 24px; height: 24px;
+    flex: none;
+    fill: currentColor;
+    vertical-align: -5px;
+    margin-right: 10px;
+  }
+
   .alt {
     margin: 14px 0 0;
     color: var(--muted);
@@ -276,6 +310,7 @@
     font-size: inherit;
     font-weight: 700;
     text-decoration: underline;
+    cursor: pointer;
   }
 
   .translation {
@@ -316,8 +351,6 @@
     font-size: calc(18px * var(--scale));
     min-height: 1.5em;
   }
-
-  /* ---------- settings ---------- */
 
   .settings { margin-top: 28px; }
 
@@ -448,6 +481,7 @@
     <p class="timer" id="timer" hidden>0:00</p>
 
     <button class="plain" id="pick" data-i18n="pick">Use a recording saved on this device</button>
+    <button class="plain" id="typeIt" data-i18n="typeIt">Type it out instead</button>
     <input type="file" id="file" accept="audio/*" hidden>
   </section>
 
@@ -464,8 +498,16 @@
 
   <section class="result" id="step-result" hidden>
 
+    <div class="result-top">
+      <p class="pill" id="detected" hidden></p>
+      <button class="plain compact danger" id="again">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z"/></svg>
+        <span data-i18n="again">Try again</span>
+      </button>
+    </div>
+
     <p class="heard-label" data-i18n="heardLabel">What we heard</p>
-    <p class="heard-hint" data-i18n="heardHint">Tap the words to fix anything that came out wrong.</p>
+    <p class="heard-hint" data-i18n="heardHint">Did we mishear? You can edit the output!</p>
     <textarea class="heard" id="heard" rows="3" data-i18n-aria="heardLabel" aria-label="What we heard"></textarea>
 
     <p class="alt" id="alt" hidden>
@@ -473,14 +515,18 @@
       <button type="button" class="link" id="useAlt" data-i18n="useAlt">Use this instead</button>
     </p>
 
-    <p class="pill" id="detected" hidden></p>
-
     <div class="row">
-      <button class="plain" id="speak" data-i18n="speak">Read it aloud</button>
-      <button class="plain" id="copy" data-i18n="copy">Copy the words</button>
+      <button class="plain" id="speak">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4ZM14 3.8v2.1a7 7 0 0 1 0 12.2v2.1a9 9 0 0 0 0-16.4Z"/></svg>
+        <span data-i18n="speak">Read it aloud</span>
+      </button>
+      <button class="plain" id="copy">
+        <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+        <span data-i18n="copy">Copy</span>
+      </button>
     </div>
 
-    <button class="big" id="translate" style="margin-top:24px" data-i18n="translate">
+    <button class="big" id="translate" style="margin-top:24px">
       Translate to English
     </button>
 
@@ -489,22 +535,33 @@
       <p class="translation-text" id="translationText"></p>
       <p class="translation-note" id="translationNote"></p>
       <div class="row" id="translationActions">
-        <button class="plain" id="speakTranslation" data-i18n="speakTranslation">Read translation aloud</button>
-        <button class="plain" id="copyTranslation" data-i18n="copyTranslation">Copy translation</button>
+        <button class="plain" id="speakTranslation">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4ZM14 3.8v2.1a7 7 0 0 1 0 12.2v2.1a9 9 0 0 0 0-16.4Z"/></svg>
+          <span data-i18n="speakTranslation">Read translation aloud</span>
+        </button>
+        <button class="plain" id="copyTranslation">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+          <span data-i18n="copyTranslation">Copy translation</span>
+        </button>
       </div>
     </div>
 
     <div class="translation" id="followUp" hidden aria-live="polite">
       <p class="translation-label" data-i18n="followUpLabel">Follow-up question</p>
       <p class="translation-text" id="followUpText"></p>
+      <div class="row" id="followUpActions">
+        <button class="plain" id="speakFollowUp">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4ZM14 3.8v2.1a7 7 0 0 1 0 12.2v2.1a9 9 0 0 0 0-16.4Z"/></svg>
+          <span data-i18n="speakFollowUp">Read question aloud</span>
+        </button>
+        <button class="plain" id="copyFollowUp">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+          <span data-i18n="copyFollowUp">Copy question</span>
+        </button>
+      </div>
     </div>
 
     <p class="ok" id="ok" aria-live="polite"></p>
-
-    <button class="big" id="again" style="margin-top:28px">
-      <svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11Z"/></svg>
-      <span data-i18n="again">Speak again</span>
-    </button>
   </section>
 
   <section class="settings" id="step-settings" hidden>
@@ -513,7 +570,6 @@
 
     <div class="field">
       <label for="preferredName" data-i18n="preferredName">Preferred name</label>
-      <p class="hint" data-i18n="preferredNameHint">What the person likes to be called.</p>
       <input type="text" id="preferredName" data-i18n-placeholder="preferredNamePlaceholder" placeholder="Mdm Tan">
     </div>
 
@@ -524,28 +580,28 @@
     </div>
 
     <div class="field">
-      <span class="field-name" data-i18n="householdTerms">Words used at home</span>
-      <p class="hint" data-i18n="householdTermsHint">A word the household uses, and what it actually means.</p>
+      <span class="field-name" data-i18n="householdTerms">Words/Phrases used at home</span>
+      <p class="hint" data-i18n="householdTermsHint">Please also provide your definition.</p>
       <div class="pairs" id="householdTerms"></div>
-      <button type="button" class="add" data-add="householdTerms" data-i18n="addWord">Add a word</button>
+      <button type="button" class="add" data-add="householdTerms" data-i18n="addWord">Add a word/phrase</button>
     </div>
 
     <div class="field">
       <span class="field-name" data-i18n="relationships">People</span>
-      <p class="hint" data-i18n="relationshipsHint">What someone is called, and who they are.</p>
+      <p class="hint" data-i18n="relationshipsHint">Add nicknames for household members.</p>
       <div class="pairs" id="relationships"></div>
       <button type="button" class="add" data-add="relationships" data-i18n="addPerson">Add a person</button>
     </div>
 
     <div class="field">
       <label for="communicationPreferences" data-i18n="commPrefs">Communication preferences</label>
-      <p class="hint" data-i18n="commPrefsHint">Anything that helps, such as speaking slowly or avoiding certain words.</p>
+      <p class="hint" data-i18n="commPrefsHint">E.g. speaking slowly or avoiding certain words.</p>
       <textarea class="box" id="communicationPreferences"></textarea>
     </div>
 
     <div class="field">
       <span class="field-name" data-i18n="interfaceLanguage">App language</span>
-      <p class="hint" data-i18n="interfaceLanguageHint">Changes the words on this app only.</p>
+      <p class="hint" data-i18n="interfaceLanguageHint">Customise the interface language (Does not affect translation)</p>
       <div class="switch" id="uiLanguage" role="group" data-i18n-aria="interfaceLanguage" aria-label="App language">
         <button type="button" data-lang="en" aria-pressed="true">English</button>
         <button type="button" data-lang="zh" aria-pressed="false">中文</button>
@@ -560,7 +616,6 @@
 </main>
 
 <script>
-/* ---------- interface copy ---------- */
 
 const STRINGS = {
   en: {
@@ -575,15 +630,18 @@ const STRINGS = {
     recordStart: "Start speaking",
     recordStop: "I am done",
     pick: "Use a recording saved on this device",
+    typeIt: "Type it out instead",
+    typeHint: "Type what was said here.",
 
     waiting: "Writing down what you said.",
     waitingNote: "This takes about half a minute.",
     retry: "Try again",
 
     heardLabel: "What we heard",
-    heardHint: "Tap the words to fix anything that came out wrong.",
+    heardHint: "Did we mishear? You can edit the output!",
     heardEmpty: "Nothing was picked up. Try again, a little louder and closer to the microphone.",
     heardFailed: "This recording did not work. Please speak again.",
+    emptyRecording: "No sound was recorded. Hold the button a moment longer and speak, then stop.",
     alsoHeard: "We also heard",
     useAlt: "Use this instead",
 
@@ -593,26 +651,34 @@ const STRINGS = {
     langMalay: "Malay",
     langMixed: "More than one language",
     langUnknown: "Could not tell",
+    detecting: "Detecting language…",
 
     speak: "Read it aloud",
-    copy: "Copy the words",
+    copy: "Copy",
     translate: "Translate to English",
+    translateToChinese: "Translate to Chinese",
+    translatePlain: "Translate",
     translating: "Translating…",
     translatingNote: "Using the conversation and your settings to translate.",
     translationLabel: "English Translation",
+    translationLabelChinese: "Chinese Translation",
     followUpLabel: "Follow-up question",
     verifiedNote: "Checked against what was originally said.",
     bestEffortNote: "A follow-up question can help make this more precise.",
     fallbackQuestion: "Could you say that a different way?",
     speakTranslation: "Read translation aloud",
     copyTranslation: "Copy translation",
-    again: "Speak again",
+    again: "Try again",
 
     readingAloud: "Reading it aloud.",
-    generatingVoice: "Generating a Singapore English voice.",
+    generatingVoice: "Generating the voice.",
     readingTranslation: "Reading the translation aloud.",
     copied: "Copied.",
     copiedTranslation: "Translation copied.",
+    speakFollowUp: "Read question aloud",
+    copyFollowUp: "Copy question",
+    readingQuestion: "Reading the question aloud.",
+    copiedQuestion: "Question copied.",
     copyBlocked: "Copying is blocked here. Select the words and copy them by hand.",
     translateFailed: "We could not translate this recording.",
     speechFailed: "Could not generate speech.",
@@ -637,14 +703,14 @@ const STRINGS = {
     householdValue: "What it means",
     addWord: "Add a word",
     relationships: "People",
-    relationshipsHint: "What someone is called, and who they are.",
-    relationshipKey: "What they are called",
-    relationshipValue: "Who they are",
+    relationshipsHint: "Add nicknames for household members.",
+    relationshipKey: "Nickname",
+    relationshipValue: "Who they refer to",
     addPerson: "Add a person",
     commPrefs: "Communication preferences",
-    commPrefsHint: "Anything that helps, such as speaking slowly or avoiding certain words.",
+    commPrefsHint: "E.g. speaking slowly or avoiding certain words.",
     interfaceLanguage: "App language",
-    interfaceLanguageHint: "Changes the words on this app only.",
+    interfaceLanguageHint: "Customise the interface language (Does not affect translation)",
     remove: "Remove",
     save: "Save",
     saving: "Saving…",
@@ -665,6 +731,8 @@ const STRINGS = {
     recordStart: "开始说话",
     recordStop: "我说完了",
     pick: "使用手机里的录音",
+    typeIt: "改为打字输入",
+    typeHint: "请在这里输入说的话。",
 
     waiting: "正在记录您说的话。",
     waitingNote: "大约需要半分钟。",
@@ -674,6 +742,7 @@ const STRINGS = {
     heardHint: "如果有错，请点击文字修改。",
     heardEmpty: "没有听到声音。请靠近麦克风，大声一点再试。",
     heardFailed: "这段录音无法处理，请再说一次。",
+    emptyRecording: "没有录到声音。请按住久一点再说话，然后停止。",
     alsoHeard: "我们也听到",
     useAlt: "改用这个",
 
@@ -683,26 +752,34 @@ const STRINGS = {
     langMalay: "马来语",
     langMixed: "多种语言",
     langUnknown: "无法确定",
+    detecting: "正在识别语言…",
 
     speak: "朗读",
     copy: "复制文字",
     translate: "翻译成英文",
+    translateToChinese: "翻译成中文",
+    translatePlain: "翻译",
     translating: "翻译中…",
     translatingNote: "正在结合对话内容和您的设置进行翻译。",
     translationLabel: "英文翻译",
+    translationLabelChinese: "中文翻译",
     followUpLabel: "后续问题",
     verifiedNote: "已与原话核对。",
     bestEffortNote: "回答后续问题可以让翻译更准确。",
     fallbackQuestion: "可以换一个说法吗？",
     speakTranslation: "朗读翻译",
     copyTranslation: "复制翻译",
-    again: "再说一次",
+    again: "再试一次",
 
     readingAloud: "正在朗读。",
     generatingVoice: "正在生成语音。",
     readingTranslation: "正在朗读翻译。",
     copied: "已复制。",
     copiedTranslation: "翻译已复制。",
+    speakFollowUp: "朗读问题",
+    copyFollowUp: "复制问题",
+    readingQuestion: "正在朗读问题。",
+    copiedQuestion: "问题已复制。",
     copyBlocked: "此处无法复制。请自行选取文字复制。",
     translateFailed: "无法翻译这段录音。",
     speechFailed: "无法生成语音。",
@@ -719,22 +796,22 @@ const STRINGS = {
     preferredNameHint: "平时怎么称呼这位长辈。",
     preferredNamePlaceholder: "陈女士",
     languages: "使用语言",
-    languagesHint: "用逗号分开。",
+    languagesHint: "请使用逗号分开语言。",
     languagesPlaceholder: "福建话、华语、英语",
-    householdTerms: "家里的用语",
+    householdTerms: "家里常用词",
     householdTermsHint: "家里常用的说法，以及它的意思。",
     householdKey: "说法",
     householdValue: "意思",
-    addWord: "加一个说法",
+    addWord: "多加入说法",
     relationships: "家里的人",
-    relationshipsHint: "怎么称呼这个人，以及他是谁。",
+    relationshipsHint: "怎么称呼这个人",
     relationshipKey: "称呼",
-    relationshipValue: "是谁",
-    addPerson: "加一个人",
+    relationshipValue: "指的是谁",
+    addPerson: "多加入人",
     commPrefs: "沟通偏好",
-    commPrefsHint: "任何有帮助的事，例如说慢一点或避免某些词。",
+    commPrefsHint: "例如说慢一点或避免某些词。",
     interfaceLanguage: "界面语言",
-    interfaceLanguageHint: "只改变这个应用的文字。",
+    interfaceLanguageHint: "只改变应用的文字。",
     remove: "删除",
     save: "保存",
     saving: "保存中…",
@@ -768,16 +845,17 @@ const steps = {
 let recorder = null, chunks = [], ticker = null, seconds = 0;
 let candidates = [], primary = 0, lastBlob = null, lastName = "";
 let translatedText = "";
+let followUpQuestionText = "";
 let currentSpeechAudio = null;
 let currentSpeechUrl = null;
 let recentContext = [];
 let detectedCode = null;
+let detecting = false;
+let detectTimer = null;
 let returnStep = "start";
 let uiLanguage = "en";
 
 const t = (key) => (STRINGS[uiLanguage] || STRINGS.en)[key] || STRINGS.en[key] || key;
-
-/* ---------- interface language ---------- */
 
 function applyLanguage(code) {
   uiLanguage = STRINGS[code] ? code : "en";
@@ -810,9 +888,8 @@ function applyLanguage(code) {
   });
 
   showDetected();
+  showTarget();
 }
-
-/* ---------- text size ---------- */
 
 document.querySelectorAll(".sizer button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -821,8 +898,6 @@ document.querySelectorAll(".sizer button").forEach((button) => {
     document.documentElement.style.setProperty("--scale", button.dataset.size);
   });
 });
-
-/* ---------- screens ---------- */
 
 function show(name) {
   Object.entries(steps).forEach(([key, node]) => { node.hidden = key !== name; });
@@ -850,8 +925,6 @@ function stopIcon() {
   box.className = "square";
   return box;
 }
-
-/* ---------- settings ---------- */
 
 function pairRow(group, key = "", value = "") {
   const row = document.createElement("div");
@@ -979,8 +1052,6 @@ async function loadSettings() {
 
 loadSettings();
 
-/* ---------- recording ---------- */
-
 el("record").addEventListener("click", async () => {
   if (recorder && recorder.state === "recording") { recorder.stop(); return; }
 
@@ -993,8 +1064,16 @@ el("record").addEventListener("click", async () => {
   }
 
   chunks = [];
-  recorder = new MediaRecorder(stream);
-  recorder.ondataavailable = (event) => chunks.push(event.data);
+
+  const supported = ["audio/webm", "audio/mp4"].find(
+    (type) => window.MediaRecorder?.isTypeSupported?.(type)
+  );
+  recorder = new MediaRecorder(stream, supported ? { mimeType: supported } : undefined);
+
+  recorder.ondataavailable = (event) => {
+    if (event.data && event.data.size) chunks.push(event.data);
+  };
+
   recorder.onstop = () => {
     stream.getTracks().forEach((track) => track.stop());
     clearInterval(ticker);
@@ -1003,10 +1082,19 @@ el("record").addEventListener("click", async () => {
     el("recordLabel").textContent = t("recordStart");
     const marker = el("record").querySelector(".square");
     if (marker) marker.replaceWith(micIcon());
-    send(new Blob(chunks, { type: "audio/webm" }), "recording.webm");
+
+    const type = recorder.mimeType || supported || "audio/webm";
+    const blob = new Blob(chunks, { type });
+
+    if (!blob.size) {
+      problem(t("transcribeTitle"), t("emptyRecording"));
+      return;
+    }
+
+    send(blob, type.includes("mp4") ? "recording.mp4" : "recording.webm");
   };
 
-  recorder.start();
+  recorder.start(1000);
   seconds = 0;
   el("timer").textContent = "0:00";
   el("timer").hidden = false;
@@ -1020,8 +1108,6 @@ el("record").addEventListener("click", async () => {
   el("record").querySelector(".mic").replaceWith(stopIcon());
 });
 
-/* ---------- file upload ---------- */
-
 el("pick").addEventListener("click", () => el("file").click());
 
 el("file").addEventListener("change", () => {
@@ -1030,16 +1116,23 @@ el("file").addEventListener("change", () => {
   el("file").value = "";
 });
 
-/* ---------- backend ---------- */
-
 async function send(blob, name) {
   lastBlob = blob;
   lastName = name;
   detectedCode = null;
   show("waiting");
 
+  let payload = blob;
+  try {
+    payload = new File([await blob.arrayBuffer()], name, {
+      type: blob.type || "application/octet-stream",
+    });
+  } catch {
+    // cannot read the bytes; fall through and try the original object.
+  }
+
   const body = new FormData();
-  body.append("audio", blob, name);
+  body.append("audio", payload, name);
 
   try {
     const response = await fetch("/api/transcribe", { method: "POST", body });
@@ -1051,9 +1144,7 @@ async function send(blob, name) {
     candidates = data.candidates || [];
     if (!candidates.length) throw new Error(t("emptyReply"));
 
-    // Prefer Qwen's multilingual result. If it failed or returned nothing,
-    // retain the previous longest-result fallback so the user still gets a
-    // usable transcript.
+   //prefer qwen but fallback to most useable script
     primary = candidates.findIndex(
       (candidate) =>
         candidate.model === "qwen_multilingual" &&
@@ -1076,22 +1167,68 @@ async function send(blob, name) {
 }
 
 el("retry").addEventListener("click", () => {
-  if (lastBlob) send(lastBlob, lastName);
-  else show("start");
-});
-
-el("again").addEventListener("click", () => {
-  el("ok").textContent = "";
+  candidates = [];
+  primary = 0;
+  lastBlob = null;
+  lastName = "";
   translatedText = "";
+  clearTimeout(detectTimer);
+  detecting = false;
   detectedCode = null;
+  el("ok").textContent = "";
   el("translation").hidden = true;
   el("followUp").hidden = true;
+  followUpQuestionText = "";
   el("detected").hidden = true;
   show("start");
   el("record").focus();
 });
 
-/* ---------- results ---------- */
+el("again").addEventListener("click", () => {
+  el("ok").textContent = "";
+  translatedText = "";
+  clearTimeout(detectTimer);
+  detecting = false;
+  detectedCode = null;
+  el("translation").hidden = true;
+  el("followUp").hidden = true;
+  followUpQuestionText = "";
+  el("detected").hidden = true;
+  show("start");
+  el("record").focus();
+});
+
+el("typeIt").addEventListener("click", () => {
+  candidates = [];
+  primary = 0;
+  lastBlob = null;
+  lastName = "";
+  translatedText = "";
+  clearTimeout(detectTimer);
+  detecting = false;
+  detectedCode = null;
+
+  const heard = el("heard");
+  heard.className = "heard";
+  heard.disabled = false;
+  heard.value = "";
+  heard.placeholder = t("typeHint");
+
+  el("alt").hidden = true;
+  el("translation").hidden = true;
+  el("followUp").hidden = true;
+  followUpQuestionText = "";
+  el("ok").textContent = "";
+  el("speak").disabled = true;
+  el("copy").disabled = true;
+  el("translate").disabled = true;
+  showDetected();
+  showTarget();
+
+  show("result");
+  grow(heard);
+  heard.focus();
+});
 
 function grow(area) {
   area.style.height = "auto";
@@ -1131,8 +1268,7 @@ function render() {
   el("alt").hidden = !alternative;
   if (alternative) el("altText").textContent = alternative.text;
 
-  el("detected").hidden = !detectedCode;
-  showDetected();
+  runDetection();
 
   const usable = Boolean(heard.value.trim());
   el("speak").disabled = !usable;
@@ -1144,8 +1280,84 @@ function render() {
 }
 
 function showDetected() {
-  if (!detectedCode) return;
-  el("detected").textContent = `${t("detectedLabel")}: ${t(LANGUAGE_KEYS[detectedCode] || "langUnknown")}`;
+  const pill = el("detected");
+
+  if (detecting) {
+    pill.hidden = false;
+    pill.textContent = t("detecting");
+    return;
+  }
+
+  if (!detectedCode) {
+    pill.hidden = true;
+    return;
+  }
+
+  pill.hidden = false;
+  pill.textContent = `${t("detectedLabel")}: ${t(LANGUAGE_KEYS[detectedCode] || "langUnknown")}`;
+}
+
+//fallback to english for everything other than chinese
+function targetLanguage() {
+  return detectedCode === "english" ? "chinese" : "english";
+}
+
+function showTarget() {
+  const button = el("translate");
+
+  //if mixed language, general "tranlsate" is displayed
+  let label = "translatePlain";
+  if (detectedCode === "chinese") label = "translate";
+  else if (detectedCode === "english") label = "translateToChinese";
+  if (button.dataset.busy !== "true") button.textContent = t(label);
+}
+
+//dialects report as chinese but is purely ui 
+const CJK_CHARACTER = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/;
+const LATIN_WORD = /[a-z]{2,}/i;
+const MALAY_WORD =
+  /\b(jangan|tolong|sudah|belum|boleh|saya|awak|dia|nanti|sakit|ubat|mandi|tidur|minum|duduk|bangun|pagi|malam)\b/gi;
+
+function detectLanguage(text) {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return null;
+
+  const hasChinese = CJK_CHARACTER.test(trimmed);
+  const hasLatin = LATIN_WORD.test(trimmed);
+
+  if (hasChinese && hasLatin) return "mixed";
+  if (hasChinese) return "chinese";
+  if (!hasLatin) return "unknown";
+
+//to minimise singlish being detected as malay
+  const malayHits = trimmed.match(MALAY_WORD);
+  if (malayHits && malayHits.length >= 2) return "malay";
+
+  return "english";
+}
+
+function runDetection() {
+  clearTimeout(detectTimer);
+  detectTimer = null;
+  detecting = false;
+  detectedCode = detectLanguage(el("heard").value);
+  showDetected();
+  showTarget();
+}
+
+function scheduleDetection() {
+  clearTimeout(detectTimer);
+  if (!el("heard").value.trim()) {
+    detecting = false;
+    detectedCode = null;
+    showDetected();
+    showTarget();
+    return;
+  }
+  detecting = true;
+  showDetected();
+  showTarget();
+  detectTimer = setTimeout(runDetection, 2500);
 }
 
 el("heard").addEventListener("input", () => {
@@ -1154,6 +1366,14 @@ el("heard").addEventListener("input", () => {
   el("speak").disabled = !usable;
   el("copy").disabled = !usable;
   el("translate").disabled = !usable;
+  scheduleDetection();
+});
+
+el("heard").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    runDetection();
+  }
 });
 
 el("useAlt").addEventListener("click", () => {
@@ -1163,11 +1383,11 @@ el("useAlt").addEventListener("click", () => {
   translatedText = "";
   el("translation").hidden = true;
   el("followUp").hidden = true;
+  followUpQuestionText = "";
   render();
   el("heard").focus();
 });
 
-/* ---------- context-aware translation ---------- */
 
 el("translate").addEventListener("click", async () => {
   const edited = el("heard").value.trim();
@@ -1175,8 +1395,7 @@ el("translate").addEventListener("click", async () => {
 
   const untouched = edited === (candidates[primary]?.text || "").trim();
 
-  // Untouched: send every candidate and let the pipeline reconcile them.
-  // Corrected: the user's wording is the truth, so send only that.
+  //treat user typing as ultimate source of truth
   const others = candidates
     .filter((candidate, index) => index !== primary && candidate.text && !candidate.error)
     .map((candidate) => candidate.text);
@@ -1184,6 +1403,7 @@ el("translate").addEventListener("click", async () => {
 
   const button = el("translate");
   button.disabled = true;
+  button.dataset.busy = "true";
   button.textContent = t("translating");
   el("translation").hidden = true;
   el("ok").textContent = t("translatingNote");
@@ -1195,6 +1415,8 @@ el("translate").addEventListener("click", async () => {
       body: JSON.stringify({
         transcript,
         recent_context: recentContext,
+        // Display only. The pipeline works in English either way.
+        target_language: targetLanguage(),
         // person_info omitted on purpose: the backend uses the saved profile.
       }),
     });
@@ -1204,23 +1426,27 @@ el("translate").addEventListener("click", async () => {
       throw new Error(result.detail || t("translateFailed"));
     }
 
+    clearTimeout(detectTimer);
+    detecting = false;
     detectedCode = result.detected_language?.code || null;
-    el("detected").hidden = !detectedCode;
     showDetected();
+    showTarget();
 
     const hasTranslation = Boolean(result.translation);
     const isVerified = result.status === "verified" && hasTranslation;
     const followUpQuestion = result.follow_up_question || result.clarification_question;
     translatedText = hasTranslation ? result.translation : "";
 
-    el("translationLabel").textContent = t("translationLabel");
+    el("translationLabel").textContent =
+      targetLanguage() === "chinese" ? t("translationLabelChinese") : t("translationLabel");
     el("translationText").textContent = translatedText;
     el("translationNote").textContent = hasTranslation
       ? (isVerified ? t("verifiedNote") : t("bestEffortNote"))
       : "";
     el("translationActions").hidden = !hasTranslation;
     el("translation").hidden = !hasTranslation;
-    el("followUpText").textContent = followUpQuestion || "";
+    followUpQuestionText = followUpQuestion || "";
+    el("followUpText").textContent = followUpQuestionText;
     el("followUp").hidden = !followUpQuestion;
     el("ok").textContent = "";
 
@@ -1235,35 +1461,71 @@ el("translate").addEventListener("click", async () => {
     el("ok").textContent = err.message || t("translateFailed");
   } finally {
     button.disabled = false;
-    button.textContent = t("translate");
+    button.dataset.busy = "false";
+    showTarget();
   }
 });
 
-el("speakTranslation").addEventListener("click", async () => {
-  if (!translatedText) return;
-  const button = el("speakTranslation");
+//polly uses chinese for mixed
+function speechLanguage(text) {
+  return /[\u4e00-\u9fff]/.test(text) ? "chinese" : "english";
+}
+
+// fallback in the event polly fails to fetch
+function speakLocally(text, okKey) {
+  if (!window.speechSynthesis) {
+    el("ok").textContent = t("speechFailed");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = speechLanguage(text) === "chinese" ? "zh-CN" : "en-SG";
+  utterance.rate = 0.85;
+  window.speechSynthesis.speak(utterance);
+  el("ok").textContent = t(okKey);
+}
+
+async function speakWithPolly(text, button, okKey) {
   button.disabled = true;
   el("ok").textContent = t("generatingVoice");
   try {
     const response = await fetch("/api/speech", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: translatedText }),
+      body: JSON.stringify({ text, language: speechLanguage(text) }),
     });
-    if (!response.ok) {
-      const result = await response.json().catch(() => ({}));
-      throw new Error(result.detail || t("speechFailed"));
-    }
+    if (!response.ok) throw new Error("polly unavailable");
+
     if (currentSpeechAudio) currentSpeechAudio.pause();
     if (currentSpeechUrl) URL.revokeObjectURL(currentSpeechUrl);
     currentSpeechUrl = URL.createObjectURL(await response.blob());
     currentSpeechAudio = new Audio(currentSpeechUrl);
     await currentSpeechAudio.play();
-    el("ok").textContent = t("readingTranslation");
-  } catch (err) {
-    el("ok").textContent = err.message || t("speechFailed");
+    el("ok").textContent = t(okKey);
+  } catch {
+    speakLocally(text, okKey);
   } finally {
     button.disabled = false;
+  }
+}
+
+el("speakTranslation").addEventListener("click", () => {
+  if (!translatedText) return;
+  speakWithPolly(translatedText, el("speakTranslation"), "readingTranslation");
+});
+
+el("speakFollowUp").addEventListener("click", () => {
+  if (!followUpQuestionText) return;
+  speakWithPolly(followUpQuestionText, el("speakFollowUp"), "readingQuestion");
+});
+
+el("copyFollowUp").addEventListener("click", async () => {
+  if (!followUpQuestionText) return;
+  try {
+    await navigator.clipboard.writeText(followUpQuestionText);
+    el("ok").textContent = t("copiedQuestion");
+  } catch {
+    el("ok").textContent = t("copyBlocked");
   }
 });
 
@@ -1277,18 +1539,10 @@ el("copyTranslation").addEventListener("click", async () => {
   }
 });
 
-/* ---------- read aloud, copy ---------- */
-
 el("speak").addEventListener("click", () => {
   const text = el("heard").value.trim();
-  if (!text || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  // Guess from the script, since there is no input toggle to read.
-  utterance.lang = /[\u4e00-\u9fff]/.test(text) ? "zh-CN" : "en-SG";
-  utterance.rate = 0.85;
-  window.speechSynthesis.speak(utterance);
-  el("ok").textContent = t("readingAloud");
+  if (!text) return;
+  speakWithPolly(text, el("speak"), "readingAloud");
 });
 
 el("copy").addEventListener("click", async () => {

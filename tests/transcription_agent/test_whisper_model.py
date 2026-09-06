@@ -3,11 +3,11 @@ from pathlib import Path
 from unittest.mock import Mock
 import unittest
 
-from models.whisper_model import WhisperSinglishModel
+from models.transcription_agent.whisper_model import WhisperSinglishModel
 
 
 class WhisperSinglishModelTests(unittest.TestCase):
-    def test_transcribe_returns_pipeline_text_without_blocking(self):
+    def test_transcribe_returns_raw_pipeline_text_without_blocking(self):
         with self.subTest("existing audio file"):
             import tempfile
 
@@ -16,11 +16,11 @@ class WhisperSinglishModelTests(unittest.TestCase):
                 audio_file.touch()
                 model = WhisperSinglishModel.__new__(WhisperSinglishModel)
                 model.model_id = "test-model"
-                model._transcribe = Mock(return_value={"text": "wah this one can"})
+                model._transcribe = Mock(return_value={"text": "wah 你好"})
 
                 text = asyncio.run(model.transcribe(str(audio_file)))
 
-        self.assertEqual(text, "wah this one can")
+        self.assertEqual(text, "wah 你好")
         model._transcribe.assert_called_once_with(
             str(audio_file),
             path_or_hf_repo="test-model",

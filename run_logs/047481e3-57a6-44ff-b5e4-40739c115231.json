@@ -1,0 +1,65 @@
+{
+  "run_id": "047481e3-57a6-44ff-b5e4-40739c115231",
+  "started_at": "2026-09-05T09:10:53.130114+00:00",
+  "finished_at": "2026-09-05T09:11:03.550015+00:00",
+  "duration_ms": 10419.84,
+  "input": {
+    "transcript": [
+      "是那个是那个啦 在那边啊 这跳不摩 这不会跳啊",
+      "是那个，是那个啦，在那边啊，个条伯妹，个不会笑啊。"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": [
+      "是那个是那个啦 在那边啊 这跳不摩 这不会跳啊",
+      "是那个，是那个啦，在那边啊，个条伯妹，个不会笑啊。"
+    ],
+    "glossary_hits": [],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "statement",
+      "actor": null,
+      "action": null,
+      "object": "那个",
+      "timing": null,
+      "negated": true,
+      "negation_cue": "不会",
+      "negation_scope": "跳 or 笑",
+      "urgency": "normal",
+      "ambiguity": [
+        "Referent '那个' (that one) is unspecified - unclear what or who is being discussed",
+        "Final phrase unclear: candidate 1 suggests '不会跳' (won't jump/move), candidate 2 suggests '不会笑' (won't smile/laugh) - different meanings that affect interpretation"
+      ],
+      "clarification_question": "你讲的那个是什么？不会跳还是不会笑？",
+      "source_language": "Mandarin",
+      "cleaned_transcript": "是那个，是那个啦，在那边啊，[个/这]不会[跳/笑]啊"
+    },
+    "structure": {
+      "draft_translation": "That one over there won't [jump/smile] (unclear referent and final word)."
+    },
+    "verification": {
+      "verdict": "CLARIFY",
+      "issues": [
+        "Referent '那个' (that one) is unspecified - unclear what object or person is being discussed",
+        "Final action is ambiguous: Candidate 1 suggests '不会跳' (won't jump/move), Candidate 2 suggests '不会笑' (won't smile/laugh) - fundamentally different meanings",
+        "Actor is missing or unclear - who or what is the subject performing the negated action?"
+      ],
+      "fault_source": "source_ambiguity",
+      "clarification_question": "你讲的那个是什么？是人、是物件、还是宠物？不会跳还是不会笑？"
+    },
+    "retry_count": 0,
+    "max_retries": 1,
+    "verification_issues": [
+      "Referent '那个' (that one) is unspecified - unclear what object or person is being discussed",
+      "Final action is ambiguous: Candidate 1 suggests '不会跳' (won't jump/move), Candidate 2 suggests '不会笑' (won't smile/laugh) - fundamentally different meanings",
+      "Actor is missing or unclear - who or what is the subject performing the negated action?"
+    ],
+    "clarification_question": "你讲的那个是什么？是人、是物件、还是宠物？不会跳还是不会笑？",
+    "error": null,
+    "status": "needs_clarification"
+  },
+  "error": null
+}

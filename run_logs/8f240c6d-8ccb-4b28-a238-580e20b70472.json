@@ -1,0 +1,70 @@
+{
+  "run_id": "8f240c6d-8ccb-4b28-a238-580e20b70472",
+  "started_at": "2026-09-05T09:31:14.766533+00:00",
+  "finished_at": "2026-09-05T09:31:29.411931+00:00",
+  "duration_ms": 14645.32,
+  "input": {
+    "transcript": [
+      "哇 barrierswhy eat chicken rice来一下给华梯",
+      "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": [
+      "哇 barrierswhy eat chicken rice来一下给华梯",
+      "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    ],
+    "glossary_hits": [],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "question",
+      "actor": "爸爸",
+      "action": "送 (send/deliver)",
+      "object": "鸡饭 (chicken rice)",
+      "timing": null,
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [
+        "Transcript highly uncertain: candidate 1 contains mixed English fragments ('barriers why eat chicken rice'), candidate 2 mentions '奶昔' (milkshake) which conflicts with chicken rice. Core request appears to be about food delivery but exact item and recipient unclear.",
+        "Actor '爸爸' (father) may be the requester or the person being asked to deliver; sentence structure ambiguous.",
+        "Final particle suggests a yes/no question ('给我不' = will [you] give me or not) but full sentence structure is fragmented."
+      ],
+      "clarification_question": "你是要爸爸送鸡饭给你，还是你要送给爸爸？",
+      "source_language": "Mandarin-Singlish mix",
+      "cleaned_transcript": "爸爸要吃鸡饭，乐意送给我不？"
+    },
+    "structure": {
+      "draft_translation": "Will Dad send chicken rice to me?"
+    },
+    "verification": {
+      "verdict": "CLARIFY",
+      "issues": [
+        "Original transcript is severely corrupted with mixed English fragments ('barriers why eat chicken rice') making source text unreliable",
+        "Candidate 2 mentions '奶昔' (milkshake) but extracted interpretation and draft translation both use 'chicken rice', creating object ambiguity",
+        "Actor role is unclear: is 爸爸 the person being asked to deliver, or is the speaker asking on behalf of 爸爸",
+        "Recipient ambiguity: unclear if chicken rice is being requested for the speaker or for 爸爸",
+        "The extraction itself flags multiple unresolved ambiguities but proceeds to a single interpretation without resolution"
+      ],
+      "fault_source": "source_ambiguity",
+      "clarification_question": "请问你是要爸爸送鸡饭给你，还是你要送鸡饭给爸爸？还是你们都要吃鸡饭？"
+    },
+    "retry_count": 0,
+    "max_retries": 1,
+    "verification_issues": [
+      "Original transcript is severely corrupted with mixed English fragments ('barriers why eat chicken rice') making source text unreliable",
+      "Candidate 2 mentions '奶昔' (milkshake) but extracted interpretation and draft translation both use 'chicken rice', creating object ambiguity",
+      "Actor role is unclear: is 爸爸 the person being asked to deliver, or is the speaker asking on behalf of 爸爸",
+      "Recipient ambiguity: unclear if chicken rice is being requested for the speaker or for 爸爸",
+      "The extraction itself flags multiple unresolved ambiguities but proceeds to a single interpretation without resolution"
+    ],
+    "clarification_question": "请问你是要爸爸送鸡饭给你，还是你要送鸡饭给爸爸？还是你们都要吃鸡饭？",
+    "error": null,
+    "status": "needs_clarification"
+  },
+  "error": null
+}

@@ -1,0 +1,18 @@
+# The original env file is not committed to github so please copy and paste this into your own repo
+
+AWS_REGION=us-east-1
+POLLY_VOICE_ID=Jasmine
+POLLY_ENGINE=neural
+
+INTERPRETATION_MODEL=sonnet
+TRANSLATION_MODEL=sonnet
+
+ASR_BACKEND=auto
+WHISPER_MLX_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
+QWEN_ASR_MLX_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
+WHISPER_PORTABLE_MODEL=mjwong/whisper-large-v3-turbo-singlish
+QWEN_ASR_PORTABLE_MODEL=Qwen/Qwen3-ASR-0.6B-hf
+VERIFICATION_MODEL=nova-lite
+
+# Optional. Defaults to ./run_logs when omitted.
+CAREBRIDGE_RUN_LOG_DIR=run_logs

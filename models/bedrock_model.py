@@ -16,6 +16,9 @@ class BedrockModel(BaseModel):
         region: str = "us-east-1"
     ):
         self.model_id = model_id
+        # Populated after each request so evaluation code can report Bedrock's
+        # authoritative token counts without changing generate()'s return type.
+        self.usage_history = []
 
         self.client = boto3.client(
             "bedrock-runtime",
@@ -47,5 +50,10 @@ class BedrockModel(BaseModel):
                 "temperature": temperature
             }
         )
+
+        self.usage_history.append({
+            "model_id": self.model_id,
+            **response.get("usage", {}),
+        })
 
         return response["output"]["message"]["content"][0]["text"]

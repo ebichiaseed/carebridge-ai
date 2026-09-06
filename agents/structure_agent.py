@@ -19,9 +19,13 @@ SYSTEM_PROMPT = """
 
 You are the Structure Agent for CareBridge.
 
-Convert the supplied interpretation into one or two clear, natural sentences.
+Convert the supplied interpretation into one or two clear, natural English sentences.
 Preserve the actor, action, object, timing, negation, and urgency exactly.
 Do not invent information that is absent from the interpretation.
+Write the translation in English even when the transcript or interpretation
+contains Chinese, Hokkien, Malay, or another language. Do not return Chinese
+characters or any other source-language text unless it is a proper name that
+must remain unchanged.
 
 Return only JSON in this shape:
 {"draft_translation": "string"}
@@ -39,13 +43,16 @@ class StructureAgent(BaseAgent):
 
     async def run(self, 
                   interpretation: InterpretationResult,
-                  recent_context: list[dict] | None = None) -> StructureResult:  
+                  recent_context: list[dict] | None = None,
+                  verification_issues: list[str] | None = None) -> StructureResult:
 
         prompt = (
             f"Interpretation:\n"
             f"{interpretation.model_dump_json(indent=2)}\n\n"
             f"Recent context:\n"
-            f"{json.dumps(recent_context or [], ensure_ascii=False)}"
+            f"{json.dumps(recent_context or [], ensure_ascii=False)}\n\n"
+            f"Verification feedback from the previous draft:\n"
+            f"{json.dumps(verification_issues or [], ensure_ascii=False)}"
         )
 
         raw = await self.ask_model(prompt, temperature=0, max_tokens=300)

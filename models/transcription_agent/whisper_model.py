@@ -15,9 +15,15 @@ class WhisperSinglishModel(SpeechToTextModel):
         """Configure the model; MLX downloads and caches weights on first use."""
         try:
             import mlx_whisper
-        except ImportError as error:
+        except ModuleNotFoundError as error:
             raise RuntimeError(
                 "MLX Whisper is missing. Run: pip install -r requirements.txt"
+            ) from error
+        except ImportError as error:
+            raise RuntimeError(
+                "MLX Whisper could not initialize. This backend requires an "
+                "Apple Silicon Mac with Metal GPU access. Set ASR_BACKEND=cpu "
+                "or cuda on another system."
             ) from error
 
         self.model_id = model_id

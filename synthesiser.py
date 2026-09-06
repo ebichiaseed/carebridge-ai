@@ -47,13 +47,16 @@ def build_workflow(
                 glossary_hits=state.get("glossary_hits"),
                 recent_context=state.get("recent_context"),
                 person_info=state.get("person_info"),
+                verification_issues=state.get("verification_issues"),
             )
 
-            return {
+            update = {
                 "interpretation": result,
                 "status": "processing",
                 "error": None,
             }
+
+            return update
 
         except InterpretationError as error:
             return {
@@ -73,6 +76,7 @@ def build_workflow(
             result = await structure_agent.run(
                 interpretation=state["interpretation"],
                 recent_context=state.get("recent_context"),
+                verification_issues=state.get("verification_issues"),
             )
 
             return {
@@ -86,6 +90,45 @@ def build_workflow(
                 "status": "needs_clarification",
                 "clarification_question": (
                     "Could you say that a different way?"
+                ),
+                "error": str(error),
+            }
+
+    async def structure_with_follow_up_node(
+        state: CareBridgeState,
+    ) -> dict[str, Any]:
+        """Create a best-effort translation before asking a follow-up.
+
+        The interpretation already established that a clarification is needed.
+        Preserve that question, but still use the existing structure agent to
+        give the user the English meaning understood so far. This path omits
+        verification because the unresolved ambiguity is intentional.
+        """
+
+        try:
+            result = await structure_agent.run(
+                interpretation=state["interpretation"],
+                recent_context=state.get("recent_context"),
+                verification_issues=state.get("verification_issues"),
+            )
+
+            return {
+                "structure": result,
+                "final_text": result.draft_translation,
+                "clarification_question": (
+                    state["interpretation"].clarification_question
+                    or "Could you say that a different way?"
+                ),
+                "status": "needs_clarification",
+                "error": None,
+            }
+
+        except StructureError as error:
+            return {
+                "status": "needs_clarification",
+                "clarification_question": (
+                    state["interpretation"].clarification_question
+                    or "Could you say that a different way?"
                 ),
                 "error": str(error),
             }
@@ -124,10 +167,15 @@ def build_workflow(
             "status": "verified",
         }
 
+    def consume_retry_node(state: CareBridgeState) -> dict[str, Any]:
+        """Consume exactly one retry before returning to an upstream agent."""
+
+        return {"retry_count": state["retry_count"] + 1}
+
     def clarify_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
-        """Choose the most relevant clarification question."""
+        """Return the best available translation and clarification question."""
 
         question = state.get("clarification_question")
 
@@ -148,7 +196,18 @@ def build_workflow(
         ):
             question = interpretation.clarification_question
 
+        structure = state.get("structure")
+        final_text = (
+            structure.draft_translation
+            if structure is not None and structure.draft_translation.strip()
+            else None
+        )
+
         return {
+            # A verified translation reaches accept_node. If clarification was
+            # requested after a usable draft was made, expose that draft as a
+            # best-effort English translation instead of discarding it.
+            "final_text": final_text,
             "clarification_question": (
                 question
                 or "Could you say that a different way?"
@@ -170,7 +229,7 @@ def build_workflow(
             return "clarify"
 
         if needs_clarification(interpretation):
-            return "clarify"
+            return "structure_with_follow_up"
 
         return "structure"
 
@@ -205,9 +264,16 @@ def build_workflow(
         if verification.verdict == "PASS":
             return "accept"
 
-        # RETRY and CLARIFY both stop for clarification for now.
-        # A retry loop should only be added after StructureAgent can
-        # receive the verifier's issues and revise its earlier draft.
+        if (
+            verification.verdict == "RETRY"
+            and state["retry_count"] < state["max_retries"]
+        ):
+            if verification.fault_source == "interpretation":
+                return "retry_interpretation"
+            # "translation" remains supported for older verifier responses.
+            return "retry_structure"
+
+        # CLARIFY, or RETRY after the retry budget is exhausted.
         return "clarify"
 
     # Build the graph.
@@ -219,8 +285,12 @@ def build_workflow(
         interpretation_node,
     )
     builder.add_node(
-        "structure",
+        "structure_step",
         structure_node,
+    )
+    builder.add_node(
+        "structure_with_follow_up",
+        structure_with_follow_up_node,
     )
     builder.add_node(
         "verify",
@@ -234,6 +304,8 @@ def build_workflow(
         "clarify",
         clarify_node,
     )
+    builder.add_node("retry_interpretation", consume_retry_node)
+    builder.add_node("retry_structure", consume_retry_node)
 
     # Starting edge.
     builder.add_edge(
@@ -246,14 +318,15 @@ def build_workflow(
         "interpret",
         route_after_interpretation,
         {
-            "structure": "structure",
+            "structure": "structure_step",
+            "structure_with_follow_up": "structure_with_follow_up",
             "clarify": "clarify",
         },
     )
 
     # Structure routing.
     builder.add_conditional_edges(
-        "structure",
+        "structure_step",
         route_after_structure,
         {
             "verify": "verify",
@@ -267,12 +340,18 @@ def build_workflow(
         route_after_verification,
         {
             "accept": "accept",
+            "retry_interpretation": "retry_interpretation",
+            "retry_structure": "retry_structure",
             "clarify": "clarify",
         },
     )
 
+    builder.add_edge("retry_interpretation", "interpret")
+    builder.add_edge("retry_structure", "structure_step")
+
     # Terminal edges.
     builder.add_edge("accept", END)
     builder.add_edge("clarify", END)
+    builder.add_edge("structure_with_follow_up", END)
 
     return builder.compile()

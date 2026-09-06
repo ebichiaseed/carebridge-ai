@@ -8,10 +8,8 @@ import argparse
 import asyncio
 import json
 
-from configs.settings import QWEN_ASR_MODEL, WHISPER_MODEL
-from models.qwen_asr_model import QwenAsrModel
-from models.whisper_model import WhisperSinglishModel
-from services.transcription_service import ParallelTranscriptionService
+from models.model_factory import ModelFactory
+from services.transcription_agent.transcription_service import ParallelTranscriptionService
 
 
 async def main() -> None:
@@ -23,8 +21,8 @@ async def main() -> None:
 
     service = ParallelTranscriptionService(
         [
-            ("singlish_whisper", WhisperSinglishModel(WHISPER_MODEL)),
-            ("qwen_multilingual", QwenAsrModel(QWEN_ASR_MODEL)),
+            ("singlish_whisper", ModelFactory.create("whisper-singlish")),
+            ("qwen_multilingual", ModelFactory.create("qwen-asr")),
         ]
     )
     candidates = await service.transcribe(args.audio_path)

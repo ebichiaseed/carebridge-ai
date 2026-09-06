@@ -1,7 +1,8 @@
 import asyncio
 import unittest
+from unittest.mock import call, patch
 
-from services.transcription_service import ParallelTranscriptionService
+from services.transcription_agent.transcription_service import ParallelTranscriptionService
 
 
 class FakeSpeechModel:
@@ -14,7 +15,9 @@ class FakeSpeechModel:
 
 
 class ParallelTranscriptionServiceTests(unittest.TestCase):
-    def test_returns_one_candidate_per_model_in_configured_order(self):
+    @patch("services.transcription_agent.transcription_service.romanize_chinese_text")
+    def test_returns_raw_and_romanized_text_in_configured_order(self, romanize):
+        romanize.side_effect = ["hello lah", "ni hao"]
         service = ParallelTranscriptionService(
             [
                 ("whisper", FakeSpeechModel("hello lah")),
@@ -27,7 +30,12 @@ class ParallelTranscriptionServiceTests(unittest.TestCase):
         self.assertEqual(
             [candidate.to_dict() for candidate in candidates],
             [
-                {"model": "whisper", "text": "hello lah"},
-                {"model": "qwen", "text": "你好"},
+                {
+                    "model": "whisper",
+                    "text": "hello lah",
+                    "raw_text": "hello lah",
+                },
+                {"model": "qwen", "text": "ni hao", "raw_text": "你好"},
             ],
         )
+        romanize.assert_has_calls([call("hello lah"), call("你好")])

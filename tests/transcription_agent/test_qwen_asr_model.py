@@ -3,11 +3,11 @@ from pathlib import Path
 from unittest.mock import Mock
 import unittest
 
-from models.qwen_asr_model import QwenAsrModel
+from models.transcription_agent.qwen_asr_model import QwenAsrModel
 
 
 class QwenAsrModelTests(unittest.TestCase):
-    def test_transcribe_returns_model_text(self):
+    def test_transcribe_returns_raw_model_text(self):
         with self.subTest("existing audio file"):
             import tempfile
 

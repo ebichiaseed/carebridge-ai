@@ -28,7 +28,9 @@ from configs.settings import VERIFICATION_MODEL
 class VerificationResult(PydanticModel):
     verdict: Literal["PASS", "RETRY", "CLARIFY"] # groups determined through system prompt
     issues: list[str] = Field(default_factory=list)
-    fault_source: Literal["translation", "source_ambiguity"] | None = None
+    fault_source: Literal[
+        "interpretation", "structure", "translation", "source_ambiguity"
+    ] | None = None
     clarification_question: str | None = None
 
 
@@ -46,43 +48,36 @@ Given the original transcript, the extracted interpretation, and the draft
 translation, judge whether critical meaning survived translation. Check
 specifically: actor, action, object, timing, negation, urgency.
 
-- If meaning is preserved: verdict = "PASS".
-- If the translation's wording/phrasing dropped or distorted meaning, but a
-  re-draft could plausibly fix it: verdict = "RETRY", fault_source = "translation".
-- If the transcript or interpretation itself is ambiguous (e.g. an unresolved
-  "that one", unclear timing) such that no re-translation could fix it:
-  verdict = "CLARIFY", fault_source = "source_ambiguity".
-
-Respond with ONLY a JSON object, no other text, no markdown fences, matching
-exactly this shape:
-{"verdict": "PASS" | "RETRY" | "CLARIFY", "issues": [string, ...], "fault_source": "translation" | "source_ambiguity" | null, "clarification_question": string | null}
-Only flag an issue if the DRAFT TRANSLATION lost, distorted, or contradicted
-something present in the interpretation. Do not flag ambiguity, missing
-disambiguation, or logical incompleteness that was already present in the
-original transcript and interpretation — that is a property of the source,
-not a translation defect. If the draft faithfully carries forward the same
-structure and relationships given in the interpretation, that is a PASS,
-even if the instruction itself could theoretically be read more than one way.
-
 Compare the draft translation against the INTERPRETATION fields, not against
 the raw transcript's wording or phrasing style. A draft that expresses the
 same interpretation in different words is not an issue - only flag a
 difference if it changes WHAT was communicated (actor, action, object,
 timing, negation, urgency), never HOW it was phrased.
 
-If any interpretation field's value itself reads as vague, unresolved,
-approximate, or open to more than one reading (e.g. "unspecified", "vague",
-"unresolved", "before an unspecified deadline", or two candidate referents),
-that signals the ORIGINAL SOURCE was ambiguous - regardless of which field
-it appears in (timing, quantity, object, or elsewhere). In that case, verdict
-must be "CLARIFY" with fault_source "source_ambiguity", even if the draft
-faithfully carries the same vagueness forward. Do not return "RETRY" in this
-situation - retrying the translation cannot resolve an ambiguity that exists
-in the source, not the translation.
 Trust the interpretation's fields as given - do not question whether the
-interpretation itself is correctly grounded in context you cannot see. Your
-only job is whether the DRAFT TRANSLATION accurately reflects the
-interpretation you were given, not whether the interpretation is correct."""
+interpretation itself is correctly grounded in context you cannot see.
+
+Follow this order:
+
+1. Does the draft accurately reflect the interpretation? If not, this is a
+   STRUCTURE fault: verdict = "RETRY", fault_source = "structure".
+
+2. If the draft matches the interpretation, does the interpretation itself
+   contradict or misread something the TRANSCRIPT states clearly and
+   unambiguously (not vague, actually stated)? If so, this is an
+   INTERPRETATION fault: verdict = "RETRY", fault_source = "interpretation".
+
+3. If any interpretation field itself reads as vague, unresolved,
+   approximate, or open to more than one reading (e.g. "unspecified",
+   "vague", "unresolved", two candidate referents), the ORIGINAL SOURCE was
+   ambiguous. verdict = "CLARIFY", fault_source = "source_ambiguity". Do not
+   return RETRY here - retrying cannot resolve an ambiguity in the source.
+
+4. Otherwise: verdict = "PASS".
+
+Respond with ONLY a JSON object, no other text, no markdown fences, matching
+exactly this shape:
+{"verdict": "PASS" | "RETRY" | "CLARIFY", "issues": [string, ...], "fault_source": "interpretation" | "structure" | "source_ambiguity" | null, "clarification_question": string | null}"""
         )
 
     async def run(self, input_data: dict) -> VerificationResult:

@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 
 from agents.interpretation_agent import InterpretationAgent
+from agents.interpretation_agent import PROFILE_FIELDS
 from agents.structure_agent import StructureAgent
 from agents.verify_agent import VerifyAgent
 from configs.settings import (
@@ -61,22 +62,6 @@ class TranslationRequest(BaseModel):
 class SpeechRequest(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
 
-
-# ---------------------------------------------------------------------------
-# Settings profile
-#
-# One local profile, since the demo is one household. The five PROFILE_FIELDS
-# are exactly what the interpretation agent reads as `person_info`.
-# ui_language is frontend-only and is stripped before the agent sees it.
-# ---------------------------------------------------------------------------
-
-PROFILE_FIELDS = (
-    "preferred_name",
-    "languages",
-    "household_terms",
-    "relationships",
-    "communication_preferences",
-)
 
 PROFILE_PATH = Path(__file__).parent / "data" / "profile.json"
 

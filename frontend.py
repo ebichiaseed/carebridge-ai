@@ -9,13 +9,14 @@ Both ASR models load once at startup, not per request.
 
 import asyncio
 import io
+import json
 import logging
 import tempfile
 import time
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -41,7 +42,7 @@ from state import create_initial_state
 from synthesiser import build_workflow
 from tools.glossary_lookup import get_retriever
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 
 class ContextTurn(BaseModel):
@@ -52,11 +53,115 @@ class ContextTurn(BaseModel):
 class TranslationRequest(BaseModel):
     transcript: str | list[str]
     recent_context: list[ContextTurn] = Field(default_factory=list)
-    person_info: dict[str, Any] = Field(default_factory=dict)
+    # Omit to use the saved settings profile. Send a value only to override it
+    # for this one turn; send {} to deliberately run with no person info.
+    person_info: dict[str, Any] | None = None
 
 
 class SpeechRequest(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
+
+
+# ---------------------------------------------------------------------------
+# Settings profile
+#
+# One local profile, since the demo is one household. The five PROFILE_FIELDS
+# are exactly what the interpretation agent reads as `person_info`.
+# ui_language is frontend-only and is stripped before the agent sees it.
+# ---------------------------------------------------------------------------
+
+PROFILE_FIELDS = (
+    "preferred_name",
+    "languages",
+    "household_terms",
+    "relationships",
+    "communication_preferences",
+)
+
+PROFILE_PATH = Path(__file__).parent / "data" / "profile.json"
+
+
+class Profile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    preferred_name: str = ""
+    # e.g. ["English", "Mandarin", "Hokkien"]
+    languages: list[str] = Field(default_factory=list)
+    # e.g. {"the white one": "white blood pressure tablet, 8am dose"}
+    household_terms: dict[str, str] = Field(default_factory=dict)
+    # e.g. {"ah girl": "Siti, the domestic helper"}
+    relationships: dict[str, str] = Field(default_factory=dict)
+    communication_preferences: str = ""
+    # Interface language only. Does not affect interpretation or translation.
+    ui_language: Literal["en", "zh"] = "en"
+
+    def person_info(self) -> dict[str, Any]:
+        """The subset the interpretation agent understands."""
+        return self.model_dump(include=set(PROFILE_FIELDS))
+
+
+def _read_profile() -> Profile:
+    try:
+        raw = json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return Profile()
+    except (json.JSONDecodeError, OSError):
+        logger.warning("Profile at %s is unreadable; using defaults.", PROFILE_PATH)
+        return Profile()
+
+    try:
+        return Profile.model_validate(raw)
+    except ValidationError:
+        logger.warning("Profile at %s failed validation; using defaults.", PROFILE_PATH)
+        return Profile()
+
+
+def _write_profile(profile: Profile) -> None:
+    """Atomic write, so a crash mid-save cannot leave half a profile on disk."""
+    PROFILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = PROFILE_PATH.with_suffix(".tmp")
+    tmp.write_text(profile.model_dump_json(indent=2), encoding="utf-8")
+    tmp.replace(PROFILE_PATH)
+
+
+# ---------------------------------------------------------------------------
+# Detected language
+#
+# The interpretation agent already returns source_language, so the UI needs no
+# input toggle. This collapses the model's free text into a small set of codes;
+# the frontend owns the display wording. Dialects report as "chinese", since
+# the ASR returns them as Chinese characters anyway.
+# ---------------------------------------------------------------------------
+
+_CHINESE_MARKERS = (
+    "chinese", "mandarin", "hokkien", "cantonese", "teochew", "hakka",
+    "minnan", "dialect", "中文", "华语", "福建", "广东", "潮州",
+)
+_ENGLISH_MARKERS = ("english", "singlish", "英文", "英语")
+_MALAY_MARKERS = ("malay", "bahasa", "马来")
+
+
+def _normalise_language(raw: str | None) -> str:
+    if not raw:
+        return "unknown"
+
+    text = raw.casefold()
+    matched = [
+        code
+        for code, markers in (
+            ("chinese", _CHINESE_MARKERS),
+            ("english", _ENGLISH_MARKERS),
+            ("malay", _MALAY_MARKERS),
+        )
+        if any(marker in text for marker in markers)
+    ]
+
+    if len(matched) > 1:
+        return "mixed"
+    if matched:
+        return matched[0]
+    return "unknown"
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("carebridge")
@@ -96,6 +201,7 @@ async def lifespan(app: FastAPI):
 
     state["glossary"] = get_retriever()
     state["polly"] = PollyService(AWS_REGION, POLLY_VOICE_ID, POLLY_ENGINE)
+    state["profile"] = await asyncio.to_thread(_read_profile)
 
     logger.info("CareBridge services ready.")
     yield
@@ -119,6 +225,28 @@ app.add_middleware(
 @app.get("/api/health")
 async def health() -> dict:
     return {"ready": "service" in state}
+
+
+@app.get("/api/profile")
+async def get_profile() -> dict:
+    """Settings page load."""
+    profile: Profile = state.get("profile") or Profile()
+    return {"profile": profile.model_dump(), "fields": list(PROFILE_FIELDS)}
+
+
+@app.put("/api/profile")
+async def put_profile(profile: Profile) -> dict:
+    """Settings page save. Replaces the whole profile, so send every field."""
+    try:
+        await asyncio.to_thread(_write_profile, profile)
+    except OSError as error:
+        logger.exception("Could not write profile")
+        raise HTTPException(
+            status_code=500, detail="Settings could not be saved."
+        ) from error
+
+    state["profile"] = profile
+    return {"profile": profile.model_dump(), "saved": True}
 
 
 @app.post("/api/transcribe")
@@ -155,12 +283,22 @@ async def transcribe(audio: UploadFile = File(...)) -> dict:
 
 @app.post("/api/translate")
 async def translate(request: TranslationRequest) -> dict:
-    """Interpret, translate, and verify one or more ASR candidates."""
+    """Interpret, translate, and verify one or more ASR candidates.
+
+    `transcript` is whatever the user last saw in the "what we heard" box,
+    which they may have corrected, not necessarily the raw ASR output.
+    """
     workflow = state.get("workflow")
     glossary = state.get("glossary")
     if workflow is None or glossary is None:
         raise HTTPException(status_code=503, detail="Translation service is still loading.")
 
+    profile: Profile = state.get("profile") or Profile()
+    person_info = (
+        request.person_info
+        if request.person_info is not None
+        else profile.person_info()
+    )
     context = [turn.model_dump() for turn in request.recent_context]
 
     try:
@@ -169,7 +307,7 @@ async def translate(request: TranslationRequest) -> dict:
             request.transcript,
             glossary_hits=glossary_result.hits,
             recent_context=context,
-            person_info=request.person_info,
+            person_info=person_info,
         )
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
@@ -203,11 +341,20 @@ async def translate(request: TranslationRequest) -> dict:
         result=result,
     )
 
+    interpretation = result.get("interpretation")
+    source_language = getattr(interpretation, "source_language", None)
+
     return {
         "run_id": run_id,
         "status": result.get("status", "failed"),
         "translation": result.get("final_text"),
         "clarification_question": result.get("clarification_question"),
+        "detected_language": {
+            "code": _normalise_language(source_language),
+            "detail": source_language,
+        },
+        # What the pipeline settled on after reconciling the ASR candidates.
+        "cleaned_transcript": getattr(interpretation, "cleaned_transcript", None),
     }
 
 

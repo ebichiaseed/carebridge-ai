@@ -253,7 +253,7 @@ WHISPER_MLX_MODEL=wysie/whisper-large-v3-turbo-singlish-mlx
 QWEN_ASR_MLX_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
 WHISPER_PORTABLE_MODEL=mjwong/whisper-large-v3-turbo-singlish
 QWEN_ASR_PORTABLE_MODEL=Qwen/Qwen3-ASR-0.6B-hf
-AWS_REGION=ap-southeast-1
+AWS_REGION=us-east-1
 ```
 
 ### Tests

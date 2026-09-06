@@ -239,126 +239,339 @@ The command prints two candidates as JSON:
 ```
 
 
-## 2. Transcription Agent
+## 2. Interpretation Agent
 
-This agent consists of 2 scripts: `tools/glossary_lookup.py` (retrieval) and
-`agents/interpretation_agent.py` (structured extraction).
+### Interpretation pipeline (glossary retrieval + interpretation agent)
 
-### Flow
+The agent and glossary scripts can be ran without orchestration as it is an upstream node.
 
-    transcript (str | list[str] ASR candidates)
-      -> glossary_lookup   -> list[hit]
-      -> InterpretationAgent(transcript, glossary_hits, person_info,
-                             recent_context, verification_issues)
-      -> InterpretationResult (Pydantic)
+```
+transcript(s) ──► GlossaryRetriever.lookup() ──► hits ──┐
+                  alias match ∪ vector search           ├──► InterpretationAgent.run()
+person_info ────────────────────────────────────────────┤        │
+recent_context ─────────────────────────────────────────┘        ▼
+                                              InterpretationResult (Pydantic)
+```
 
-### Glossary retrieval
+### Files
 
-`data/caregiving_glossary.json` — 45 entries, 256 surface forms (term + variants).
+| Path | Role |
+| --- | --- |
+| `tools/glossary_lookup.py` | Hybrid retriever, glossary schema/validation, embedding cache, CLI diagnostics |
+| `tools/caregiving_glossary.json` | Curated glossary (more info below) |
+| `agents/interpretation_agent.py` | `InterpretationResult` schema, system prompt, `needs_clarification()`, `to_trace()` |
+| `tests/test_glossary_lookup.py` | Unit tests — no network, no AWS, injected `FakeEmbedder` |
+| `tests/interp_test_cases.json` | Probe cases with `assert` / `watch_for` / `expect_ambiguity` |
 
-| | |
-|---|---|
-| categories | daily_living 13, symptom 11, negation 6, urgency_state 6, referent 4, tcm 3, time 2 |
-| languages | Chinese/Singlish 17, Chinese 11, Singapore English 8, Singlish 7, mixed 2 |
+### Glossary
 
-Entry schema: `id, term, language, meaning, variants[], category, example, ambiguity`.
-Unknown keys, duplicate ids and an empty file are rejected at load
-(`GlossaryConfigError`); non-fatal problems (entry with no matchable surface form,
-a form claimed by two entries) surface as `retriever.warnings`.
+45 entries, 248 matchable surface forms, 38 carrying an `ambiguity` note.
+Categories: `daily_living` 13, `symptom` 11, `negation` 6, `urgency_state` 6,
+`referent` 4, `tcm` 3, `time` 2.
 
-Hybrid lookup, alias first:
+Example of a glossary term:
+```json
+{
+  "id": "g001",
+  "term": "never",
+  "language": "Singlish",
+  "meaning": "marks that something DID NOT happen on this occasion; past-tense negation, not 'not ever'",
+  "variants": ["never did", "never take"],
+  "category": "negation",
+  "example": "she never take her medicine this morning",
+  "ambiguity": "Translating it as 'not ever' turns a missed dose into a refusal of all medication."
+}
+```
 
-1. **Alias match** — normalised, punctuation/spacing-insensitive regex over all
-   surface forms. Latin forms are word-boundary anchored; CJK forms are not.
-   Scores `1.0`, `match_type="alias"`. Longer surface forms rank first.
-2. **Vector search** — Titan Text Embeddings v2 (`amazon.titan-embed-text-v2:0`,
-   1024-dim) over `term + meaning + example`, cosine similarity,
-   `MIN_SIMILARITY = 0.28`. Entries already hit by alias are not re-added.
-   `match_type="vector"`, rendered to the agent as "(paraphrase match)".
+`extra="forbid"` on the entry model, so a typo'd key fails at startup rather than at
+query time. `_validate_entries` reports every problem in one pass. `_content_warnings`
+flags non-fatal issues (an entry with no alias-matchable form or a form with two entries).
 
-Alias hits always outrank vector hits. Defaults: `TOP_K = 3`, `MAX_HITS = 8`.
+### Retrieval
 
-Length floors are script-aware: `MIN_ALIAS_LENGTH = 3` for Latin,
-`MIN_ALIAS_LENGTH_CJK = 2`, so 头晕 / 跌倒 / 不要 stay matchable while `ok` / `GP`
-do not. `_has_latin` casefolds first, or `GP`/`BP` would take the CJK branch and
-match inside unrelated words.
+Two paths, unioned, alias always ranked first:
 
-Embeddings are cached on disk (`glossary_embeddings.json`), keyed by SHA-256 of
-the embed text plus model id and dimensions, so a config change invalidates the
-cache rather than mixing vector spaces. Corrupt or wrong-dimension cache entries
-fall back to re-embedding.
+1. **Alias match** — deterministic regex over `term` + `variants`. Punctuation and
+   spacing insensitive (`paiseh` / `pai seh` / `pai-seh` all match), word-boundary
+   anchored for Latin forms so `song` does not fire inside `belong`. Scores 1.0.
+   Works with no network.
+2. **Cosine similarity** — Titan Text Embeddings v2 (`amazon.titan-embed-text-v2:0`,
+   1024-dim, `normalize=True`, so dot product *is* cosine). Earns its keep on
+   paraphrases and on a CJK ASR candidate matching an English-language entry.
+   Entries already alias-matched are excluded, so no hit is duplicated.
 
-Degradation: if Bedrock is unreachable at index or query time, alias matching
-still runs and `lookup()` never raises. Zero hits on a transcript with no
-glossary terms is `success=True` — it must not count against tool-call success rate.
+Length floor is script-aware: **3 characters for Latin, 2 for CJK**. A flat floor of 3
+silently drops 头晕, 跌倒, 不要, 中风, which is roughly half the glossary. `_has_latin` casefolds
+first, otherwise uppercase-only forms like `GP`/`BP` take the CJK branch and lose their
+word-boundary anchors.
 
-`result.to_trace()` emits `node, matches, alias_matches, vector_matches,
-tool_success`.
+Pass **all** ASR candidates to `lookup()`, not just one. Each candidate is embedded
+separately — mean-pooling a Singlish and a Mandarin candidate produces a vector that
+matches neither.
 
-    # startup
-    get_retriever().index()
-    # per turn
-    hits = glossary_lookup(transcript)     # list[dict]
+Config knobs at the top of the module: `TOP_K = 3`, `MIN_SIMILARITY = 0.28`,
+`MAX_HITS = 8`.
 
-CLI: `python3 -m tools.glossary_lookup --check` (offline alias smoke tests),
-`--calibrate` (probe positives/negatives to re-pick `MIN_SIMILARITY`; needs
-`aws sso login --profile hackathon`). Region must be `us-east-1`.
+### Failure behaviour
 
-### InterpretationAgent
+- A missing or malformed glossary raises `GlossaryConfigError` **at construction**. A
+  silent fallback to a stub glossary mid-demo is worse than failing visibly at startup.
+- `lookup()` never raises. If Bedrock is unreachable or credentials have expired, vector
+  search is dropped and alias matching still answers; `result.success` goes False and
+  `result.error` carries the exception name.
+- Zero hits on a transcript containing no glossary terms is a **success**, not a tool
+  failure — this matters for Tool-Call Success Rate.
+- AWS errors are translated into actionable messages (expired SSO, model access not
+  enabled, wrong region).
 
-Extracts structure, does not translate. `temperature=0`, `max_tokens=800`,
-JSON-only output; `_extract_json` slices the outermost object so a preamble
-sentence can't break validation. Invalid output raises `InterpretationError` —
-no fabricated result, the graph routes to CLARIFY.
+### Embedding cache
 
-`InterpretationResult`:
+On-disk JSON beside the glossary, keyed by SHA-256 of `model_id | dimensions |
+embed_text`. Changing the model, the dimensions or an entry's text invalidates that key
+instead of mixing vector spaces. Corrupt or wrong-dimension cache entries are dropped
+and re-embedded. Writes are atomic via a `.tmp` + `replace`.
 
-    utterance_type   request | statement | question | distress
-    actor, action, object, timing          # all optional; action may be null
-    negated, negation_cue, negation_scope  # split so "not the blue one, the white one" survives
-    urgency          low | normal | high
-    ambiguity[], clarification_question
-    source_language, cleaned_transcript
+### Interpretation agent
 
-Prompt rules that carry the weight:
+Please do not redefine the nodes. Every field added since the first draft has a default, so callers that ignore them still work.
 
-- **Negation is the highest-cost error.** Any of don't / cannot / no need / bo /
-  mai / buay sets `negated`, plus cue and scope.
-- **`urgency` defaults to `normal`.** `low` is only for an explicit statement of
-  non-concern. `high` only for pain, falls, breathing difficulty, explicit
-  distress — vague discomfort with no named symptom is flagged, not escalated.
-- **Referent identity ≠ term sense.** Person info resolves *who*; it never
-  settles which reading of a term applies. A referent resolved from context is
-  resolved — it must not be re-flagged.
-- **A discarded paraphrase candidate is not an ambiguity.** Vector hits are
-  candidate readings; ignoring one produces no note.
-- Unresolvable referent → field null + ambiguity note, never an invented referent.
+```python
+utterance_type: "request" | "statement" | "question" | "distress"
+actor, action, object, timing: str | None      # action is optional: "aiyo, so hot today"
+negated: bool
+negation_cue: str | None                       # "mai", "bo", "don't"
+negation_scope: str | None                     # "don't give the BLUE one, give the white"
+urgency: "low" | "normal" | "high"
+ambiguity: list[str]
+clarification_question: str | None
+source_language, cleaned_transcript: str | None
+```
 
-Only `PROFILE_FIELDS` (`preferred_name, languages, household_terms,
-relationships, communication_preferences`) reach the prompt. A raw profile dict
-is never f-strung in.
+Some important prompt rules:
 
-`needs_clarification(result)` is the graph's single decision point. Ambiguity
-alone is deliberately not enough (it would tank clarification precision); it
-clarifies only on high urgency, negation with unresolved scope, or a
-request/distress missing action or object.
+- Vector hits are labelled `(paraphrase match)` and framed as candidate readings. A
+  discarded candidate must **not** produce an ambiguity note.
+- Person info resolves **who**, never which **sense** of a term applies. Knowing 阿嬤 is
+  Mdm Tan does not settle whether 辛苦 means tired or unwell.
+- `urgency` defaults to `"normal"`. `"low"` is only for an explicit statement of
+  non-concern — never for "nothing urgent was mentioned".
+- A referent resolved from context is resolved. Re-flagging it as ambiguous is the
+  failure mode the referent rules exist to prevent.
+- Only `PROFILE_FIELDS` (`preferred_name`, `languages`, `household_terms`,
+  `relationships`, `communication_preferences`) ever reach a prompt. No raw profile dict
+  is f-stringed in. Clinically relevant vocabulary belongs in the glossary `ambiguity`
+  field, not in the profile.
+- `temperature=0` — this is structured extraction, not generation.
 
-`to_trace(result)` emits `node, schema_valid, utterance_type, negated, urgency,
-ambiguity_count, needs_clarification` — no transcript text, no reasoning.
+Invalid model output raises `InterpretationError`. The node routes to CLARIFY; it never
+fabricates a result.
 
-### Evaluation
+`needs_clarification(result)` is deliberately stricter than "ambiguity is non-empty" —
+clarifying on every flagged ambiguity tanks Clarification Precision. It fires only on
+high urgency, negation with an unresolved scope, or a request/distress turn missing its
+action or object.
 
-`interp_test_cases.json` — 20 probe cases, each with a `probe`, a `watch_for`
-note and an `expect_ambiguity` flag. Current: **18/20**, baseline without
-glossary 15/20. c005 and c020 are known, documented failures from the
-`urgency`-tightening tradeoff.
+### Observability
 
-### Tests
+Both halves emit trace dicts with no chain-of-thought and no transcript text:
 
-    python3 -m unittest tests.test_glossary_lookup -v
+- `GlossaryLookupResult.to_trace()` → `tool_success`, `matches`, `alias_matches`,
+  `vector_matches`, `vector_search_used`, `latency_ms`, `error_code`
+- `interpretation_agent.to_trace()` → `schema_valid`, `utterance_type`, `negated`,
+  `urgency`, `ambiguity_count`, `needs_clarification`
 
-No network, no AWS, no data file — every test injects a glossary and a
-deterministic `FakeEmbedder`.
+### Usage
+
+Instantiate the singleton once in the FastAPI startup hook. The first call embeds every
+uncached entry and must not sit inside a user request.
+
+```python
+from tools.glossary_lookup import get_retriever
+
+retriever = get_retriever()          # loads, validates, indexes
+
+result = await retriever.alookup(transcript)   # alookup: lookup does blocking I/O
+state["glossary_hits"] = result.hits
+```
+
+## Interpretation pipeline (glossary retrieval + interpretation agent)
+
+Owner: context lookup and the interpretation node. Everything here is upstream of the
+structure/verify agents and independent of the graph — it can be run and tested before
+orchestration exists.
+
+```
+transcript(s) ──► GlossaryRetriever.lookup() ──► hits ──┐
+                  alias match ∪ vector search           ├──► InterpretationAgent.run()
+person_info ────────────────────────────────────────────┤        │
+recent_context ─────────────────────────────────────────┘        ▼
+                                              InterpretationResult (Pydantic)
+```
+
+### Files
+
+| Path | Role |
+| --- | --- |
+| `tools/glossary_lookup.py` | Hybrid retriever, glossary schema/validation, embedding cache, CLI diagnostics |
+| `tools/caregiving_glossary.json` | Curated glossary. Also resolvable at `data/caregiving_glossary.json` or via `GLOSSARY_PATH` |
+| `agents/interpretation_agent.py` | `InterpretationResult` schema, system prompt, `needs_clarification()`, `to_trace()` |
+| `tests/test_glossary_lookup.py` | Unit tests — no network, no AWS, injected `FakeEmbedder` |
+| `evaluation/interp_test_cases.json` | Probe cases with `assert` / `watch_for` / `expect_ambiguity` |
+
+### Glossary
+
+45 entries, 248 matchable surface forms, 38 carrying an `ambiguity` note.
+Categories: `daily_living` 13, `symptom` 11, `negation` 6, `urgency_state` 6,
+`referent` 4, `tcm` 3, `time` 2.
+
+```json
+{
+  "id": "g001",
+  "term": "never",
+  "language": "Singlish",
+  "meaning": "marks that something DID NOT happen on this occasion; past-tense negation, not 'not ever'",
+  "variants": ["never did", "never take"],
+  "category": "negation",
+  "example": "she never take her medicine this morning",
+  "ambiguity": "Translating it as 'not ever' turns a missed dose into a refusal of all medication."
+}
+```
+
+`extra="forbid"` on the entry model, so a typo'd key fails at startup rather than at
+query time. `_validate_entries` reports every problem in one pass; `_content_warnings`
+flags non-fatal issues (an entry with no alias-matchable form, a surface form claimed
+by two entries).
+
+### Retrieval
+
+Two paths, unioned, alias always ranked first:
+
+1. **Alias match** — deterministic regex over `term` + `variants`. Punctuation and
+   spacing insensitive (`paiseh` / `pai seh` / `pai-seh` all match), word-boundary
+   anchored for Latin forms so `song` does not fire inside `belong`. Scores 1.0.
+   Works with no network.
+2. **Cosine similarity** — Titan Text Embeddings v2 (`amazon.titan-embed-text-v2:0`,
+   1024-dim, `normalize=True`, so dot product *is* cosine). Earns its keep on
+   paraphrases and on a CJK ASR candidate matching an English-language entry.
+   Entries already alias-matched are excluded, so no hit is duplicated.
+
+Length floor is script-aware: **3 characters for Latin, 2 for CJK**. A flat floor of 3
+silently drops 头晕, 跌倒, 不要, 中风 — roughly half the glossary. `_has_latin` casefolds
+first, otherwise uppercase-only forms like `GP`/`BP` take the CJK branch and lose their
+word-boundary anchors.
+
+Pass **all** ASR candidates to `lookup()`, not just one. Each candidate is embedded
+separately — mean-pooling a Singlish and a Mandarin candidate produces a vector that
+matches neither.
+
+Config knobs at the top of the module: `TOP_K = 3`, `MIN_SIMILARITY = 0.28`,
+`MAX_HITS = 8`.
+
+### Failure behaviour
+
+- A missing or malformed glossary raises `GlossaryConfigError` **at construction**. A
+  silent fallback to a stub glossary mid-demo is worse than failing visibly at startup.
+- `lookup()` never raises. If Bedrock is unreachable or credentials have expired, vector
+  search is dropped and alias matching still answers; `result.success` goes False and
+  `result.error` carries the exception name.
+- Zero hits on a transcript containing no glossary terms is a **success**, not a tool
+  failure — this matters for Tool-Call Success Rate.
+- AWS errors are translated into actionable messages (expired SSO, model access not
+  enabled, wrong region).
+
+### Embedding cache
+
+On-disk JSON beside the glossary, keyed by SHA-256 of `model_id | dimensions |
+embed_text`. Changing the model, the dimensions or an entry's text invalidates that key
+instead of mixing vector spaces. Corrupt or wrong-dimension cache entries are dropped
+and re-embedded. Writes are atomic via a `.tmp` + `replace`.
+
+### Interpretation agent
+
+`InterpretationResult` is a shared integration boundary — import it, do not redefine it
+per node. Every field added since the first draft has a default, so callers that ignore
+them still work.
+
+```python
+utterance_type: "request" | "statement" | "question" | "distress"
+actor, action, object, timing: str | None      # action is optional: "aiyo, so hot today"
+negated: bool
+negation_cue: str | None                       # "mai", "bo", "don't"
+negation_scope: str | None                     # "don't give the BLUE one, give the white"
+urgency: "low" | "normal" | "high"
+ambiguity: list[str]
+clarification_question: str | None
+source_language, cleaned_transcript: str | None
+```
+
+Prompt rules worth knowing before editing them:
+
+- Vector hits are labelled `(paraphrase match)` and framed as candidate readings. A
+  discarded candidate must **not** produce an ambiguity note.
+- Person info resolves **who**, never which **sense** of a term applies. Knowing 阿嬤 is
+  Mdm Tan does not settle whether 辛苦 means tired or unwell.
+- `urgency` defaults to `"normal"`. `"low"` is only for an explicit statement of
+  non-concern — never for "nothing urgent was mentioned".
+- A referent resolved from context is resolved. Re-flagging it as ambiguous is the
+  failure mode the referent rules exist to prevent.
+- Only `PROFILE_FIELDS` (`preferred_name`, `languages`, `household_terms`,
+  `relationships`, `communication_preferences`) ever reach a prompt. No raw profile dict
+  is f-stringed in. Clinically relevant vocabulary belongs in the glossary `ambiguity`
+  field, not in the profile.
+- `temperature=0` — this is structured extraction, not generation.
+
+Invalid model output raises `InterpretationError`. The node routes to CLARIFY; it never
+fabricates a result.
+
+`needs_clarification(result)` is deliberately stricter than "ambiguity is non-empty" —
+clarifying on every flagged ambiguity tanks Clarification Precision. It fires only on
+high urgency, negation with an unresolved scope, or a request/distress turn missing its
+action or object.
+
+### Observability
+
+Both halves emit trace dicts with no chain-of-thought and no transcript text:
+
+- `GlossaryLookupResult.to_trace()` → `tool_success`, `matches`, `alias_matches`,
+  `vector_matches`, `vector_search_used`, `latency_ms`, `error_code`
+- `interpretation_agent.to_trace()` → `schema_valid`, `utterance_type`, `negated`,
+  `urgency`, `ambiguity_count`, `needs_clarification`
+
+### Usage
+
+Instantiate the singleton once in the FastAPI startup hook — the first call embeds every
+uncached entry and must not sit inside a user request.
+
+```python
+from tools.glossary_lookup import get_retriever
+
+retriever = get_retriever()          # loads, validates, indexes
+
+result = await retriever.alookup(transcript)   # alookup: lookup does blocking I/O
+state["glossary_hits"] = result.hits
+```
+
+### Commands
+
+```bash
+# glossary integrity, alias smoke tests, script-floor check -- no AWS needed
+python3 -m tools.glossary_lookup --check
+
+# similarity distribution over labelled probes; set MIN_SIMILARITY in the gap, need to login with aws credentials
+python3 -m tools.glossary_lookup --calibrate
+```
+
+`AWS_REGION` is read from the environment, **not** from `configs.settings`, and defaults
+to `us-east-1`. The `us.anthropic.*` inference profiles this project uses do not resolve
+in other regions; a non-US region logs a warning at construction.
+
+### Known gaps
+
+- The two-character Hokkien negation `bo` sits below the Latin alias floor of 3 and is
+  invisible to the retriever. Lowering the floor makes `mai`-class forms match across
+  word breaks (`\s*` can span one), so this is unresolved rather than forgotten.
+- `MIN_SIMILARITY = 0.28` is calibrated against the probe set in `_CALIBRATION_PROBES`,
+  not against real ASR traces.
 
 ### Tests
 
@@ -366,10 +579,7 @@ deterministic `FakeEmbedder`.
 python3 -m unittest discover -s tests -v
 ```
 
-These unit tests validate file handling and concurrent candidate collection;
-they do not prove real model accuracy or performance on your audio.
-
-## Intepretation Agent and Glossary Lookup
+These unit tests validate file handling and concurrent candidate collection, and not used to test for real-world accuracy.
 
 **Unit tests** prove the glossary retriever's logic is correct. They inject a
 deterministic fake embedder, so they need no AWS credentials and no network.
@@ -403,9 +613,6 @@ The glossary suite covers nine areas:
 | File loading | missing file lists every path searched; malformed JSON reports line and column |
 | Validation | duplicate ids, unknown fields, missing fields, empty glossary all rejected |
 | Embedding cache | reuse on second index, corrupt cache falls back, wrong-dimension vectors dropped, no temp file left behind |
-
-The remaining 9 tests cover the verify agent, both ASR models and the parallel
-transcription service.
 
 ### Glossary retrieval configuration
 
@@ -511,7 +718,7 @@ latency) and the interpret trace (`schema_valid`, `utterance_type`, `negated`,
 `urgency`, `ambiguity_count`). This is the evidence behind the schema-validity,
 tool-success and clarification-rate metrics in the observability plan.
 
-## Structure Agent
+## 3. Structure Agent
 
 ### Structure Agent evaluation
 

@@ -485,13 +485,18 @@
     </button>
 
     <div class="translation" id="translation" hidden aria-live="polite">
-      <p class="translation-label" id="translationLabel">English translation</p>
+      <p class="translation-label" id="translationLabel">English Translation</p>
       <p class="translation-text" id="translationText"></p>
       <p class="translation-note" id="translationNote"></p>
       <div class="row" id="translationActions">
         <button class="plain" id="speakTranslation" data-i18n="speakTranslation">Read translation aloud</button>
         <button class="plain" id="copyTranslation" data-i18n="copyTranslation">Copy translation</button>
       </div>
+    </div>
+
+    <div class="translation" id="followUp" hidden aria-live="polite">
+      <p class="translation-label" data-i18n="followUpLabel">Follow-up question</p>
+      <p class="translation-text" id="followUpText"></p>
     </div>
 
     <p class="ok" id="ok" aria-live="polite"></p>
@@ -594,10 +599,10 @@ const STRINGS = {
     translate: "Translate to English",
     translating: "Translating…",
     translatingNote: "Using the conversation and your settings to translate.",
-    translationLabel: "English translation",
-    clarifyLabel: "Please say a bit more",
+    translationLabel: "English Translation",
+    followUpLabel: "Follow-up question",
     verifiedNote: "Checked against what was originally said.",
-    unclearNote: "The meaning was not clear enough to translate safely.",
+    bestEffortNote: "A follow-up question can help make this more precise.",
     fallbackQuestion: "Could you say that a different way?",
     speakTranslation: "Read translation aloud",
     copyTranslation: "Copy translation",
@@ -685,9 +690,9 @@ const STRINGS = {
     translating: "翻译中…",
     translatingNote: "正在结合对话内容和您的设置进行翻译。",
     translationLabel: "英文翻译",
-    clarifyLabel: "请再说清楚一点",
+    followUpLabel: "后续问题",
     verifiedNote: "已与原话核对。",
-    unclearNote: "意思不够清楚，无法安全翻译。",
+    bestEffortNote: "回答后续问题可以让翻译更准确。",
     fallbackQuestion: "可以换一个说法吗？",
     speakTranslation: "朗读翻译",
     copyTranslation: "复制翻译",
@@ -1046,14 +1051,23 @@ async function send(blob, name) {
     candidates = data.candidates || [];
     if (!candidates.length) throw new Error(t("emptyReply"));
 
-    // No input toggle any more: show the fullest transcript, since the model
-    // that heard more of the utterance is the better starting point to edit.
-    primary = 0;
-    let best = -1;
-    candidates.forEach((candidate, index) => {
-      const length = candidate.text ? candidate.text.trim().length : -1;
-      if (length > best) { best = length; primary = index; }
-    });
+    // Prefer Qwen's multilingual result. If it failed or returned nothing,
+    // retain the previous longest-result fallback so the user still gets a
+    // usable transcript.
+    primary = candidates.findIndex(
+      (candidate) =>
+        candidate.model === "qwen_multilingual" &&
+        candidate.text &&
+        !candidate.error
+    );
+    if (primary === -1) {
+      primary = 0;
+      let best = -1;
+      candidates.forEach((candidate, index) => {
+        const length = candidate.text ? candidate.text.trim().length : -1;
+        if (length > best) { best = length; primary = index; }
+      });
+    }
 
     render();
   } catch (err) {
@@ -1071,6 +1085,7 @@ el("again").addEventListener("click", () => {
   translatedText = "";
   detectedCode = null;
   el("translation").hidden = true;
+  el("followUp").hidden = true;
   el("detected").hidden = true;
   show("start");
   el("record").focus();
@@ -1147,6 +1162,7 @@ el("useAlt").addEventListener("click", () => {
   primary = candidates.indexOf(alternative);
   translatedText = "";
   el("translation").hidden = true;
+  el("followUp").hidden = true;
   render();
   el("heard").focus();
 });
@@ -1192,16 +1208,20 @@ el("translate").addEventListener("click", async () => {
     el("detected").hidden = !detectedCode;
     showDetected();
 
-    const isVerified = result.status === "verified" && result.translation;
-    translatedText = isVerified ? result.translation : "";
+    const hasTranslation = Boolean(result.translation);
+    const isVerified = result.status === "verified" && hasTranslation;
+    const followUpQuestion = result.follow_up_question || result.clarification_question;
+    translatedText = hasTranslation ? result.translation : "";
 
-    el("translationLabel").textContent = isVerified ? t("translationLabel") : t("clarifyLabel");
-    el("translationText").textContent = isVerified
-      ? translatedText
-      : (result.clarification_question || t("fallbackQuestion"));
-    el("translationNote").textContent = isVerified ? t("verifiedNote") : t("unclearNote");
-    el("translationActions").hidden = !isVerified;
-    el("translation").hidden = false;
+    el("translationLabel").textContent = t("translationLabel");
+    el("translationText").textContent = translatedText;
+    el("translationNote").textContent = hasTranslation
+      ? (isVerified ? t("verifiedNote") : t("bestEffortNote"))
+      : "";
+    el("translationActions").hidden = !hasTranslation;
+    el("translation").hidden = !hasTranslation;
+    el("followUpText").textContent = followUpQuestion || "";
+    el("followUp").hidden = !followUpQuestion;
     el("ok").textContent = "";
 
     if (isVerified) {

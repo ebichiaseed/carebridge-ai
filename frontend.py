@@ -348,6 +348,8 @@ async def translate(request: TranslationRequest) -> dict:
         "run_id": run_id,
         "status": result.get("status", "failed"),
         "translation": result.get("final_text"),
+        "follow_up_question": result.get("clarification_question"),
+        # Kept temporarily for clients still using the original field name.
         "clarification_question": result.get("clarification_question"),
         "detected_language": {
             "code": _normalise_language(source_language),

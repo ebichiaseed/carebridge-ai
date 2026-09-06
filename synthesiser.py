@@ -94,6 +94,45 @@ def build_workflow(
                 "error": str(error),
             }
 
+    async def structure_with_follow_up_node(
+        state: CareBridgeState,
+    ) -> dict[str, Any]:
+        """Create a best-effort translation before asking a follow-up.
+
+        The interpretation already established that a clarification is needed.
+        Preserve that question, but still use the existing structure agent to
+        give the user the English meaning understood so far. This path omits
+        verification because the unresolved ambiguity is intentional.
+        """
+
+        try:
+            result = await structure_agent.run(
+                interpretation=state["interpretation"],
+                recent_context=state.get("recent_context"),
+                verification_issues=state.get("verification_issues"),
+            )
+
+            return {
+                "structure": result,
+                "final_text": result.draft_translation,
+                "clarification_question": (
+                    state["interpretation"].clarification_question
+                    or "Could you say that a different way?"
+                ),
+                "status": "needs_clarification",
+                "error": None,
+            }
+
+        except StructureError as error:
+            return {
+                "status": "needs_clarification",
+                "clarification_question": (
+                    state["interpretation"].clarification_question
+                    or "Could you say that a different way?"
+                ),
+                "error": str(error),
+            }
+
     async def verification_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
@@ -136,7 +175,7 @@ def build_workflow(
     def clarify_node(
         state: CareBridgeState,
     ) -> dict[str, Any]:
-        """Choose the most relevant clarification question."""
+        """Return the best available translation and clarification question."""
 
         question = state.get("clarification_question")
 
@@ -157,7 +196,18 @@ def build_workflow(
         ):
             question = interpretation.clarification_question
 
+        structure = state.get("structure")
+        final_text = (
+            structure.draft_translation
+            if structure is not None and structure.draft_translation.strip()
+            else None
+        )
+
         return {
+            # A verified translation reaches accept_node. If clarification was
+            # requested after a usable draft was made, expose that draft as a
+            # best-effort English translation instead of discarding it.
+            "final_text": final_text,
             "clarification_question": (
                 question
                 or "Could you say that a different way?"
@@ -179,7 +229,7 @@ def build_workflow(
             return "clarify"
 
         if needs_clarification(interpretation):
-            return "clarify"
+            return "structure_with_follow_up"
 
         return "structure"
 
@@ -239,6 +289,10 @@ def build_workflow(
         structure_node,
     )
     builder.add_node(
+        "structure_with_follow_up",
+        structure_with_follow_up_node,
+    )
+    builder.add_node(
         "verify",
         verification_node,
     )
@@ -265,6 +319,7 @@ def build_workflow(
         route_after_interpretation,
         {
             "structure": "structure_step",
+            "structure_with_follow_up": "structure_with_follow_up",
             "clarify": "clarify",
         },
     )
@@ -297,5 +352,6 @@ def build_workflow(
     # Terminal edges.
     builder.add_edge("accept", END)
     builder.add_edge("clarify", END)
+    builder.add_edge("structure_with_follow_up", END)
 
     return builder.compile()

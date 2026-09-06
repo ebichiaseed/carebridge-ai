@@ -1,0 +1,66 @@
+{
+  "run_id": "f5d5ea0c-cb9b-4bdb-a8d1-f96895e38b7d",
+  "started_at": "2026-09-05T08:59:12.995598+00:00",
+  "finished_at": "2026-09-05T08:59:21.600580+00:00",
+  "duration_ms": 8604.93,
+  "input": {
+    "transcript": [
+      "我怕都听了 我不会是在大便 你可以帮我一下吗 求求你",
+      "我怕多天，我唔会晒大便，你可以帮我一下嘛，求求你。"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": [
+      "我怕都听了 我不会是在大便 你可以帮我一下吗 求求你",
+      "我怕多天，我唔会晒大便，你可以帮我一下嘛，求求你。"
+    ],
+    "glossary_hits": [
+      {
+        "id": "g014",
+        "term": "pass motion",
+        "language": "Singapore English",
+        "meaning": "to have a bowel movement",
+        "example": "she never pass motion for two days",
+        "ambiguity": "'Pass motion' is standard Singapore healthcare usage and is not idiomatic in other English varieties. Translate to the plain clinical sense, not literally.",
+        "category": "daily_living",
+        "match_type": "alias",
+        "score": 1.0
+      }
+    ],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "request",
+      "actor": "speaker",
+      "action": "help with bowel movement",
+      "object": null,
+      "timing": "now",
+      "negated": true,
+      "negation_cue": "不会",
+      "negation_scope": "able to have bowel movement",
+      "urgency": "high",
+      "ambiguity": [],
+      "clarification_question": null,
+      "source_language": "Mandarin with Cantonese particle",
+      "cleaned_transcript": "我怕多天，我唔会晒大便，你可以帮我一下吗，求求你"
+    },
+    "structure": {
+      "draft_translation": "I'm afraid because I haven't been able to have a bowel movement for several days. Can you please help me right now?"
+    },
+    "verification": {
+      "verdict": "PASS",
+      "issues": [],
+      "fault_source": null,
+      "clarification_question": null
+    },
+    "retry_count": 0,
+    "max_retries": 1,
+    "verification_issues": [],
+    "final_text": "I'm afraid because I haven't been able to have a bowel movement for several days. Can you please help me right now?",
+    "error": null,
+    "status": "verified"
+  },
+  "error": null
+}

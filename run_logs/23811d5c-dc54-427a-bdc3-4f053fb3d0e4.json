@@ -1,0 +1,19 @@
+{
+  "run_id": "23811d5c-dc54-427a-bdc3-4f053fb3d0e4",
+  "started_at": "2026-09-05T09:49:24.664247+00:00",
+  "finished_at": "2026-09-05T09:49:24.784337+00:00",
+  "duration_ms": 120.09,
+  "input": {
+    "transcript": [
+      "我怕都听了 我不会是在大便 你可以帮我一下吗 求求你",
+      "我怕多天，我唔会晒大便，你可以帮我一下嘛，求求你。"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": null,
+  "error": {
+    "type": "ValidationException",
+    "message": "An error occurred (ValidationException) when calling the Converse operation: The provided model identifier is invalid."
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "run_id": "d02bac71-2cce-4ac8-b2da-6e4ae99e60db",
+  "started_at": "2026-09-05T09:07:24.671448+00:00",
+  "finished_at": "2026-09-05T09:07:48.858355+00:00",
+  "duration_ms": 24186.76,
+  "input": {
+    "transcript": [
+      "泡多厂不准啊 笑 ihr有 Charanceey like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and",
+      "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    ],
+    "recent_context": [],
+    "person_info": {}
+  },
+  "result": {
+    "transcript": [
+      "泡多厂不准啊 笑 ihr有 Charanceey like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and like it and",
+      "爸爸都要，我要吃一根奶昔，乐意送给我不？"
+    ],
+    "glossary_hits": [],
+    "recent_context": [],
+    "person_info": {},
+    "interpretation": {
+      "utterance_type": "question",
+      "actor": null,
+      "action": "give",
+      "object": "milkshake",
+      "timing": null,
+      "negated": false,
+      "negation_cue": null,
+      "negation_scope": null,
+      "urgency": "normal",
+      "ambiguity": [
+        "Actor unclear: '爸爸都要' (dad also wants) may indicate dad wants a milkshake too, or may be context for why speaker is asking",
+        "Scope of request: unclear if asking for one milkshake for speaker only, or one for speaker and one for dad",
+        "Addressee unknown: '送给我' (give to me) implies asking someone to provide/deliver, but recipient relationship unclear"
+      ],
+      "clarification_question": "You want one milkshake or two? One for you, one for papa?",
+      "source_language": "Mandarin",
+      "cleaned_transcript": "爸爸都要，我要吃一根奶昔，肯送给我不？"
+    },
+    "structure": {
+      "draft_translation": "Dad wants one too—can you give me a milkshake to eat?"
+    },
+    "verification": {
+      "verdict": "RETRY",
+      "issues": [
+        "Actor ambiguity not resolved: Draft assumes 'you' (the worker) will provide the milkshake, but the Mandarin '乐意送给我不？' (willing to give to me?) leaves the addressee/provider unclear—could be asking dad, the worker, or someone else",
+        "Quantity ambiguity unresolved: Draft translates as singular 'a milkshake' but the context '爸爸都要' (dad also wants) suggests potentially two milkshakes needed—the extraction correctly flags this as ambiguous, but the draft doesn't preserve or clarify this uncertainty",
+        "Action nuance: '乐意送给我' carries a politeness/willingness component ('willing to give') that 'can you give me' flattens into a direct request"
+      ],
+      "fault_source": "structure",
+      "clarification_question": "Before retranslating: Does the speaker want one milkshake total, or one for themselves and one for dad? And who is being asked to provide it?"
+    },
+    "retry_count": 1,
+    "max_retries": 1,
+    "verification_issues": [
+      "Actor ambiguity not resolved: Draft assumes 'you' (the worker) will provide the milkshake, but the Mandarin '乐意送给我不？' (willing to give to me?) leaves the addressee/provider unclear—could be asking dad, the worker, or someone else",
+      "Quantity ambiguity unresolved: Draft translates as singular 'a milkshake' but the context '爸爸都要' (dad also wants) suggests potentially two milkshakes needed—the extraction correctly flags this as ambiguous, but the draft doesn't preserve or clarify this uncertainty",
+      "Action nuance: '乐意送给我' carries a politeness/willingness component ('willing to give') that 'can you give me' flattens into a direct request"
+    ],
+    "clarification_question": "Before retranslating: Does the speaker want one milkshake total, or one for themselves and one for dad? And who is being asked to provide it?",
+    "error": null,
+    "status": "needs_clarification"
+  },
+  "error": null
+}

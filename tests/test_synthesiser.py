@@ -49,6 +49,19 @@ class FakeStructureAgent:
         return StructureResult(draft_translation="Give the medicine after dinner.")
 
 
+class ClarifyingInterpretationAgent(FakeInterpretationAgent):
+    async def run(self, **kwargs):
+        self.calls.append(kwargs)
+        return InterpretationResult(
+            utterance_type="request",
+            actor="caregiver",
+            action="give",
+            object=None,
+            ambiguity=["The medicine is not identified."],
+            clarification_question="Which medicine do you mean?",
+        )
+
+
 class SequencedVerifyAgent:
     def __init__(self, verdicts, fault_source="structure"):
         self.verdicts = iter(verdicts)
@@ -66,6 +79,20 @@ class SequencedVerifyAgent:
 
 
 class SynthesiserRetryTests(unittest.IsolatedAsyncioTestCase):
+    async def test_clarification_keeps_best_effort_translation_and_question(self):
+        interpretation = ClarifyingInterpretationAgent()
+        structure = FakeStructureAgent()
+        verification = SequencedVerifyAgent([])
+        workflow = build_workflow(interpretation, structure, verification)
+
+        result = await workflow.ainvoke(create_initial_state("Give that medicine"))
+
+        self.assertEqual(result["status"], "needs_clarification")
+        self.assertEqual(result["final_text"], "Give the medicine after dinner.")
+        self.assertEqual(result["clarification_question"], "Which medicine do you mean?")
+        self.assertEqual(structure.call_count, 1)
+        self.assertEqual(verification.call_count, 0)
+
     async def test_structure_retry_rebuilds_only_draft_with_feedback(self):
         interpretation = FakeInterpretationAgent()
         structure = FakeStructureAgent()
@@ -119,6 +146,7 @@ class SynthesiserRetryTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(result["status"], "needs_clarification")
+        self.assertEqual(result["final_text"], "Give the medicine after dinner.")
         self.assertEqual(result["retry_count"], 0)
         self.assertEqual(len(interpretation.calls), 1)
         self.assertEqual(verification.call_count, 1)
@@ -134,6 +162,7 @@ class SynthesiserRetryTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(result["status"], "needs_clarification")
+        self.assertEqual(result["final_text"], "Give the medicine after dinner.")
         self.assertEqual(len(interpretation.calls), 1)
 
 

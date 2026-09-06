@@ -202,6 +202,15 @@ class StructureAgentTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(fake.last_kwargs["temperature"], 0)
         self.assertEqual(fake.last_kwargs["max_tokens"], 300)
 
+    async def test_prompt_requires_an_english_translation(self):
+        fake = FakeModel('{"draft_translation": "Give grandmother her medicine."}')
+        agent = StructureAgent(model=fake)
+
+        await agent.run(make_interpretation())
+
+        self.assertIn("natural English sentences", fake.last_prompt)
+        self.assertIn("Do not return Chinese", fake.last_prompt)
+
     
 
 

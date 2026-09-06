@@ -1,26 +1,59 @@
-# carebridge-ai
+# CareBridge
 
-for now i shall use readme to introduce the repo to all, then later we amend nice nice
+## Problem Statement
+
+A caregiver in her first few months caring for a Hokkien- or Cantonese-speaking elderly employer needs a way to understand daily-care instructions, be it medication, meals, mobility, in the moment they're given, because misunderstanding them causes confusion and distress on both sides. This gap is real enough that NTUC and the Centre for Domestic Employees launched dedicated Hokkien and Cantonese classes for migrant domestic workers in December 2024 specifically to address it (NTUC/CDE, Dec 2024), building on earlier findings that caregivers may experience embarrassment and humiliation when unable to understand their employers (McKay, 2013).
+
+## Motivation
+Caregivers, such as FDWs, in Singapore, are mostly trained in English and often cannot speak the dialect of the elderly Chinese employers whom they care for. This is an acute gap especially in the first few months of their placement as they have yet informally picked up on dialect phrases and Singlish slang, cultivated through constant communication. FDW interviewees have described the embarrassment and humiliation this causes when they struggle to understand instructions from their employers (McKay, 2013), risking confusion or frustration when needs and demands are misread in daily caregiving routines.
+This gap is already recognised at a national level: in December 2024, NTUC and the Centre for Domestic Employees began running Hokkien and Cantonese classes for domestic workers. One participant, Enik Suparmi, who has worked for over 25 years in Singapore, described the direct caregiving impact: "It helps me a lot, especially to communicate with grandma... when my grandma orders things from me, asks me to cook... I can say yes, okay" (NTUC/CDE, Dec 2024). But these pilot classes are small (11 participants in the Hokkien pilot, 25 in the Cantonese pilot) and take months to build fluency. This leaves a real-time gap for FDWs who are mid-placement, not yet enrolled, or facing a dialect/idiom the curriculum doesn't cover. This communication gap is what we're proposing to close.
+
+## Key Features
+- **Parallel speech recognition:** Processes the same audio using separate models for English and Singlish, as well as Mandarin, Cantonese, and Minnan.
+- **Caregiving-aware interpretation:** Identifies requests, statements, symptoms, timing, negation, urgency, and referenced people or objects.
+- **Glossary-assisted understanding:** Uses a curated caregiving glossary and semantic retrieval to interpret local expressions, dialect terms, and common ambiguities.
+- **Context-aware translation:** Uses recent conversation context and known information about the people involved when interpreting an utterance.
+- **Safety verification:** Checks whether important information was preserved before accepting a translation.
+- **Targeted retries:** Re-runs only the affected stage when the verifier detects an interpretation or translation problem.
+- **Clarification questions:** Requests clarification when an ambiguity could materially change the meaning or required action.
+- **Speech playback:** Reads completed English translations aloud using Amazon Polly's Singapore English `Jasmine` voice.
+- **Local observability:** Records each completed workflow as a local JSON file for evaluation and debugging.
+
+## How It Works
+
+```text
+Spoken instruction
+        ↓
+Parallel transcription
+        ↓
+Caregiving-aware interpretation
+        ↓
+Structured English translation
+        ↓
+Safety verification
+   ┌────┴───────────────┐
+   ↓                    ↓
+Accept translation   Retry affected stage
+   ↓                    ↓
+Read aloud          Verify again
+                        ↓
+              Clarify if unresolved
 
 ## Instructions to start up the app
 
-Pre-requisite: ensures u have created a profile ('hackathon') instead of the original name
-
-Ensure `.env` file looks like this
-
+Please ensure that you have these parameters in the .env file
 ```plain text
 AWS_PROFILE=hackathon
 AWS_REGION=us-east-1
 POLLY_VOICE_ID=Jasmine
 POLLY_ENGINE=neural
 ```
-
 The AWS role behind that profile must allow `polly:SynthesizeSpeech`. CareBridge
 uses Polly's Singapore English `Jasmine` neural voice for the **Read translation
 aloud** button. AWS credentials remain on the server and are never sent to the
 browser.
 
-Then copy and paste these into the terminal
+Assuming AWS is set up, copy and paste these commands into the terminal
 
 ```
 aws sso login --profile hackathon
@@ -28,57 +61,93 @@ export AWS_PROFILE=hackathon
 uvicorn frontend:app --reload
 ```
 
+[The above example assumes that the profile name is ‘hackathon’, which requires sso configuration]
+
 Each completed translation workflow is written locally as a separate JSON file
 under `run_logs/`. Set `CAREBRIDGE_RUN_LOG_DIR` to use a different directory.
 The directory is ignored by Git because logs may contain private conversation
 content.
 
-## Run tests
-
-```
-RUN_BEDROCK_EVAL=1 \
-BEDROCK_EVAL_CONFIG=production \
-BEDROCK_EVAL_INTERPRETATION_MODEL=sonnet \
-BEDROCK_EVAL_STRUCTURE_MODEL=sonnet \
-BEDROCK_EVAL_VERIFICATION_MODEL=haiku \
-BEDROCK_EVAL_JUDGE_MODEL=nova-lite \
-BEDROCK_EVAL_ENFORCE_THRESHOLDS=1 \
-.venv/bin/python -m unittest \
-tests.test_synthesiser.BedrockSynthesiserEvaluation
-```
-
-## Notes
+## Technical Overview
 
 ### Repo Skeleton
+
 ```
-backend/
-│
+.
+├── frontend.py                      FastAPI server and API routes
+├── index.html                       Browser interface served by FastAPI
+├── synthesiser.py                   Interpretation -> structure -> verification workflow
 ├── agents/
-│   ├── base_agent.py
-│   ├── transcription_agent.py
-│   ├── interpretation_agent.py
-│   ├── translation_agent.py
-│   └── ...
-│
+│   ├── interpretation_agent.py      Meaning, urgency, and ambiguity (Claude Sonnet)
+│   ├── structure_agent.py           English draft translation (Claude Sonnet)
+│   └── verify_agent.py              Meaning-preservation check and retry (Claude Haiku)
 ├── models/
-│   ├── base_model.py
-│   ├── bedrock_model.py
-│   ├── whisper_model.py
-│   └── model_factory.py
-│
-├── config/
-│   └── settings.py
-│
-├── services/
-│   └── ...
-│
-└── state.py
-│
-└── synthesiser.py
+│   ├── bedrock_model.py             Claude Sonnet, Claude Haiku, and Nova Lite access
+│   └── transcription_agent/         Singlish Whisper and multilingual Qwen3-ASR adapters
+├── services/                        Parallel transcription, Polly, and run logging
+├── configs/                         Runtime and ASR model configuration
+├── tools/                           Caregiving glossary and hybrid retrieval
+├── tests/                           Unit tests, fixtures, and recorded evaluations
+├── env_template.txt                 Environment-variable template
+└── requirements.txt                 Python dependencies
+```
+
+
+### Orchestration Workflow
+
+A concise mental model:
+```
+Interpret → Structure → Verify → Accept
+    ↑           ↑          |
+    |           |          ├─ interpretation fault → retry Interpret
+    |           └──────────┴─ structure fault → retry Structure
+    |
+important ambiguity → best-effort Structure → translation + Clarify
+unrecoverable/error/exhausted retry → Clarify
+
+```
+
+The full implementation:
+```
+START
+  ↓
+INTERPRET
+  ├─ agent/parsing failure ───────────────→ CLARIFY → END
+  ├─ important ambiguity detected
+  │      ↓
+  │   STRUCTURE BEST-EFFORT
+  │      ↓
+  │   return translation + question ─────→ END
+  └─ sufficiently clear
+         ↓
+      STRUCTURE
+         ├─ failure/empty draft ──────────→ CLARIFY → END
+         ↓
+      VERIFY
+         ├─ PASS ─────────────────────────→ ACCEPT → END
+         │
+         ├─ RETRY: interpretation fault
+         │    and retries remain
+         │      ↓
+         │    increment retry_count
+         │      ↓
+         │    INTERPRET → STRUCTURE → VERIFY
+         │
+         ├─ RETRY: structure/translation fault
+         │    and retries remain
+         │      ↓
+         │    increment retry_count
+         │      ↓
+         │    STRUCTURE → VERIFY
+         │
+         ├─ CLARIFY ──────────────────────→ CLARIFY → END
+         │
+         └─ RETRY with budget exhausted ─→ CLARIFY → END
+
 ```
 
 ### Agent
-le important idea
+
 ```
 Agent
   ↓
@@ -92,63 +161,7 @@ Model Interface
 └─────────────────┴────────────────────┘
 ```
 
-```
-Interpret → Structure → Verify
-    ↑           ↑         |
-    |           └ structure fault
-    └ interpretation fault
 
-source ambiguity → Clarify
-PASS → Accept
-```
-
-so what do you need to do as agent specialists:
-
-1. follow `agents_base_agent_example.py` for an idea on how to use the template
-
-2. create your system prompt, create any tools where needed
-
-### Orchestration Workflow
-
-overarching idea:
-
-```
-START
-  ↓
-interpretation_agent
-  ├─ needs clarification ─────────────→ CLARIFY → END
-  ↓
-structure_agent
-  ↓
-verify_agent
-  ├─ PASS ────────────────────────────→ END
-  ├─ CLARIFY ─────────────────────────→ CLARIFY → END
-  └─ RETRY and retry_count < limit ───→ structure_agent
-```
-
-
-and then how to access the AWS
-
-1. ensure you have `awscli` downloaded, else download it
-```
-aws --version
-
-brew install awscli
-```
-
-2. configure ur sso
-
-refer to access keys for the info!
-```
-aws configure sso
-```
-
-3. configure profile name: hackathon
-
-4. next time, when start working
-```
-aws sso login --profile hackathon
-```
 
 ### Transcription workflow layout
 
@@ -236,12 +249,6 @@ The command prints two candidates as JSON:
 ]
 ```
 
-`TestData/SinglishTestData.m4a` is version-controlled for this practice run;
-other files under `TestData/` are ignored by default. A successful run produces
-two non-empty candidate texts. Transcript wording may vary with model-runtime
-updates, so use successful completion and output structure as the check rather
-than a fixed transcript.
-
 ### Configuration
 
 Copy `env_template` to `.env` only when you need to override model identifiers
@@ -254,6 +261,19 @@ QWEN_ASR_MLX_MODEL=mlx-community/Qwen3-ASR-0.6B-8bit
 WHISPER_PORTABLE_MODEL=mjwong/whisper-large-v3-turbo-singlish
 QWEN_ASR_PORTABLE_MODEL=Qwen/Qwen3-ASR-0.6B-hf
 AWS_REGION=us-east-1
+```
+## Run tests
+
+```
+RUN_BEDROCK_EVAL=1 \
+BEDROCK_EVAL_CONFIG=production \
+BEDROCK_EVAL_INTERPRETATION_MODEL=sonnet \
+BEDROCK_EVAL_STRUCTURE_MODEL=sonnet \
+BEDROCK_EVAL_VERIFICATION_MODEL=haiku \
+BEDROCK_EVAL_JUDGE_MODEL=nova-lite \
+BEDROCK_EVAL_ENFORCE_THRESHOLDS=1 \
+.venv/bin/python -m unittest \
+tests.test_synthesiser.BedrockSynthesiserEvaluation
 ```
 
 ### Tests
@@ -546,3 +566,4 @@ Performance and cost:
 - Interpretation was the largest cost component at **$0.212**, about 72% of synthesiser cost.
 
 Overall, the system is production-threshold compliant, reliable at preserving meaning, and effective at self-repair. The clearest improvement area is distinguishing genuine ambiguity from harmless unresolved pronouns, followed by more consistent categorical handling of contextual negation and statement-versus-request intent.
+

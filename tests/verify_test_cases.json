@@ -1,0 +1,350 @@
+[
+  {
+    "id": "v001",
+    "probe": "correct translation, timing preserved",
+    "category": "simple",
+    "transcript": "Give ah ma her medicine after dinner.",
+    "interpretation": {"actor": "FDW", "action": "give medicine", "object": "ah ma", "timing": "after dinner", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please give grandmother her medicine after dinner.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": "baseline case -- if this fails, the verifier is too strict, not too lenient."
+  },
+  {
+    "id": "v002",
+    "probe": "timing silently flipped in translation",
+    "category": "simple",
+    "transcript": "Give ah ma her medicine after dinner.",
+    "interpretation": {"actor": "FDW", "action": "give medicine", "object": "ah ma", "timing": "after dinner", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please give grandmother her medicine before dinner.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "if verdict comes back PASS, the verifier is only checking fluency, not meaning -- this is the single most important case in the set."
+  },
+  {
+    "id": "v003",
+    "probe": "correct translation, negation preserved",
+    "category": "simple",
+    "transcript": "Close the window, it's cold.",
+    "interpretation": {"actor": "FDW", "action": "close window", "object": "window", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please close the window, it is cold.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v004",
+    "probe": "negation dropped in translation",
+    "category": "simple",
+    "transcript": "Don't close the window, I want fresh air.",
+    "interpretation": {"actor": "FDW", "action": "close window", "object": "window", "timing": "now", "negated": true, "urgency": "normal"},
+    "draft_translation": "Please close the window, I want fresh air.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "a dropped negation flips the instruction's meaning entirely -- this is the highest-stakes error type for caregiving."
+  },
+  {
+    "id": "v005",
+    "probe": "Singlish urgency preserved correctly",
+    "category": "colloquial_dialect",
+    "transcript": "Wa lau, jio ah ma makan already lah, don't delay.",
+    "interpretation": {"actor": "FDW", "action": "call to eat", "object": "ah ma", "timing": "now, urgently", "negated": false, "urgency": "high"},
+    "draft_translation": "Please call grandmother to eat now, don't delay.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v006",
+    "probe": "urgency softened away in translation",
+    "category": "colloquial_dialect",
+    "transcript": "Wa lau, jio ah ma makan already lah, don't delay.",
+    "interpretation": {"actor": "FDW", "action": "call to eat", "object": "ah ma", "timing": "now, urgently", "negated": false, "urgency": "high"},
+    "draft_translation": "Whenever convenient, you could call grandmother to eat.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "urgency loss is subtle -- the sentence still reads as fluent, plausible English. Checks the verifier isn't just fluency-scoring."
+  },
+  {
+    "id": "v007",
+    "probe": "TCM-adjacent phrase, correctly translated as soreness",
+    "category": "colloquial_dialect",
+    "transcript": "Ah gong cannot makan too much sio bak, doctor said.",
+    "interpretation": {"actor": "ah gong", "action": "should not eat too much roast pork", "object": "sio bak (roast pork)", "timing": "ongoing", "negated": true, "urgency": "normal"},
+    "draft_translation": "Grandfather should not eat too much roast pork, the doctor said.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v008",
+    "probe": "context-resolved object correctly carried through",
+    "category": "context_dependent",
+    "transcript": "Bring that one to her room, she asked for it earlier.",
+    "interpretation": {"actor": "FDW", "action": "bring item", "object": "the shawl (from recent_context)", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please bring the shawl to her room, she asked for it earlier.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v009",
+    "probe": "resolved object swapped for a different one in translation",
+    "category": "context_dependent",
+    "transcript": "Bring that one to her room, she asked for it earlier.",
+    "interpretation": {"actor": "FDW", "action": "bring item", "object": "the shawl (from recent_context)", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please bring the blanket to her room, she asked for it earlier.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "the interpretation already resolved the reference correctly -- this tests whether verify catches the TRANSLATION step losing it, not the interpretation step."
+  },
+  {
+    "id": "v010",
+    "probe": "unresolved referent should route to clarify, not retry",
+    "category": "ambiguous",
+    "transcript": "Put that one back where it was.",
+    "interpretation": {"actor": "FDW", "action": "put back", "object": "unresolved - no prior reference in context", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please put it back where it was.",
+    "is_injected_error": false,
+    "assert": {"verdict": "CLARIFY", "fault_source": "source_ambiguity"},
+    "watch_for": "translation is a faithful rendering of an already-ambiguous interpretation -- retrying translation cannot fix this. If verdict is RETRY, fault_source classification is not working."
+  },
+  {
+    "id": "v011",
+    "probe": "vague timing at the source, not a translation problem",
+    "category": "ambiguous",
+    "transcript": "Do it later, not now, but also not too late.",
+    "interpretation": {"actor": "FDW", "action": "unspecified", "object": "unspecified", "timing": "vague - later but before an unspecified deadline", "negated": true, "urgency": "normal"},
+    "draft_translation": "Please do it at some point later.",
+    "is_injected_error": false,
+    "assert": {"verdict": "CLARIFY", "fault_source": "source_ambiguity"},
+    "watch_for": "this is the case that most directly tests whether the retry cap is being spent wisely -- a RETRY here would burn the team's one retry on an unfixable problem."
+  },
+  {
+    "id": "v012",
+    "probe": "multi-element instruction, all preserved",
+    "category": "difficult",
+    "transcript": "Don't give her the hot soup before 6pm, wait for the medicine first, then after 30 minutes give the soup.",
+    "interpretation": {"actor": "FDW", "action": "give soup after medicine + wait", "object": "hot soup, medicine", "timing": "after 6pm, 30 min after medicine", "negated": true, "urgency": "normal"},
+    "draft_translation": "Please do not give her the hot soup before 6pm. Give the medicine first, then wait 30 minutes before giving the soup.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v013",
+    "probe": "multi-element instruction, negation and sequence both dropped",
+    "category": "difficult",
+    "transcript": "Don't give her the hot soup before 6pm, wait for the medicine first, then after 30 minutes give the soup.",
+    "interpretation": {"actor": "FDW", "action": "give soup after medicine + wait", "object": "hot soup, medicine", "timing": "after 6pm, 30 min after medicine", "negated": true, "urgency": "normal"},
+    "draft_translation": "Please give her the hot soup before 6pm, then give the medicine.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "two elements broken at once (negation + sequence) -- checks the verifier doesn't stop looking after finding one issue."
+  },
+  {
+    "id": "v014",
+    "probe": "conditional urgency, correctly translated",
+    "category": "difficult",
+    "transcript": "If she says her chest hurts, stop everything and call me immediately, don't wait.",
+    "interpretation": {"actor": "FDW", "action": "call employer's family immediately", "object": "phone call", "timing": "immediately, conditional on chest pain", "negated": true, "urgency": "high"},
+    "draft_translation": "If she says her chest hurts, stop everything and call me right away, do not wait.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": "highest real-world stakes case in the set -- a false PASS here is the worst possible failure mode for the whole product."
+  },
+  {
+    "id": "v015",
+    "probe": "conditional urgency dropped -- most safety-critical injected error",
+    "category": "difficult",
+    "transcript": "If she says her chest hurts, stop everything and call me immediately, don't wait.",
+    "interpretation": {"actor": "FDW", "action": "call employer's family immediately", "object": "phone call", "timing": "immediately, conditional on chest pain", "negated": true, "urgency": "high"},
+    "draft_translation": "If she mentions chest discomfort, you can call me sometime after.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "if this one is ever missed, it goes straight into the demo as the strongest justification for having a verifier at all."
+  },
+  {
+    "id": "v016",
+    "probe": "correct object preserved, simple case",
+    "category": "simple",
+    "transcript": "Fetch her glasses from the drawer.",
+    "interpretation": {"actor": "FDW", "action": "fetch glasses", "object": "glasses in the drawer", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please fetch her glasses from the drawer.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v017",
+    "probe": "object swapped for something plausible but wrong",
+    "category": "simple",
+    "transcript": "Fetch her glasses from the drawer.",
+    "interpretation": {"actor": "FDW", "action": "fetch glasses", "object": "glasses in the drawer", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please fetch her gloves from the drawer.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "single-word substitution, plausible in isolation -- checks the verifier is cross-referencing the interpretation, not just judging fluency."
+  },
+  {
+    "id": "v018",
+    "probe": "TCM-adjacent phrase correctly kept as non-clinical",
+    "category": "colloquial_dialect",
+    "transcript": "Eat too much fried food, she said she feels 热气.",
+    "interpretation": {"actor": "care recipient", "action": "feeling heaty/unwell after fried food", "object": "self", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "She said she feels heaty after eating too much fried food.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v019",
+    "probe": "TCM idiom escalated into an invented clinical finding",
+    "category": "colloquial_dialect",
+    "transcript": "Eat too much fried food, she said she feels 热气.",
+    "interpretation": {"actor": "care recipient", "action": "feeling heaty/unwell after fried food", "object": "self", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "She said she has a fever after eating too much fried food.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "translation invents a clinical symptom (fever) that was never in the interpretation -- checks the verifier catches fabrication, not just omission."
+  },
+   {
+    "id": "v020",
+    "probe": "context-resolved pronoun correctly carried through",
+    "category": "context_dependent",
+    "transcript": "That one is due already.",
+    "interpretation": {
+      "actor": "FDW",
+      "action": "change diaper",
+      "object": "the diaper",
+      "timing": "now",
+      "negated": false,
+      "urgency": "normal"
+    },
+    "draft_translation": "The diaper is due to be changed now.",
+    "is_injected_error": false,
+    "assert": {
+      "verdict": "PASS"
+    },
+    "watch_for": ""
+  },
+  {
+    "id": "v021",
+    "probe": "correctly resolved object dropped entirely in translation",
+    "category": "context_dependent",
+    "transcript": "That one is due already.",
+    "interpretation": {"actor": "FDW", "action": "administer dose", "object": "the diaper (from recent_context)", "timing": "now", "negated": false, "urgency": "normal"},
+    "draft_translation": "It's about time now.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "an omission error, not a substitution -- the object vanishes rather than being swapped. Checks the verifier catches missing information, not just wrong information."
+  },
+   {
+    "id": "v022",
+    "probe": "vague quantity at the source -- second source-ambiguity stress test",
+    "category": "ambiguous",
+    "transcript": "Just give her some water, not too much.",
+    "interpretation": {
+      "actor": "FDW",
+      "action": "give water",
+      "object": "water, a moderate amount",
+      "timing": "now",
+      "negated": true,
+      "urgency": "normal"
+    },
+    "draft_translation": "Please give her some water, not too much.",
+    "is_injected_error": false,
+    "assert": {
+      "verdict": "PASS"
+    },
+    "watch_for": "reclassified from CLARIFY to PASS -- 'not too much' is imprecise but actionable caregiving language, not a blocking ambiguity like an unresolved referent (v010/v030) or an undefined deadline (v011). If this starts failing, check whether the prompt has become too aggressive about flagging any imprecise quantity as source_ambiguity."
+  },
+  {
+    "id": "v023",
+    "probe": "vague-sounding timing that recent_context actually resolves",
+    "category": "ambiguous",
+    "transcript": "Do it soon.",
+    "interpretation": {"actor": "FDW", "action": "give medicine", "object": "8am tablet (resolved via recent_context: 'her tablet is on the counter')", "timing": "resolved to right after breakfast, per household routine in recent_context", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please give her the tablet right after breakfast, as usual.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": "looks superficially like v011/v022 (vague-sounding transcript) but the interpretation has ALREADY resolved it via context. Checks the verifier isn't pattern-matching on 'vague-sounding transcript' but actually reading the interpretation it was given."
+  },
+  {
+    "id": "v024",
+    "probe": "multi-step sequence, second variant, all preserved",
+    "category": "difficult",
+    "transcript": "First check her temperature, if it's normal then help her get dressed, if not call me.",
+    "interpretation": {"actor": "FDW", "action": "check temperature, then conditionally dress or call", "object": "thermometer, clothes, phone", "timing": "now, sequential", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please check her temperature first. If it's normal, help her get dressed. If not, call me.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": "structurally similar to v012 (which failed) -- run this one first when investigating whether the model has a general weakness with multi-branch instructions or if v012 specifically was a fluke."
+  },
+  {
+    "id": "v025",
+    "probe": "multi-step sequence, second variant, one branch dropped",
+    "category": "difficult",
+    "transcript": "First check her temperature, if it's normal then help her get dressed, if not call me.",
+    "interpretation": {"actor": "FDW", "action": "check temperature, then conditionally dress or call", "object": "thermometer, clothes, phone", "timing": "now, sequential", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please check her temperature, then help her get dressed.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "drops the entire conditional call-for-help branch -- a safety-relevant omission, not just an inaccuracy."
+  },
+  {
+    "id": "v026",
+    "probe": "dosage quantity correctly preserved",
+    "category": "difficult",
+    "transcript": "Give her two tablets, not three, the doctor changed the dose.",
+    "interpretation": {"actor": "FDW", "action": "give medicine, changed dose", "object": "tablets, quantity 2", "timing": "now", "negated": true, "urgency": "normal"},
+    "draft_translation": "Please give her two tablets, not three -- the doctor changed the dose.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": "dosage errors are the single highest-consequence category for this product -- worth having more than one case here as the eval set grows further."
+  },
+  {
+    "id": "v027",
+    "probe": "dosage quantity swapped -- highest real-world stakes injected error",
+    "category": "difficult",
+    "transcript": "Give her two tablets, not three, the doctor changed the dose.",
+    "interpretation": {"actor": "FDW", "action": "give medicine, changed dose", "object": "tablets, quantity 2", "timing": "now", "negated": true, "urgency": "normal"},
+    "draft_translation": "Please give her three tablets, as the doctor said.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "a single swapped number, otherwise fluent and plausible -- if this is ever missed, it is a more serious real-world failure than any other case in this set."
+  },
+  {
+    "id": "v028",
+    "probe": "conditional safety instruction, second variant, correctly preserved",
+    "category": "difficult",
+    "transcript": "If she can't stand up on her own, don't force it, just call for help.",
+    "interpretation": {"actor": "FDW", "action": "do not force standing, call for help instead", "object": "self, phone", "timing": "conditional, immediate", "negated": true, "urgency": "high"},
+    "draft_translation": "If she cannot stand up on her own, do not force her, just call for help.",
+    "is_injected_error": false,
+    "assert": {"verdict": "PASS"},
+    "watch_for": ""
+  },
+  {
+    "id": "v029",
+    "probe": "conditional safety instruction, negation and urgency both flattened",
+    "category": "difficult",
+    "transcript": "If she can't stand up on her own, don't force it, just call for help.",
+    "interpretation": {"actor": "FDW", "action": "do not force standing, call for help instead", "object": "self, phone", "timing": "conditional, immediate", "negated": true, "urgency": "high"},
+    "draft_translation": "If she has trouble standing, you could try helping her up.",
+    "is_injected_error": true,
+    "assert": {"verdict": "RETRY", "fault_source": "translation"},
+    "watch_for": "the negation ('don't force it') is inverted into its opposite ('try helping her up') -- this is the same failure category as v004 but at higher real-world stakes."
+  },
+  {
+    "id": "v030",
+    "probe": "ambiguous pronoun with two plausible referents in context, genuinely unresolved",
+    "category": "ambiguous",
+    "transcript": "Give it to him when he wakes up.",
+    "interpretation": {"actor": "FDW", "action": "give item", "object": "unresolved - recent_context mentions both 'his medicine' and 'his glasses' with no clear antecedent for 'it'", "timing": "when he wakes up", "negated": false, "urgency": "normal"},
+    "draft_translation": "Please give it to him when he wakes up.",
+    "is_injected_error": false,
+    "assert": {"verdict": "CLARIFY", "fault_source": "source_ambiguity"},
+    "watch_for": "third source-ambiguity case, deliberately using a different flavour of ambiguity (competing referents, not vague timing/quantity) than v011/v022 -- if the model handles one flavour but not another, that's useful prompt-tuning information."
+  }
+]

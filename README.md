@@ -652,10 +652,7 @@ The evaluation contains only 20 cases and one recorded generation per configurat
 
 ## 4. Verify Agent
 
-This is a safety gate. It sees the original transcript, the `InterpretationResult`, and the
-draft translation, and decides whether critical meaning survived. It does not rewrite
-anything, and only returns a verdict. On failure, it names which upstream agent must redo
-its work.
+This is a safety gate. It sees the original transcript, the `InterpretationResult`, and the draft translation, and decides whether critical meaning survived. It does not rewrite anything, and only returns a verdict. On failure, it names which upstream agent must redo its work.
 
 ### Files
 
@@ -663,6 +660,8 @@ its work.
 | --- | --- |
 | `agents/verify_agent.py` | `VerificationResult` schema, system prompt, JSON parsing with fail-safe |
 | `tests/test_verify_agent.py` | Unit tests with a fake model (no Bedrock needed) |
+| `tests/verify_test_cases.json` | 34 hand-written cases across six categories, with `assert` / `watch_for` / `is_injected_error` |
+| `tests/test_verify_eval.py` | Model-backed evaluation runner (argparse, concurrency, JSONL output) |
 | `tests/structure_test_cases.json` | Shared with the Structure Agent for meaning-preservation probes |
 
 ### Schema
@@ -677,9 +676,7 @@ class VerificationResult(PydanticModel):
     clarification_question: str | None = None
 ```
 
-`fault_source` is what makes retries targeted rather than a blind re-run of the whole
-pipeline. `"translation"` is retained for backwards compatibility only; new responses
-should use `"structure"`.
+`fault_source` is what makes retries targeted rather than a blind re-run of the whole pipeline. `"translation"` is retained for backwards compatibility only; new responses use `"structure"`.
 
 ### Verdict rules
 
@@ -690,20 +687,13 @@ should use `"structure"`.
 | Interpretation right, draft dropped/distorted meaning | `RETRY` | `structure` | re-run STRUCTURE → VERIFY |
 | Transcript or interpretation itself ambiguous | `CLARIFY` | `source_ambiguity` | → CLARIFY |
 
-Checked fields: actor, action, object, timing, negation, urgency. Every `RETRY` issue
-must state what the named upstream agent should correct — a bare "translation is wrong"
-gives the retry nothing to act on.
+Checked fields: actor, action, object, timing, negation_scope, urgency. Every `RETRY` issue must state what the named upstream agent should correct — a bare "translation is wrong" gives the retry nothing to act on. `temperature=0`, matching the rest of the pipeline: this is a judgment/classification task, not generation.
 
 ### Failure behaviour
 
-`BedrockModel.generate()` returns plain text, not a forced tool-call shape, so the
-response is parsed and validated here. `_parse_result` strips markdown fences, then on
-`JSONDecodeError` or `ValidationError` returns `CLARIFY` with the parse error as an
-issue and a generic clarification question.
+`BedrockModel.generate()` returns plain text, not a forced tool-call shape, so the response is parsed and validated here. `_parse_result` strips markdown fences, then on `JSONDecodeError` or `ValidationError` returns `CLARIFY` with the parse error as an issue and a generic clarification question.
 
-The agent **never raises** and **never invents a PASS**. An unparseable verifier
-response degrades to asking the user, not to silently accepting an unchecked draft.
-This is the graph's "no infinite loop, no silent crash" invariant.
+The agent **never raises** and **never invents a PASS**. An unparseable verifier response degrades to asking the user, not to silently accepting an unchecked draft. This is the graph's "no infinite loop, no silent crash" invariant.
 
 ### Unit tests
 
@@ -714,15 +704,51 @@ This is the graph's "no infinite loop, no silent crash" invariant.
 - unparseable text fails safe to `CLARIFY` with a non-empty `issues` list
 - a response wrapped in ```` ```json ```` fences still parses
 
+### Verify Agent evaluation
+
+34 hand-written cases in `tests/verify_test_cases.json`, across six categories: simple, colloquial/dialect, context-dependent, ambiguous, difficult, and interpretation-fault. Each case supplies a transcript, an interpretation, and a draft translation, and asserts the expected verdict and (where relevant) fault_source.
+
+Unlike Interpretation and Structure, Verify's job is judgment, not extraction, so cases are split between genuine (correct) translations and deliberately injected errors, to measure both catch rate and false-positive rate rather than accuracy alone.
+
+```bash
+python3 -m tests.test_verify_eval
+python3 -m tests.test_verify_eval --only v011,v022,v030 -v
+```
+
+#### What each case category tests
+
+| Category | Probe | What a failure would mean |
+| --- | --- | --- |
+| simple / colloquial / context-dependent | translation faithfully reflects the interpretation | a subtle wording, object, or urgency drift reaching the employer unflagged |
+| ambiguous | source itself is genuinely unresolved (vague timing, quantity, competing referents) | burning the one retry on a problem retrying cannot fix |
+| difficult | multi-branch, dosage, and negated-safety instructions | the highest real-world-stakes failure category in the product |
+| interpretation-fault | interpretation misreads a transcript that was actually clear | wrongly retrying Structure when Interpretation is the real source of error |
+
+#### Results
+
+| Metric | Result |
+| --- | --- |
+| Overall pass rate (all 34 cases, full assert) | 32/34 (94%) |
+| Verifier catch rate (injected errors) | 14/14 (100%) |
+| False positive rate (should-PASS genuine cases) | 2/16 (12%) |
+| fault_source classification accuracy* | 18/18 (100%) |
+| Schema validation pass rate | 34/34 (100%) |
+
+*measured only on the 18 cases that assert a specific `fault_source` value; both failing cases assert `verdict` alone.
+
+Each run writes one JSONL record per case to `tests/verify_runs.jsonl`, mirroring the interpretation and structure eval output shape.
+
 ### Known limitations
 
-The verifier reasons over an English draft against a possibly non-English transcript.
-Cross-language meaning comparison is the harder half of its job; this is why the Display
-Agent runs after the graph rather than inside it (see below).
+The verifier reasons over an English draft against a possibly non-English transcript. Cross-language meaning comparison is the harder half of its job; this is why the Display Agent runs after the graph rather than inside it (see below). Verifier catch rate is measured by injecting deliberately corrupted translations, not by observing organic failures — the orchestrator evaluation numbers reflect that setup.
 
-Verifier catch rate is measured by injecting deliberately corrupted translations, not by
-observing organic failures — the numbers in the orchestrator evaluation reflect that
-setup.
+Two cases (`v020`, `v023`) fail consistently, including at `temperature=0` across repeated runs, which rules out sampling noise as the cause. Both involve an interpretation that correctly resolves a reference or detail using `recent_context` or `person_info` — information the Verify Agent does not receive. Despite an explicit
+prompt instruction to trust the interpretation's resolved fields rather than audit their grounding, the model (Haiku) consistently second-guesses these resolutions anyway, in one case explicitly asking "Are these resolutions based on conversation history not shown here?" — precisely the behaviour the instruction was written to prevent.
+
+This points to an instruction-following limitation rather than a prompt-wording issue, since the relevant instruction is already present and specific. The reference architecture originally specified Sonnet for Verify ("quality matters here"); Haiku is currently used only due to an earlier AWS Bedrock access restriction. Re-testing this pair of cases against Sonnet, once available, would confirm whether this is a genuine
+model-capability gap or something a stronger model resolves without further prompt changes.
+
+The three-way `fault_source` distinction (`structure`, `interpretation`, `source_ambiguity`) required iterative prompt tuning: an early version over-flagged logically-incomplete-but-faithful translations as structure faults, and a later version briefly regressed by second-guessing Interpretation's grounding rather than trusting its stated fields. Both were corrected by narrowing the verifier's scope to comparing the draft against the interpretation, not against the transcript's raw phrasing or the interpretation's own justification.
 
 ---
 

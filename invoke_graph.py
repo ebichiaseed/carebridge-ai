@@ -22,7 +22,7 @@ async def main():
         "recent_context": [],
         "person_info": {},
         "retry_count": 0,
-        "max_retries": 0,
+        "max_retries": 1,
         "status": "processing",
     }
 
